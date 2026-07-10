@@ -85,11 +85,11 @@ class GeodesicSphere():
     node_2_idx = {}
 
     for out_idx, root in enumerate(sorted(clusters.keys())):
-      canonical_node = root + 1
-      node_2_idx[canonical_node] = out_idx + 1
+      canonical_node = root
+      node_2_idx[canonical_node] = out_idx
       self.non_duplicate_vertices.append(self.unprojected_vertices[root])
       for member in clusters[root]:
-        duplicate_vertex_2_correct_vertex[member + 1] = canonical_node
+        duplicate_vertex_2_correct_vertex[member] = canonical_node
 
     return node_2_idx, duplicate_vertex_2_correct_vertex
 

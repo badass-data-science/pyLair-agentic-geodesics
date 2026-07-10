@@ -45,8 +45,8 @@ def test_chords_reference_valid_vertex_indices():
     sphere = build_sphere(Icosahedron, 3)
     num_vertices = len(sphere.sphere_vertices)
     for c in sphere.non_duplicate_chords:
-        assert 1 <= c[0] <= num_vertices
-        assert 1 <= c[1] <= num_vertices
+        assert 0 <= c[0] < num_vertices
+        assert 0 <= c[1] < num_vertices
         assert c[0] != c[1]
 
 
@@ -55,7 +55,7 @@ def test_faces_reference_valid_vertex_indices():
     num_vertices = len(sphere.sphere_vertices)
     for f in sphere.non_duplicate_face_nodes:
         for n in f:
-            assert 1 <= n <= num_vertices
+            assert 0 <= n < num_vertices
 
 
 def test_no_duplicate_chords():
@@ -74,7 +74,7 @@ def test_icosahedron_frequency_one_matches_original_icosahedron_edge_length():
     # original icosahedron's edge length once projected onto the unit sphere.
     lengths = set()
     for c in sphere.non_duplicate_chords:
-        v1 = sphere.sphere_vertices[c[0] - 1]
-        v2 = sphere.sphere_vertices[c[1] - 1]
+        v1 = sphere.sphere_vertices[c[0]]
+        v2 = sphere.sphere_vertices[c[1]]
         lengths.add(round(np.linalg.norm(v1 - v2), 6))
     assert len(lengths) == 1

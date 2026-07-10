@@ -5,8 +5,8 @@ from Output import OutputDXF, OutputWireframeVRML, OutputFaceVRML
 
 def make_triangle():
     V = [np.array([0., 0., 0.]), np.array([1., 0., 0.]), np.array([0., 1., 0.])]
-    C = [[1, 2], [2, 3], [3, 1]]
-    F = [[1, 2, 3]]
+    C = [[0, 1], [1, 2], [2, 0]]
+    F = [[0, 1, 2]]
     return V, C, F
 
 
@@ -32,7 +32,7 @@ def test_output_wireframe_vrml_contains_all_points_and_indices(tmp_path):
     for v in V:
         assert f"{v[0]} {v[1]} {v[2]}," in content
     for c in C:
-        assert f"{c[0]-1} {c[1]-1} -1," in content
+        assert f"{c[0]} {c[1]} -1," in content
 
 
 def test_output_face_vrml_contains_face_indices(tmp_path):
@@ -44,4 +44,4 @@ def test_output_face_vrml_contains_face_indices(tmp_path):
     assert content.startswith("#VRML V2.0 utf8")
     assert "IndexedFaceSet" in content
     for f in F:
-        assert f"{f[0]-1}, {f[1]-1}, {f[2]-1}, -1," in content
+        assert f"{f[0]}, {f[1]}, {f[2]}, -1," in content

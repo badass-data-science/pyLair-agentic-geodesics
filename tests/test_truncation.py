@@ -36,8 +36,8 @@ def test_truncate_chords_reference_valid_vertex_indices():
     V, C = build_sphere()
     V_new, C_new = truncate(V, C, 0.499999)
     for c in C_new:
-        assert 1 <= c[0] <= len(V_new)
-        assert 1 <= c[1] <= len(V_new)
+        assert 0 <= c[0] < len(V_new)
+        assert 0 <= c[1] < len(V_new)
 
 
 @pytest.mark.parametrize("truncation_amount", [0.2, 0.333333, 0.499999, 0.75])
@@ -63,7 +63,7 @@ def test_truncate_raises_clearly_on_horizontal_chord_at_cutoff():
         np.array([1., 0., 0.5 - 1e-13]),
         np.array([1., 1., 0.5]),
     ]
-    C = [[2, 3]]
+    C = [[1, 2]]
 
     with pytest.raises(ValueError):
         truncate(V, C, 1.0)  # cutoff_from_bottom=1.0 -> cutoff = max z = 0.5

@@ -26,33 +26,33 @@ def test_symmetry_triangle_vertices_are_planar_at_z_zero():
         assert v.xyz[2] == 0.
 
 
-def test_convert_rc_notation_to_vertex_number_is_unique_and_1_indexed():
+def test_convert_rc_notation_to_vertex_index_is_unique_and_0_indexed():
     poly = Icosahedron()
     st = ClassOneMethodOneSymmetryTriangle(3, poly)
 
     seen = set()
     for r in range(len(st.row_list)):
         for c in range(len(st.row_list[r])):
-            n = st.convertRCNotationToVertexNumber(r, c)
+            n = st.convertRCNotationToVertexIndex(r, c)
             assert n not in seen
             seen.add(n)
 
-    assert seen == set(range(1, len(st.vertices) + 1))
+    assert seen == set(range(len(st.vertices)))
 
 
-def test_face_list_references_valid_vertex_numbers():
+def test_face_list_references_valid_vertex_indices():
     poly = Icosahedron()
     st = ClassOneMethodOneSymmetryTriangle(4, poly)
     num_vertices = len(st.vertices)
     for face in st.face_list:
         for n in face:
-            assert 1 <= n <= num_vertices
+            assert 0 <= n < num_vertices
 
 
-def test_chord_list_references_valid_vertex_numbers():
+def test_chord_list_references_valid_vertex_indices():
     poly = Icosahedron()
     st = ClassOneMethodOneSymmetryTriangle(4, poly)
     num_vertices = len(st.vertices)
     for chord in st.chord_list:
         for n in chord:
-            assert 1 <= n <= num_vertices
+            assert 0 <= n < num_vertices

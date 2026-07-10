@@ -30,8 +30,8 @@ def get_bill_of_materials(vertices, chords, rounding_precision):
   #
   bom = {}
   for c in chords:
-    v1 = vertices[c[0] - 1]
-    v2 = vertices[c[1] - 1]
+    v1 = vertices[c[0]]
+    v2 = vertices[c[1]]
     distance_between = round(np.linalg.norm(v1 - v2), rounding_precision)  # CHECK THIS!
 
     if not distance_between in bom:
@@ -59,11 +59,11 @@ def get_bill_of_materials(vertices, chords, rounding_precision):
   hubs = {}
   for c in chords:
     if not c[0] in hubs:  hubs[c[0]] = {'connected_vertices': {}, 'vertex' : None}
-    hubs[c[0]]['connected_vertices'][c[1]] = {'vertex' : vertices[c[1]-1]}
-    hubs[c[0]]['vertex'] = vertices[c[0]-1]
+    hubs[c[0]]['connected_vertices'][c[1]] = {'vertex' : vertices[c[1]]}
+    hubs[c[0]]['vertex'] = vertices[c[0]]
     if not c[1] in hubs:  hubs[c[1]] = {'connected_vertices' : {}, 'vertex' : None}
-    hubs[c[1]]['connected_vertices'][c[0]] = {'vertex' : vertices[c[0]-1]}
-    hubs[c[1]]['vertex'] = vertices[c[1]-1]
+    hubs[c[1]]['connected_vertices'][c[0]] = {'vertex' : vertices[c[0]]}
+    hubs[c[1]]['vertex'] = vertices[c[1]]
 
   #
   # compute angles at hub between outbound chords and tangential plane
