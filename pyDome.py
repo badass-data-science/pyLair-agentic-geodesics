@@ -51,7 +51,7 @@ Options:
 
 \t-t, --truncation\tDistance (ratio) from the bottom to truncate. Default 0.499999. I advise using only the default or 0.333333. Must be floating point.
 
-\t-b, --bom-rounding\tThe number of decimal places to round chord length output in the generated Bill of Materials. Default 5. Must be an integer.
+\t-b, --bom-rounding\tThe number of decimal places to round chord length output in the generated Bill of Materials. Also controls how aggressively near-identical strut lengths are merged into one entry: a lower value merges more, which is useful for treating fabrication-irrelevant differences as the same length, but can merge genuinely distinct lengths together at high dome frequencies. Default 9, which is fine enough to keep all distinct lengths separate at any practical frequency. Must be an integer.
 
 \t-p, --polyhedron\tEither "octahedron" or "icosahedron". Default icosahedron.
 
@@ -70,7 +70,7 @@ def main():
   vertex_equal_threshold = 0.0000001
   truncation_amount = 0.499999
   run_truncate = False
-  bom_rounding_precision = 5
+  bom_rounding_precision = 9
   face_output = False
   output_path = None
 

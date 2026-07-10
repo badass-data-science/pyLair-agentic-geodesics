@@ -30,22 +30,25 @@ def get_bill_of_materials(vertices, chords, rounding_precision):
   #
   # Chords belonging to the same strut class can differ by tiny amounts of
   # floating-point noise from the geometry pipeline. Group them by sorting
-  # and splitting on gaps larger than a small tolerance relative to the
-  # largest chord, rather than independently rounding each length to
-  # rounding_precision and bucketing by the rounded value: at high
-  # frequency, two genuinely distinct strut lengths can differ by less
-  # than rounding_precision's granularity and be silently merged by
-  # per-value rounding, or a single true length whose floating-point
-  # noise straddles a rounding boundary can be incorrectly split in two.
-  # rounding_precision is applied only to the displayed length below, not
-  # to the grouping decision itself.
+  # and splitting on gaps larger than a tolerance, rather than
+  # independently rounding each length to rounding_precision and
+  # bucketing by the rounded value: naive per-value rounding can
+  # incorrectly split a single true length whose floating-point noise
+  # straddles a rounding boundary. The tolerance is derived from
+  # rounding_precision (matching its original role of letting a builder
+  # deliberately merge near-identical strut lengths that aren't worth
+  # distinguishing for fabrication purposes -- a coarse rounding_precision
+  # merges more aggressively), floored by a tiny noise-only tolerance so
+  # that even a very fine rounding_precision still merges pure
+  # floating-point noise rather than reporting spurious near-duplicate
+  # lengths as distinct struts.
   #
   raw_lengths = [np.linalg.norm(vertices[c[0]] - vertices[c[1]]) for c in chords]
 
   list_bom = []
   if raw_lengths:
     scale = max(raw_lengths)
-    cluster_tolerance = scale * 1e-9
+    cluster_tolerance = max(scale * 1e-9, 0.5 * 10 ** (-rounding_precision))
 
     order = sorted(range(len(raw_lengths)), key=lambda i: raw_lengths[i])
     clusters = [[order[0]]]
