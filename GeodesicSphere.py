@@ -16,6 +16,7 @@
 
 
 import numpy as np
+from scipy.spatial import cKDTree
 
 class GeodesicSphere():
   def __init__(self, polyhedral, symmetry_triangle, vpt, radius):
@@ -50,36 +51,45 @@ class GeodesicSphere():
 
 
   def locate_duplicate_vertices(self):
-    replace_dict = {}
-    for i in range(len(self.unprojected_vertices)):
-      for j in range(i + 1, len(self.unprojected_vertices)):
-        distance_vector = self.unprojected_vertices[i] - self.unprojected_vertices[j]
-        length = (distance_vector[0] ** 2 + distance_vector[1] ** 2 + distance_vector[2] ** 2) ** 0.5
+    # Find every pair of vertices closer than vertex_proximity_threshold
+    # (these arise where adjacent polyhedron faces share an edge, so the
+    # replicated symmetry triangle produces near-identical points) using a
+    # KD-tree instead of an O(n^2) all-pairs scan, then union those pairs
+    # into clusters. Each cluster collapses to its lowest-indexed member,
+    # matching the original algorithm's "earliest vertex wins" behavior.
+    n = len(self.unprojected_vertices)
+    points = np.array(self.unprojected_vertices)
+    pairs = cKDTree(points).query_pairs(self.vertex_proximity_threshold)
 
-        if not i + 1 in replace_dict:
-          replace_dict[i+1] = []
+    parent = list(range(n))
 
-        if length < self.vertex_proximity_threshold:
-          replace_dict[i+1].append(j+1)
+    def find(x):
+      while parent[x] != x:
+        parent[x] = parent[parent[x]]
+        x = parent[x]
+      return x
 
-    for node in sorted(replace_dict.keys()):
-      try:
-        for v in replace_dict[node]:
-          del(replace_dict[v])
-      except:
-        pass
+    for i, j in pairs:
+      root_i, root_j = find(i), find(j)
+      if root_i != root_j:
+        lo, hi = (root_i, root_j) if root_i < root_j else (root_j, root_i)
+        parent[hi] = lo
+
+    clusters = {}
+    for idx in range(n):
+      clusters.setdefault(find(idx), []).append(idx)
 
     self.non_duplicate_vertices = []
-    
-    duplicate_vertex_2_correct_vertex = {}  
+
+    duplicate_vertex_2_correct_vertex = {}
     node_2_idx = {}
 
-    for idx, node in enumerate(sorted(replace_dict.keys())):
-      node_2_idx[node] = idx + 1
-      self.non_duplicate_vertices.append(self.unprojected_vertices[node-1])
-      duplicate_vertex_2_correct_vertex[node] = node
-      for n in replace_dict[node]:
-        duplicate_vertex_2_correct_vertex[n] = node
+    for out_idx, root in enumerate(sorted(clusters.keys())):
+      canonical_node = root + 1
+      node_2_idx[canonical_node] = out_idx + 1
+      self.non_duplicate_vertices.append(self.unprojected_vertices[root])
+      for member in clusters[root]:
+        duplicate_vertex_2_correct_vertex[member + 1] = canonical_node
 
     return node_2_idx, duplicate_vertex_2_correct_vertex
 
