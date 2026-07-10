@@ -58,7 +58,7 @@ Options:
 
 \t-F, --face\tFlag specifying whether to generate face output in WRL file. Cancels DXF file output and cannot be used with truncation.
 
-\t-P, --preview\tAlso save a quick 3D wireframe preview image ("<output>_preview.png") alongside the usual output files, so you can sanity-check the dome without opening a CAD or VRML viewer.
+\t-P, --preview\tAlso save a quick 3D wireframe preview image ("<output>.png") alongside the usual output files, so you can sanity-check the dome without opening a CAD or VRML viewer.
 """
   print(help_text)
 
@@ -191,7 +191,7 @@ def main():
   # preview image
   #
   if preview_output:
-    save_preview(V, C, output_path + '_preview.png')
+    save_preview(V, C, output_path + '.png')
 
   #
   # bill of materials

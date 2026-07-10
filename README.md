@@ -42,7 +42,7 @@ produces `output/mydome.dxf`, `output/mydome.wrl`, and prints a JSON Bill of Mat
 | `-v` | `--vthreshold` | Distance below which two computed vertices are treated as the same point. | `0.0000001` |
 | `-b` | `--bom-rounding` | Decimal places to display, and merge granularity, for the Bill of Materials (see caveats below). | `9` |
 | `-F` | `--face` | Emit face data (not wireframe) in the WRL output; skips DXF entirely. Incompatible with `-t`. | off |
-| `-P` | `--preview` | Also save a quick 3D wireframe preview image (`<output>_preview.png`) for a fast sanity check without opening a CAD/VRML viewer. | off |
+| `-P` | `--preview` | Also save a quick 3D wireframe preview image (`<output>.png`) for a fast sanity check without opening a CAD/VRML viewer. | off |
 | `-h` | `--help` | Show usage and exit. | — |
 
 ## Caveats and known limitations
