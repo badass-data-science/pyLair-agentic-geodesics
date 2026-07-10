@@ -9,7 +9,6 @@ description = "A geodesic dome calculator: computes vertices and chords of Class
 readme = "README.md"
 license = { text = "GPL-3.0-or-later" }
 authors = [
-  { name = "Daniel Williams" },
   { name = "Emily Williams" },
 ]
 requires-python = ">=3.9"
