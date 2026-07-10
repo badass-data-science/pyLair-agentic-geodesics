@@ -1,5 +1,5 @@
 #    pyDome:  A geodesic dome calculator
-#    Copyright (C) 2013  Daniel Williams
+#    Copyright (C) 2013  Emily Williams
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -16,6 +16,12 @@
 
 
 import numpy as np
+
+# below this, a chord is considered exactly coincident with the cutoff
+# plane: dividing by its near-zero z-extent would silently produce an
+# inf/nan vertex (numpy division by zero warns rather than raising)
+# instead of failing loudly.
+HORIZONTAL_CHORD_EPSILON = 1e-12
 
 def truncate(V_sphere, C_sphere, cutoff_from_bottom):
 
@@ -36,36 +42,45 @@ def truncate(V_sphere, C_sphere, cutoff_from_bottom):
   V_new = list(V_sphere)
   chords_to_remove = []
   chords_to_add = []
-  vertices_to_remove = []
   for c_idx, c in enumerate(C_sphere):
-    v1_idx = c[0] - 1
-    v2_idx = c[1] - 1
+    v1_idx = c[0]
+    v2_idx = c[1]
     v1 = V_sphere[v1_idx]
     v2 = V_sphere[v2_idx]
-    
+
     # both vertices below cutoff
     if v1[2] < cutoff and v2[2] < cutoff:
       chords_to_remove.append(c_idx)
-      vertices_to_remove.append(v1_idx)
-      vertices_to_remove.append(v2_idx)
 
     # vertex 1 below cutoff
     if v1[2] < cutoff and v2[2] >= cutoff:
       chords_to_remove.append(c_idx)
-      norm = np.linalg.linalg.norm(v1 - v2)
+      norm = np.linalg.norm(v1 - v2)
       norm_vec = (v1 - v2) / norm
+      if abs(norm_vec[2]) < HORIZONTAL_CHORD_EPSILON:
+        raise ValueError(
+          'Truncation cutoff plane lies exactly on a horizontal chord '
+          '(vertices %s and %s). Choose a slightly different --truncation '
+          'value to avoid this degenerate case.' % (c[0], c[1])
+        )
       scalar = (cutoff - v2[2]) / norm_vec[2]
       V_new.append(v2 + scalar * norm_vec)
-      chords_to_add.append([c[1], len(V_new)])
+      chords_to_add.append([c[1], len(V_new) - 1])
 
     # vertex 2 below cutoff
     if v2[2] < cutoff and v1[2] >= cutoff:
       chords_to_remove.append(c_idx)
-      norm = np.linalg.linalg.norm(v2 - v1)
+      norm = np.linalg.norm(v2 - v1)
       norm_vec = (v2 - v1) / norm
+      if abs(norm_vec[2]) < HORIZONTAL_CHORD_EPSILON:
+        raise ValueError(
+          'Truncation cutoff plane lies exactly on a horizontal chord '
+          '(vertices %s and %s). Choose a slightly different --truncation '
+          'value to avoid this degenerate case.' % (c[0], c[1])
+        )
       scalar = (cutoff - v1[2]) / norm_vec[2]
       V_new.append(v1 + scalar * norm_vec)
-      chords_to_add.append([c[0], len(V_new)])
+      chords_to_add.append([c[0], len(V_new) - 1])
 
   #
   # consolidate chords
@@ -83,21 +98,21 @@ def truncate(V_sphere, C_sphere, cutoff_from_bottom):
   old_vidx_2_new_v = {}
   V_final = []
   for c_idx, c in enumerate(C_next):
-    vertex_1_idx = c[0] - 1
-    vertex_2_idx = c[1] - 1
+    vertex_1_idx = c[0]
+    vertex_2_idx = c[1]
 
     if not vertex_1_idx in old_vidx_2_new_v:
       V_final.append(V_new[vertex_1_idx])
-      old_vidx_2_new_v[vertex_1_idx] = len(V_final)
+      old_vidx_2_new_v[vertex_1_idx] = len(V_final) - 1
 
     if not vertex_2_idx in old_vidx_2_new_v:
       V_final.append(V_new[vertex_2_idx])
-      old_vidx_2_new_v[vertex_2_idx] = len(V_final)
+      old_vidx_2_new_v[vertex_2_idx] = len(V_final) - 1
 
   C_final = []
   for c_idx, c in enumerate(C_next):
-    vertex_1_idx = c[0] - 1
-    vertex_2_idx = c[1] - 1
+    vertex_1_idx = c[0]
+    vertex_2_idx = c[1]
     C_final.append([old_vidx_2_new_v[vertex_1_idx], old_vidx_2_new_v[vertex_2_idx]])
 
   return V_final, C_final

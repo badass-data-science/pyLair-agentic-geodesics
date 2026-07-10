@@ -1,5 +1,5 @@
 #    pyDome:  A geodesic dome calculator
-#    Copyright (C) 2013  Daniel Williams
+#    Copyright (C) 2013  Emily Williams
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -26,12 +26,12 @@ import sys
 #
 # load pyDome modules
 #
-from Polyhedral import *
-from SymmetryTriangle import *
-from GeodesicSphere import *
-from Output import *
-from Truncation import *
-from BillOfMaterials import *
+from .polyhedral import Icosahedron, Octahedron
+from .symmetry_triangle import ClassOneMethodOneSymmetryTriangle
+from .geodesic_sphere import GeodesicSphere
+from .output import OutputDXF, OutputWireframeVRML, OutputFaceVRML
+from .truncation import truncate
+from .bill_of_materials import get_bill_of_materials
 
 
 def display_help():
@@ -43,15 +43,15 @@ Required Command-Line Input:
 
 Options:
 
-\t-r, --radius\tRadius of generated dome. Must be floating point. Default 1.0.
+\t-r, --radius\tRadius of generated dome. Must be a floating point number greater than zero. Default 1.0.
 
-\t-f, --frequency\tFrequency of generated dome. Must be an integer. Default 4.
+\t-f, --frequency\tFrequency of generated dome. Must be a positive integer. Default 4.
 
 \t-v, --vthreshold\tDistance required to consider two vertices equal. Default 0.0000001. Must be floating point.
 
 \t-t, --truncation\tDistance (ratio) from the bottom to truncate. Default 0.499999. I advise using only the default or 0.333333. Must be floating point.
 
-\t-b, --bom-rounding\tThe number of decimal places to round chord length output in the generated Bill of Materials. Default 5. Must be an integer.
+\t-b, --bom-rounding\tThe number of decimal places to round chord length output in the generated Bill of Materials. Also controls how aggressively near-identical strut lengths are merged into one entry: a lower value merges more, which is useful for treating fabrication-irrelevant differences as the same length, but can merge genuinely distinct lengths together at high dome frequencies. Default 9, which is fine enough to keep all distinct lengths separate at any practical frequency. Must be an integer.
 
 \t-p, --polyhedron\tEither "octahedron" or "icosahedron". Default icosahedron.
 
@@ -70,7 +70,7 @@ def main():
   vertex_equal_threshold = 0.0000001
   truncation_amount = 0.499999
   run_truncate = False
-  bom_rounding_precision = 5
+  bom_rounding_precision = 9
   face_output = False
   output_path = None
 
@@ -85,9 +85,9 @@ def main():
   # parse command line
   #
   try:
-    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:Fo:', ['truncation=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'face', 'output='])
-  except getopt.error, msg:
-    print('for help use --help')
+    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:Fho:', ['truncation=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'face', 'output='])
+  except getopt.error as msg:
+    print(str(msg) + ' (for help use --help)')
     sys.exit(-1)
   for o, a in opts:
     if o in ('-o', '--output'):
@@ -98,7 +98,7 @@ def main():
     if o in ('-b', '--bom-rounding'):
       try:
         bom_rounding_precision = int(a)
-      except:
+      except ValueError:
         print('-b or --bom-rounding argument must be an integer. Exiting.')
         sys.exit(-1)
     if o in ('-h', '--help'):
@@ -110,20 +110,26 @@ def main():
       try:
         a = float(a)
         radius = np.float64(a)
-      except:
+      except ValueError:
         print('-r or --radius argument must be a floating point number. Exiting.')
+        sys.exit(-1)
+      if radius <= 0:
+        print('-r or --radius argument must be greater than zero. Exiting.')
         sys.exit(-1)
     if o in ('-f', '--frequency'):
       try:
         frequency = int(a)
-      except:
+      except ValueError:
         print('-f or --frequency argument must be an integer. Exiting.')
+        sys.exit(-1)
+      if frequency < 1:
+        print('-f or --frequency argument must be a positive integer. Exiting.')
         sys.exit(-1)
     if o in ('-v', '--vthreshold'):
       try:
         a = float(a)
         vertex_equal_threshold = np.float64(a)
-      except:
+      except ValueError:
         print('-v or --vthreshold argument must be a floating point number. Exiting.')
         sys.exit(-1)
     if o in ('-t', '--truncation'):
@@ -131,7 +137,7 @@ def main():
         a = float(a)
         truncation_amount = np.float64(a)
         run_truncate = True
-      except:
+      except ValueError:
         print('-t or --truncation argument must be a floating point number. Exiting.')
         sys.exit(-1)
 
@@ -147,7 +153,7 @@ def main():
   #
   if face_output and run_truncate:
     print('Truncation does not work with face output at this time. Use either -t or -F but not both.')
-    exit(-1)
+    sys.exit(-1)
 
   #
   # generate geodesic sphere

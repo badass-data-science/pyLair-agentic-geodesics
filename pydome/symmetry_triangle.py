@@ -1,5 +1,5 @@
 #    pyDome:  A geodesic dome calculator
-#    Copyright (C) 2013  Daniel Williams
+#    Copyright (C) 2013  Emily Williams
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -19,13 +19,13 @@ import numpy as np
 
 PI = np.pi
 
-from Polyhedral import Vertex
+from .polyhedral import Vertex
 
 
 class SymmetryTriangle(object):
 
-  def convertRCNotationToVertexNumber(self, r, c):
-    cnt = 1;
+  def convertRCNotationToVertexIndex(self, r, c):
+    cnt = 0;
     for i in range(len(self.row_list)):
       for j in range(len(self.row_list[i])):
         if (i == r) and (j == c):
@@ -37,7 +37,7 @@ class SymmetryTriangle(object):
 
     # self.chord_list and self.face_list contain integers indicating local position
     # on the symmetry triangle, and therefore do not use the Chord and Face 
-    # classes defined in Polyhedral.py
+    # classes defined in polyhedral.py
 
     # specify chords
     self.chord_list = []
@@ -45,32 +45,32 @@ class SymmetryTriangle(object):
       for c in range(0, len(self.row_list[r])):
 
         if r + c != chord_frequency:
-          the_start = self.convertRCNotationToVertexNumber(r, c)
-          the_end = self.convertRCNotationToVertexNumber(r+1, c)
+          the_start = self.convertRCNotationToVertexIndex(r, c)
+          the_end = self.convertRCNotationToVertexIndex(r+1, c)
           self.chord_list.append([the_start, the_end])
 	
-          the_start = self.convertRCNotationToVertexNumber(r, c)
-          the_end = self.convertRCNotationToVertexNumber(r, c+1)
+          the_start = self.convertRCNotationToVertexIndex(r, c)
+          the_end = self.convertRCNotationToVertexIndex(r, c+1)
           self.chord_list.append([the_start, the_end])
 
         if c != 0:
-          the_start = self.convertRCNotationToVertexNumber(r, c);
-          the_end = self.convertRCNotationToVertexNumber(r+1, c-1);
+          the_start = self.convertRCNotationToVertexIndex(r, c);
+          the_end = self.convertRCNotationToVertexIndex(r+1, c-1);
           self.chord_list.append([the_start, the_end])
 
     # specify faces
     self.face_list = []
     for r in range(len(self.row_list)):
       for c in range(0, len(self.row_list[r]) - 1):
-        the_first = self.convertRCNotationToVertexNumber(r, c)
-        the_second = self.convertRCNotationToVertexNumber(r, c+1)
-        the_third = self.convertRCNotationToVertexNumber(r+1, c)
+        the_first = self.convertRCNotationToVertexIndex(r, c)
+        the_second = self.convertRCNotationToVertexIndex(r, c+1)
+        the_third = self.convertRCNotationToVertexIndex(r+1, c)
         self.face_list.append([the_first, the_second, the_third])
 
         if c != 0 and r + 1 != chord_frequency:
-          the_first = self.convertRCNotationToVertexNumber(r+1, c-1)
-          the_second = self.convertRCNotationToVertexNumber(r, c)
-          the_third = self.convertRCNotationToVertexNumber(r+1, c)
+          the_first = self.convertRCNotationToVertexIndex(r+1, c-1)
+          the_second = self.convertRCNotationToVertexIndex(r, c)
+          the_third = self.convertRCNotationToVertexIndex(r+1, c)
           self.face_list.append([the_first, the_second, the_third])
 
 

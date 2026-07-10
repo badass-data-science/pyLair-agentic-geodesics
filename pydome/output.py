@@ -1,5 +1,5 @@
 #    pyDome:  A geodesic dome calculator
-#    Copyright (C) 2013  Daniel Williams
+#    Copyright (C) 2013  Emily Williams
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -31,17 +31,17 @@ def OutputDXF(V, C, the_filename):
     outfile.write('62\n')
     outfile.write('3\n')
     outfile.write('10\n')
-    outfile.write(str(V[n[0]-1][0]) + '\n')
+    outfile.write(str(V[n[0]][0]) + '\n')
     outfile.write('20\n')
-    outfile.write(str(V[n[0]-1][2]) + '\n')
+    outfile.write(str(V[n[0]][2]) + '\n')
     outfile.write('30\n')
-    outfile.write(str(V[n[0]-1][1]) + '\n')
+    outfile.write(str(V[n[0]][1]) + '\n')
     outfile.write('11\n')
-    outfile.write(str(V[n[1]-1][0]) + '\n')
+    outfile.write(str(V[n[1]][0]) + '\n')
     outfile.write('21\n')
-    outfile.write(str(V[n[1]-1][2]) + '\n')
+    outfile.write(str(V[n[1]][2]) + '\n')
     outfile.write('31\n')
-    outfile.write(str(V[n[1]-1][1]) + '\n')
+    outfile.write(str(V[n[1]][1]) + '\n')
 
   outfile.write('0\n')
   outfile.write('ENDSEC\n')
@@ -73,7 +73,7 @@ def OutputWireframeVRML(V, C, the_filename):
   outfile.write("          }")
   outfile.write("       coordIndex [")
   for c in C:
-    outfile.write(''.join([str(c[0]-1), " ", str(c[1]-1), " -1,"]) + '\n')
+    outfile.write(''.join([str(c[0]), " ", str(c[1]), " -1,"]) + '\n')
   outfile.write("               ]")
   outfile.write("          }" )
   outfile.write("     }" )
@@ -102,7 +102,7 @@ def OutputFaceVRML(V, F, the_filename):
   outfile.write("          }")
   outfile.write("       coordIndex [")
   for f in F:
-    outfile.write(''.join([str(f[0]-1), ", ", str(f[1]-1), ", ", str(f[2]-1), ", -1,"]) + '\n')
+    outfile.write(''.join([str(f[0]), ", ", str(f[1]), ", ", str(f[2]), ", -1,"]) + '\n')
   outfile.write("               ]")
   outfile.write("          }" )
   outfile.write("     }" )

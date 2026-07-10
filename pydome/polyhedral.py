@@ -1,5 +1,5 @@
 #    pyDome:  A geodesic dome calculator
-#    Copyright (C) 2013  Daniel Williams
+#    Copyright (C) 2013  Emily Williams
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -29,11 +29,11 @@ class Face():
 
     # compute transfer matrix
     x = self.v2.xyz - self.v1.xyz
-    x = x / np.linalg.linalg.norm(x)
+    x = x / np.linalg.norm(x)
     y = self.v3.xyz - self.origin
-    y = y / np.linalg.linalg.norm(y)
+    y = y / np.linalg.norm(y)
     z = np.cross(x, y)
-    self.transfer_matrix = np.transpose(np.matrix([x, y, z]))
+    self.transfer_matrix = np.transpose(np.array([x, y, z]))
 
 class Chord():
   def __init__(self, v1, v2):
@@ -45,7 +45,7 @@ class Vertex():
     self.xyz = np.array([x, y, z])
 		
   def distance_to(self, vertex):
-    return np.linalg.linalg.norm(self.xyz - vertex.xyz)
+    return np.linalg.norm(self.xyz - vertex.xyz)
 	
 class Polyhedron(object):
   def __init__(self):

@@ -28,19 +28,41 @@ def get_bill_of_materials(vertices, chords, rounding_precision):
   #
   # compute Bill of Materials
   #
-  bom = {}
-  for c in chords:
-    v1 = vertices[c[0] - 1]
-    v2 = vertices[c[1] - 1]
-    distance_between = round(np.linalg.linalg.norm(v1 - v2), rounding_precision)  # CHECK THIS!
-
-    if not distance_between in bom:
-      bom[distance_between] = 0
-    bom[distance_between] += 1
+  # Chords belonging to the same strut class can differ by tiny amounts of
+  # floating-point noise from the geometry pipeline. Group them by sorting
+  # and splitting on gaps larger than a tolerance, rather than
+  # independently rounding each length to rounding_precision and
+  # bucketing by the rounded value: naive per-value rounding can
+  # incorrectly split a single true length whose floating-point noise
+  # straddles a rounding boundary. The tolerance is derived from
+  # rounding_precision (matching its original role of letting a builder
+  # deliberately merge near-identical strut lengths that aren't worth
+  # distinguishing for fabrication purposes -- a coarse rounding_precision
+  # merges more aggressively), floored by a tiny noise-only tolerance so
+  # that even a very fine rounding_precision still merges pure
+  # floating-point noise rather than reporting spurious near-duplicate
+  # lengths as distinct struts.
+  #
+  raw_lengths = [np.linalg.norm(vertices[c[0]] - vertices[c[1]]) for c in chords]
 
   list_bom = []
-  for k in sorted(list(bom.keys())):
-    list_bom.append({'length' : k, 'count' : bom[k]})
+  if raw_lengths:
+    scale = max(raw_lengths)
+    cluster_tolerance = max(scale * 1e-9, 0.5 * 10 ** (-rounding_precision))
+
+    order = sorted(range(len(raw_lengths)), key=lambda i: raw_lengths[i])
+    clusters = [[order[0]]]
+    for prev_idx, idx in zip(order, order[1:]):
+      if raw_lengths[idx] - raw_lengths[prev_idx] > cluster_tolerance:
+        clusters.append([])
+      clusters[-1].append(idx)
+
+    for cluster in clusters:
+      cluster_lengths = [raw_lengths[i] for i in cluster]
+      list_bom.append({
+        'length': round(sum(cluster_lengths) / len(cluster_lengths), rounding_precision),
+        'count': len(cluster),
+      })
   df_bom = pd.DataFrame(list_bom).sort_values(by = ['length'], ascending = False).reset_index(drop = True)
 
   dict_bom = {
@@ -59,11 +81,11 @@ def get_bill_of_materials(vertices, chords, rounding_precision):
   hubs = {}
   for c in chords:
     if not c[0] in hubs:  hubs[c[0]] = {'connected_vertices': {}, 'vertex' : None}
-    hubs[c[0]]['connected_vertices'][c[1]] = {'vertex' : vertices[c[1]-1]}
-    hubs[c[0]]['vertex'] = vertices[c[0]-1]
+    hubs[c[0]]['connected_vertices'][c[1]] = {'vertex' : vertices[c[1]]}
+    hubs[c[0]]['vertex'] = vertices[c[0]]
     if not c[1] in hubs:  hubs[c[1]] = {'connected_vertices' : {}, 'vertex' : None}
-    hubs[c[1]]['connected_vertices'][c[0]] = {'vertex' : vertices[c[0]-1]}
-    hubs[c[1]]['vertex'] = vertices[c[1]-1]
+    hubs[c[1]]['connected_vertices'][c[0]] = {'vertex' : vertices[c[0]]}
+    hubs[c[1]]['vertex'] = vertices[c[1]]
 
   #
   # compute angles at hub between outbound chords and tangential plane

@@ -3,62 +3,97 @@ pyDome
 
 A geodesic dome calculator written in Python.
 
-pyDome calculates vertices and chords of Class One geodesic domes of arbitrary size. Domes created by pyDome can be truncated to facilitate structure design. The program produces DXF for easy import into CAD programs, and VRML output for easy display.
+pyDome calculates vertices and chords of Class One geodesic domes of arbitrary size. Domes created by pyDome can be truncated to facilitate structure design. The program produces DXF for easy import into CAD programs, and VRML output for easy display, plus a Bill of Materials report (chord lengths/counts and hub angles) for construction.
 
-The overall method used to produce the geodesic domes is described below:
+For the geometric method (icosahedron/octahedron subdivision, projection, truncation) and reference images, see [METHOD.md](METHOD.md).
 
-## Method
+## Installation
 
-Start with an icosahedron:
+Requires Python 3.9+.
 
-![](https://github.com/badassdatascience/pyDome/blob/master/images/edited_icosahedron1.png)
+```
+pip install -e .
+```
 
-Divide each face into smaller, equal-sized triangles:
+This installs `numpy`, `pandas`, and `scipy` as dependencies, and provides a `pydome` console command. For running the test suite, install the `test` extra instead:
 
-![](https://github.com/badassdatascience/pyDome/blob/master/images/edited_4_unprojected1.png)
+```
+pip install -e ".[test]"
+pytest
+```
 
-Project the points (triangle intersections) created in the last step onto the unit sphere while preserving the chord pattern:
+## Usage
 
-![](https://github.com/badassdatascience/pyDome/blob/master/images/edited_4_projected1.png)
+```
+pydome -o output/mydome -f 4 -r 1.0
+```
 
-Truncate the sphere at the equator:
+produces `output/mydome.dxf`, `output/mydome.wrl`, and prints a JSON Bill of Materials report to stdout.
 
-![](https://github.com/badassdatascience/pyDome/blob/master/images/edited_truncated.png)
+### Command-line options
 
-Load into CAD:
+| Flag | Long form | Description | Default |
+|---|---|---|---|
+| `-o` | `--output` | Output file path; `.dxf`/`.wrl` are appended. Required. | — |
+| `-r` | `--radius` | Dome radius. Must be > 0. | `1.0` |
+| `-f` | `--frequency` | Subdivision frequency. Must be a positive integer. | `4` |
+| `-p` | `--polyhedron` | Base polyhedron: `icosahedron` or `octahedron`. | `icosahedron` |
+| `-t` | `--truncation` | Cutoff ratio (0-1) from the bottom of the sphere; passing this enables truncation. Incompatible with `-F`. | off (full sphere) |
+| `-v` | `--vthreshold` | Distance below which two computed vertices are treated as the same point. | `0.0000001` |
+| `-b` | `--bom-rounding` | Decimal places to display, and merge granularity, for the Bill of Materials (see caveats below). | `9` |
+| `-F` | `--face` | Emit face data (not wireframe) in the WRL output; skips DXF entirely. Incompatible with `-t`. | off |
+| `-h` | `--help` | Show usage and exit. | — |
 
-![](https://github.com/badassdatascience/pyDome/blob/master/sample_image.png)
+## Caveats and known limitations
 
-### Angles Between Chords and the Hub Tangent Plane
+A few behaviors are worth understanding before relying on the output for a real build.
 
-The angle between a chord and the plane tangent to the sphere at the chord's hub measures the amount of inward deflection a hub spoke for that chord must make. The following diagram illustrates this idea:
+- **Truncation at an exactly horizontal chord fails loudly.** If the truncation cutoff plane happens to land exactly on a chord that lies flat in that plane, `truncate()` raises a clear `ValueError` naming the chord rather than producing a corrupted vertex. This is why the `-t/--truncation` help text recommends sticking to the default (`0.499999`) or `0.333333` — these ratios are chosen to avoid landing exactly on a vertex ring for typical frequencies. If you hit this error, nudge `-t` slightly.
 
-<!--a href="http://badassdatascience.com/2014/06/15/pydome-updates-hub-angles/tangent_angle_image_cropped/" rel="attachment wp-att-1923"><img class="alignnone size-full wp-image-1923" src="http://badassdatascience.com/badassdatascience/wp-content/uploads/2014/06/tangent_angle_image_CROPPED.png" alt="tangent_angle_image_CROPPED" width="880" height="736" /></a-->
+- **`-b/--bom-rounding` controls two things at once: display precision and merge granularity.** Chords are grouped into Bill-of-Materials rows by clustering their lengths, not by independently rounding each one — this avoids splitting a single true strut length into multiple rows due to floating-point noise. The clustering tolerance is derived from `-b`, so a coarser value (e.g. `-b 2`) intentionally merges strut lengths that are close but not identical, which is useful when your fabrication tools can't distinguish sub-millimeter differences. The default is `9`, which stays exact (no unintended merging) at any practical dome frequency. If you deliberately lower `-b` for a high-frequency dome, be aware it may merge lengths that are actually meant to be different — check the DXF/report before cutting material to a merged length.
 
-![](https://github.com/badassdatascience/pyDome/blob/master/images/tangent_angle_image_CROPPED.png)
+- **`-f/--frequency` must be a positive integer and `-r/--radius` must be greater than zero.** Both are validated with a clear error message; there is no dome at frequency 0 or radius 0.
 
-In this image, the view is directly facing the side of the tangent plane, so that it appears as a line. Two chords are shown here for illustrative purposes, but there are actually either five or six chords for a hub depending on the hub's position in the geodesic sphere.
+- **`-v/--vthreshold` controls vertex deduplication**, i.e. how close two computed vertices must be to be treated as the same point where polyhedron faces meet. The default (`1e-7`) is tuned for the default unit radius; if you use a very large or very small `-r`, you may need to adjust `-v` proportionally.
 
-The program now reports these angles for each hub as part of the standard output:
+- **`-F/--face` (face output) cannot be combined with `-t/--truncation`.** Use one or the other.
 
-<!--a href="http://badassdatascience.com/2014/06/15/pydome-updates-hub-angles/stdout_tangent_angles/" rel="attachment wp-att-1924"><img class="alignnone size-full wp-image-1924" src="http://badassdatascience.com/badassdatascience/wp-content/uploads/2014/06/STDOUT_tangent_angles.png" alt="STDOUT_tangent_angles" width="623" height="480" /></a-->
+- **Chord/vertex counts grow with the square of frequency** (a Class One subdivision of an icosahedron produces `20*f^2` faces). Vertex deduplication uses a KD-tree and scales well even at high frequency, but very high frequencies will still produce large DXF/VRML files and correspondingly large Bill of Materials reports.
 
-![](https://github.com/badassdatascience/pyDome/blob/master/images/STDOUT_tangent_angles.png)
+- **Small-length chords in the output can be artifacts of the geometry pipeline** rather than intentional struts — the tool already surfaces this as a warning in the Bill of Materials report. Check any unexpectedly short chord in a DXF viewer before building.
 
-As expected, these are small angles.
+## Project structure
 
-### Angles of Chords Around the Hub
+`pydome` is a regular Python package (`pyproject.toml` declares it under `[tool.setuptools] packages = ["pydome"]`), not a flat collection of top-level modules.
 
-The other hub angles considered here are the angles between chords centered around a hub. Here we first project the chords onto the tangent plane, then select one of the chords as a reference, and then report the angle between the projected reference chord and each other projected chord. I call these angles "spoke" angles. The following image illustrates the idea:
+| File | Responsibility |
+|---|---|
+| `pydome/__init__.py` | Package marker; intentionally empty besides the license header. |
+| `pydome/__main__.py` | Enables `python -m pydome`; delegates to `cli.main()`. |
+| `pydome/cli.py` | CLI entry point (`pydome` console command → `cli:main`): argument parsing/validation and orchestration. |
+| `pydome/polyhedral.py` | The base polyhedra (`Icosahedron`, `Octahedron`) and the `Vertex`/`Chord`/`Face` primitives. |
+| `pydome/symmetry_triangle.py` | Class One subdivision of a single polyhedron face into a triangular vertex/chord/face grid. |
+| `pydome/geodesic_sphere.py` | Replicates the symmetry triangle across every polyhedron face, deduplicates the vertices shared along adjacent-face edges (via a KD-tree), and projects the result onto a sphere of the requested radius. |
+| `pydome/truncation.py` | Cuts a geodesic sphere at a horizontal plane to produce a dome. |
+| `pydome/output.py` | DXF and VRML (wireframe or face) file writers. |
+| `pydome/bill_of_materials.py` | Clusters chords into strut-length groups, computes hub tangent-plane and spoke angles, and prints the report as JSON. |
+| `tests/` | pytest suite: unit tests per module (importing from `pydome.*`) plus subprocess-level CLI integration tests (invoked via `python -m pydome`). |
+| `METHOD.md` | The geometric method walkthrough with reference images (icosahedron subdivision, projection, truncation). |
+| `images/` | Diagrams referenced by `METHOD.md`. |
 
-<!--a href="http://badassdatascience.com/2014/06/15/pydome-updates-hub-angles/spoke_angle_image_cropped/" rel="attachment wp-att-1925"><img class="alignnone size-full wp-image-1925" src="http://badassdatascience.com/badassdatascience/wp-content/uploads/2014/06/spoke_angle_image_CROPPED.png" alt="spoke_angle_image_CROPPED" width="672" height="603" /></a-->
+Internally, vertices/chords/faces are referenced by plain integer index into Python lists — 0-indexed throughout, matching how they're actually used (this wasn't always true; earlier versions numbered them 1-indexed and subtracted 1 at every point of use).
 
-![](https://github.com/badassdatascience/pyDome/blob/master/images/spoke_angle_image_CROPPED.png)
+## Development
 
-Here the view is orthogonal to the sphere's tangent plane defined at the hub. (This is the same tangent plane as that used above).
+```
+pip install -e ".[test]"
+pytest
+```
 
-The program reports these angles in its standard output:
+The test suite includes golden-value checks against known geodesic-dome vertex/edge/face-count formulas (e.g. an icosahedron-derived sphere at frequency `f` has `10f²+2` vertices, `30f²` edges, `20f²` faces), so a correctness regression in the geometry pipeline should show up as a failing count rather than just an exception.
 
-<!--a href="http://badassdatascience.com/2014/06/15/pydome-updates-hub-angles/stdout_spoke_angles/" rel="attachment wp-att-1926"><img class="alignnone size-full wp-image-1926" src="http://badassdatascience.com/badassdatascience/wp-content/uploads/2014/06/STDOUT_spoke_angles.png" alt="STDOUT_spoke_angles" width="623" height="480" /></a-->
+This codebase was ported from Python 2 to Python 3, and most of the Python 2-isms found along the way (bare `except:` clauses, wildcard imports, a private/deprecated `numpy.linalg.linalg`/`numpy.matrix` API, 1-indexed vertex numbering) have been cleaned up. If you spot code that still looks unusual for modern Python — e.g. the manual dict-based grouping in `pydome/bill_of_materials.py` where a `collections.defaultdict` would read more clearly — it's likely another such holdover rather than an intentional design choice. Feel free to modernize it if you're in the area, just add/update tests alongside.
 
-![](https://github.com/badassdatascience/pyDome/blob/master/images/STDOUT_spoke_angles.png)
+## License
+
+GPLv3. See [LICENSE](LICENSE).

@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pydome"
+version = "0.1.0"
+description = "A geodesic dome calculator: computes vertices and chords of Class One geodesic domes, with DXF/VRML export and a hub-angle bill of materials."
+readme = "README.md"
+license = { text = "GPL-3.0-or-later" }
+authors = [
+  { name = "Emily Williams" },
+]
+requires-python = ">=3.9"
+dependencies = [
+  "numpy",
+  "pandas",
+  "scipy",
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[project.scripts]
+pydome = "pydome.cli:main"
+
+[tool.setuptools]
+packages = ["pydome"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
