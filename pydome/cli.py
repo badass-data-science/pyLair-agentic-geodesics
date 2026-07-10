@@ -22,12 +22,13 @@
 import numpy as np
 import getopt
 import sys
+from types import SimpleNamespace
 
 #
 # load pyDome modules
 #
-from .polyhedral import Icosahedron, Octahedron
-from .symmetry_triangle import ClassOneMethodOneSymmetryTriangle
+from .polyhedral import Icosahedron, Octahedron, build_lcd_faces
+from .symmetry_triangle import ClassOneMethodOneSymmetryTriangle, ClassTwoMethodOneSymmetryTriangle
 from .geodesic_sphere import GeodesicSphere
 from .output import OutputDXF, OutputWireframeVRML, OutputFaceVRML, OutputSTL, OutputOBJ
 from .truncation import truncate
@@ -56,6 +57,8 @@ Options:
 
 \t-p, --polyhedron\tEither "octahedron" or "icosahedron". Default icosahedron.
 
+\t-c, --class\tSubdivision class: 1 (Alternate) or 2 (Triacon). Class 2 requires an even --frequency, since each original edge is already implicitly split once by its construction. Default 1.
+
 \t-F, --face\tFlag specifying whether to generate face output in WRL file. Cancels DXF file output and cannot be used with truncation.
 
 \t-P, --preview\tAlso save a quick 3D wireframe preview image ("<output>.png") alongside the usual output files, so you can sanity-check the dome without opening a CAD or VRML viewer.
@@ -73,6 +76,7 @@ def main():
   #
   radius = np.float64(1.)
   frequency = 4
+  dome_class = 1
   polyhedral = Icosahedron()
   vertex_equal_threshold = 0.0000001
   truncation_amount = 0.499999
@@ -95,7 +99,7 @@ def main():
   # parse command line
   #
   try:
-    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:FPsOho:', ['truncation=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'face', 'preview', 'stl', 'obj', 'output='])
+    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:c:FPsOho:', ['truncation=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'class=', 'face', 'preview', 'stl', 'obj', 'output='])
   except getopt.error as msg:
     print(str(msg) + ' (for help use --help)')
     sys.exit(-1)
@@ -105,6 +109,15 @@ def main():
     if o in ('-p', '--polyhedron'):
       if a == 'octahedron':
         polyhedral = Octahedron()
+    if o in ('-c', '--class'):
+      try:
+        dome_class = int(a)
+      except ValueError:
+        print('-c or --class argument must be an integer (1 or 2). Exiting.')
+        sys.exit(-1)
+      if dome_class not in (1, 2):
+        print('-c or --class argument must be 1 or 2. Exiting.')
+        sys.exit(-1)
     if o in ('-b', '--bom-rounding'):
       try:
         bom_rounding_precision = int(a)
@@ -174,11 +187,20 @@ def main():
     print('Truncation does not work with face-based output (-F/-s/-O) at this time. Use either -t or one of those, but not both.')
     sys.exit(-1)
 
+  if dome_class == 2 and frequency % 2 != 0:
+    print('-c 2 (Class II / Triacon) requires an even --frequency. Exiting.')
+    sys.exit(-1)
+
   #
   # generate geodesic sphere
   #
-  symmetry_triangle = ClassOneMethodOneSymmetryTriangle(frequency, polyhedral)
-  sphere = GeodesicSphere(polyhedral, symmetry_triangle, vertex_equal_threshold, radius)
+  if dome_class == 2:
+    symmetry_triangle = ClassTwoMethodOneSymmetryTriangle(frequency // 2, polyhedral)
+    face_source = SimpleNamespace(faces=build_lcd_faces(polyhedral))
+  else:
+    symmetry_triangle = ClassOneMethodOneSymmetryTriangle(frequency, polyhedral)
+    face_source = polyhedral
+  sphere = GeodesicSphere(face_source, symmetry_triangle, vertex_equal_threshold, radius)
   C_sphere = sphere.non_duplicate_chords
   F_sphere = sphere.non_duplicate_face_nodes
   V_sphere = sphere.sphere_vertices

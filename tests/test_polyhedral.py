@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from pydome.polyhedral import Vertex, Face, Chord, Octahedron, Icosahedron
+from pydome.polyhedral import Vertex, Face, Chord, Octahedron, Icosahedron, build_lcd_faces
 
 
 def test_vertex_distance_to():
@@ -60,3 +60,45 @@ def test_chord_stores_endpoints():
     c = Chord(v1, v2)
     assert c.v1 is v1
     assert c.v2 is v2
+
+
+@pytest.mark.parametrize(
+    "polyhedron_cls,expected_lcd_count",
+    [(Octahedron, 48), (Icosahedron, 120)],
+)
+def test_build_lcd_faces_produces_six_per_original_face(polyhedron_cls, expected_lcd_count):
+    poly = polyhedron_cls()
+    lcd_faces = build_lcd_faces(poly)
+    assert len(lcd_faces) == expected_lcd_count == 6 * len(poly.faces)
+
+
+def test_lcd_face_is_a_30_60_90_triangle_with_the_right_angle_at_the_midpoint():
+    poly = Icosahedron()
+    lcd_faces = build_lcd_faces(poly)
+    CL = poly.ppt_side_length
+
+    for face in lcd_faces[:6]:
+        # v1=original vertex, v2=edge midpoint (right angle), v3=centroid
+        leg_v1v2 = face.v1.distance_to(face.v2)
+        leg_v2v3 = face.v2.distance_to(face.v3)
+        hyp_v1v3 = face.v1.distance_to(face.v3)
+
+        assert leg_v1v2 == pytest.approx(CL / 2.)
+        assert leg_v2v3 == pytest.approx(CL * np.sqrt(3.) / 6.)
+        assert hyp_v1v3 == pytest.approx(CL / np.sqrt(3.))
+        # right angle at v2: (v1-v2) . (v3-v2) should be 0
+        a = face.v1.xyz - face.v2.xyz
+        b = face.v3.xyz - face.v2.xyz
+        assert np.dot(a, b) == pytest.approx(0., abs=1e-9)
+
+
+def test_lcd_faces_centroid_is_shared_original_face_centroid():
+    poly = Icosahedron()
+    lcd_faces = build_lcd_faces(poly)
+    # the first 6 LCD faces come from the same original face and should
+    # all share the exact same centroid (v3, per build_lcd_faces's
+    # (vertex, midpoint, centroid) argument order)
+    centroids = [f.v3.xyz for f in lcd_faces[:6]]
+    for c in centroids[1:]:
+        assert c == pytest.approx(centroids[0])
+    assert centroids[0] == pytest.approx(poly.faces[0].origin)

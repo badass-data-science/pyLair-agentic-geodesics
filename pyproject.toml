@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pydome"
 version = "0.1.0"
-description = "A geodesic dome calculator: computes vertices and chords of Class One geodesic domes, with DXF/VRML/STL/OBJ export, a quick 3D preview image, and a hub-angle bill of materials."
+description = "A geodesic dome calculator: computes vertices and chords of Class I and Class II geodesic domes, with DXF/VRML/STL/OBJ export, a quick 3D preview image, and a hub-angle bill of materials."
 readme = "README.md"
 license = { text = "GPL-3.0-or-later" }
 authors = [

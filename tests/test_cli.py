@@ -143,3 +143,33 @@ def test_no_stl_or_obj_flag_means_no_mesh_files(tmp_path):
     assert result.returncode == 0
     assert not out.with_suffix(".stl").exists()
     assert not out.with_suffix(".obj").exists()
+
+
+def test_class_two_requires_even_frequency(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "3", "-c", "2"])
+
+    assert result.returncode != 0
+    assert "even" in result.stdout.lower()
+    assert "Traceback" not in result.stderr
+
+
+def test_class_two_generates_a_valid_dome(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "4", "-c", "2"])
+
+    assert result.returncode == 0
+    assert out.with_suffix(".dxf").exists()
+    assert out.with_suffix(".wrl").exists()
+
+    report = json.loads(result.stdout)
+    assert "pyDome report" in report
+
+
+def test_invalid_class_reports_clear_error(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-c", "3"])
+
+    assert result.returncode != 0
+    assert "1 or 2" in result.stdout
+    assert "Traceback" not in result.stderr
