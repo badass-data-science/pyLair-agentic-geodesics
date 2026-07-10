@@ -24,7 +24,22 @@ import json
 from .output import OutputHubConnectorTemplateDXF
 
 
-def compute_hub_data(vertices, chords):
+def _ellipsoid_normal(vertex, elongation_factor):
+  # The outward surface normal of an axis-aligned ellipsoid (semi-axes
+  # a, a, a*elongation_factor, Z being the elongated axis -- see
+  # pydome.elongation) at a point on its surface, from the gradient of
+  # its implicit equation x^2/a^2 + y^2/a^2 + z^2/(a*elongation_factor)^2
+  # = 1: proportional to (x, y, z/elongation_factor^2). The absolute
+  # scale `a` cancels out in the normalization below, so only the
+  # elongation factor matters. Reduces exactly to the ordinary sphere
+  # normal (the normalized position vector) when elongation_factor == 1
+  # -- a sphere's surface normal is always radial, but an ellipsoid's
+  # generally is not, except at the poles/equator.
+  direction = np.array([vertex[0], vertex[1], vertex[2] / (elongation_factor ** 2)])
+  return direction / np.linalg.norm(direction)
+
+
+def compute_hub_data(vertices, chords, elongation_factor=1.0):
   # For every hub (vertex where 1+ chords meet): the vertex position,
   # each connected vertex, the tangential-plane deflection angle of
   # that chord, and the point where that chord (projected radially
@@ -46,8 +61,9 @@ def compute_hub_data(vertices, chords):
   #
   for h in hubs.keys():
     vertex = hubs[h]['vertex']
+    normal = _ellipsoid_normal(vertex, elongation_factor)
     for c in hubs[h]['connected_vertices']:
-      A = vertex
+      A = normal
       B = vertex - hubs[h]['connected_vertices'][c]['vertex']
       angle = (np.pi/2) - np.arccos(np.dot(A, B) / (np.linalg.norm(A) * np.linalg.norm(B)))
       angle_in_degrees = 180. * angle / np.pi
@@ -57,7 +73,7 @@ def compute_hub_data(vertices, chords):
   # find where each outbound chord crosses the hub's own tangent plane
   #
   for hub in hubs.keys():
-    normal_vector = hubs[hub]['vertex'] / np.linalg.norm(hubs[hub]['vertex'])
+    normal_vector = _ellipsoid_normal(hubs[hub]['vertex'], elongation_factor)
     point_on_plane = hubs[hub]['vertex']
     line_origin = np.array([0., 0., 0.])
     for spoke in hubs[hub]['connected_vertices']:
@@ -178,7 +194,7 @@ def group_hub_types(hubs, angle_precision=3):
   return result
 
 
-def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_length=None, hub_template_output_path=None):
+def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_length=None, hub_template_output_path=None, elongation_factor=1.0):
 
   report = {'pyDome report' : {}}
   
@@ -249,7 +265,7 @@ def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_le
   #
   # data structure to store hub information
   #
-  hubs = compute_hub_data(vertices, chords)
+  hubs = compute_hub_data(vertices, chords, elongation_factor)
 
   #
   # hub connector templates: one DXF cutting template per unique hub

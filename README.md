@@ -48,6 +48,7 @@ produces `output/mydome.dxf`, `output/mydome.wrl`, and prints a JSON Bill of Mat
 | `-s` | `--stl` | Also save an STL file (`<output>.stl`) of the dome's surface triangles, e.g. for 3D-printing a scale model. Requires face data; incompatible with `-t`. | off |
 | `-O` | `--obj` | Also save an OBJ file (`<output>.obj`) of the dome's surface triangles. Requires face data; incompatible with `-t`. | off |
 | `-H` | `--hub-templates` | Also save one 2D DXF cutting template per unique hub connector shape (`<output>_hubtype1.dxf`, `<output>_hubtype2.dxf`, ...), for laser-cutting/CNC connector plates. | off |
+| `-e` | `--elongation` | Stretches the dome along its vertical (Z) axis by this factor before truncation, turning the sphere into an axis-aligned ellipsoid (values > 1 raise ceiling height, values < 1 widen the footprint). Must be > 0. | `1.0` (no elongation) |
 | `-h` | `--help` | Show usage and exit. | — |
 
 ## Caveats and known limitations
@@ -72,6 +73,8 @@ A few behaviors are worth understanding before relying on the output for a real 
 
 - **`-H/--hub-templates` clusters hubs by a rotation-invariant "shape" signature** (valence, plus the cyclic pattern of angular gaps and tangential angles going around the hub), not by symmetry group membership — two hubs get the same template if and only if one is a rotation of the other, regardless of *why*. The clustering tolerance (3 decimal places on angle values) was tuned empirically: the geometry pipeline's floating-point noise was observed to reach the 6th decimal place on otherwise-identical hubs, and a precision of 6 failed to merge them, silently doubling the reported template count. If you're working at a much higher frequency than has been tested (up to 16) and the template count looks suspiciously large for the dome's symmetry, that noise floor is the first thing to check.
 
+- **`-e/--elongation` is applied before truncation**, so a `-t` ratio always describes where to cut the dome's *final* (possibly-elongated) height range, not the original sphere's. All angle-based output correctly accounts for the resulting ellipsoid's true surface normal (the gradient of the ellipsoid equation) rather than naively treating each vertex's position vector as the normal — that naive approximation is only exact for a true sphere (`-e 1.0`), and silently gives wrong tangential/spoke angles for any other elongation factor if you're extending this code, so don't reintroduce it.
+
 ## Project structure
 
 `pydome` is a regular Python package (`pyproject.toml` declares it under `[tool.setuptools] packages = ["pydome"]`), not a flat collection of top-level modules.
@@ -85,9 +88,10 @@ A few behaviors are worth understanding before relying on the output for a real 
 | `pydome/symmetry_triangle.py` | Subdivides a single polyhedron face (Class I) or LCD sub-triangle (Class II) into a triangular vertex/chord/face grid. |
 | `pydome/geodesic_sphere.py` | Replicates the symmetry triangle across every polyhedron face, deduplicates the vertices shared along adjacent-face edges (via a KD-tree), and projects the result onto a sphere of the requested radius. |
 | `pydome/truncation.py` | Cuts a geodesic sphere at a horizontal plane to produce a dome. |
+| `pydome/elongation.py` | Scales the Z axis (`-e/--elongation`) to turn the sphere into an axis-aligned ellipsoid, for ceiling-height/footprint tradeoffs. |
 | `pydome/output.py` | DXF, VRML (wireframe or face), STL, OBJ, and hub-connector-template file writers. |
 | `pydome/preview.py` | Renders a quick 3D wireframe preview PNG (`-P/--preview`), with equal axis scaling so the plot itself never distorts the dome's proportions. |
-| `pydome/bill_of_materials.py` | Clusters chords into strut-length groups, computes hub tangent-plane and spoke angles, clusters hubs into connector-plate "types" (`-H/--hub-templates`), and prints the report as JSON. |
+| `pydome/bill_of_materials.py` | Clusters chords into strut-length groups, computes hub tangent-plane and spoke angles (using the true ellipsoid surface normal when elongated), clusters hubs into connector-plate "types" (`-H/--hub-templates`), and prints the report as JSON. |
 | `tests/` | pytest suite: unit tests per module (importing from `pydome.*`) plus subprocess-level CLI integration tests (invoked via `python -m pydome`). |
 | `METHOD.md` | The geometric method walkthrough with reference images (icosahedron subdivision, projection, truncation). |
 | `images/` | Diagrams referenced by `METHOD.md`. |

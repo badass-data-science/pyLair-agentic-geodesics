@@ -234,3 +234,51 @@ def test_no_hub_templates_flag_means_no_template_files_or_section(tmp_path):
     report = json.loads(result.stdout)["pyDome report"]
     assert "Hub Connector Templates" not in report
     assert list(tmp_path.glob("dome_hubtype*.dxf")) == []
+
+
+def test_default_elongation_produces_identical_output_to_explicit_one(tmp_path):
+    out1 = tmp_path / "default"
+    out2 = tmp_path / "explicit"
+
+    result1 = run_cli(["-o", str(out1), "-f", "4"])
+    result2 = run_cli(["-o", str(out2), "-f", "4", "-e", "1.0"])
+
+    assert result1.returncode == 0
+    assert result2.returncode == 0
+    assert result1.stdout == result2.stdout
+    assert out1.with_suffix(".dxf").read_text() == out2.with_suffix(".dxf").read_text()
+
+
+def test_elongation_flag_produces_a_taller_dome(tmp_path):
+    out_normal = tmp_path / "normal"
+    out_tall = tmp_path / "tall"
+
+    run_cli(["-o", str(out_normal), "-f", "4", "-P"])
+    run_cli(["-o", str(out_tall), "-f", "4", "-e", "1.8", "-P"])
+
+    normal_png = out_normal.with_suffix(".png").read_bytes()
+    tall_png = out_tall.with_suffix(".png").read_bytes()
+    # not a rigorous geometric check (that's covered elsewhere), just
+    # confirms elongation actually changed the rendered output
+    assert normal_png != tall_png
+
+
+def test_elongated_and_truncated_dome_generates_valid_hub_templates(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "4", "-e", "1.8", "-t", "0.499999", "-H"])
+
+    assert result.returncode == 0
+    report = json.loads(result.stdout)["pyDome report"]
+    rows = report["Hub Connector Templates"]
+    assert len(rows) > 0
+    for row in rows:
+        assert Path(row["template_file"]).exists()
+
+
+def test_nonpositive_elongation_reports_clear_error(tmp_path):
+    out = tmp_path / "dome"
+    for factor in ["0", "-2"]:
+        result = run_cli(["-o", str(out), "-f", "1", "-e", factor])
+        assert result.returncode != 0
+        assert "greater than zero" in result.stdout.lower()
+        assert "Traceback" not in result.stderr

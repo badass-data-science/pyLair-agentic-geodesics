@@ -13,7 +13,9 @@ from pydome.bill_of_materials import (
     compute_spoke_angles,
     group_hub_types,
     _hub_type_signature,
+    _ellipsoid_normal,
 )
+from pydome.elongation import elongate
 
 
 def build_sphere(frequency=1, radius=1.0):
@@ -198,3 +200,62 @@ def test_bill_of_materials_tangential_angles_are_small_for_a_smooth_sphere(capsy
 
     for row in rows:
         assert abs(row["angle (degrees)"]) < 45
+
+
+def test_ellipsoid_normal_matches_hand_computed_value():
+    # a=1 (x/y semi-axis), c=2 (z semi-axis, elongation_factor=2), point
+    # at theta=45 degrees on the x-z ellipse (y=0): x=cos(45)=0.7071,
+    # z=2*sin(45)=1.4142. True normal (gradient of x^2/a^2+z^2/c^2=1) is
+    # proportional to (x/a^2, z/c^2) = (0.7071, 0.3536), normalized to
+    # (0.8944, 0.4472) -- the exact opposite ratio of the naive,
+    # position-vector-normalized (wrong) answer.
+    vertex = np.array([np.cos(np.pi / 4), 0., 2 * np.sin(np.pi / 4)])
+    normal = _ellipsoid_normal(vertex, elongation_factor=2.0)
+
+    assert normal == pytest.approx(np.array([0.8944271909999159, 0., 0.4472135954999579]))
+
+    naive_wrong_normal = vertex / np.linalg.norm(vertex)
+    assert not np.allclose(normal, naive_wrong_normal)
+
+
+def test_ellipsoid_normal_reduces_to_sphere_normal_when_factor_is_one():
+    vertex = np.array([0.5, 0.5, 1. / np.sqrt(2)])
+    normal = _ellipsoid_normal(vertex, elongation_factor=1.0)
+    sphere_normal = vertex / np.linalg.norm(vertex)
+
+    assert normal == pytest.approx(sphere_normal)
+
+
+def test_ellipsoid_normal_is_axis_aligned_at_the_pole_and_equator_regardless_of_elongation():
+    # at the pole (0,0,c) and equator (a,0,0), the ellipsoid's true
+    # normal happens to coincide with the naive position-vector
+    # direction for any elongation factor -- these points don't
+    # distinguish a correct implementation from the old, wrong one, but
+    # they're still useful as a basic sanity check
+    for factor in [0.5, 1.0, 3.0]:
+        pole = np.array([0., 0., factor])
+        assert _ellipsoid_normal(pole, factor) == pytest.approx(np.array([0., 0., 1.]))
+
+        equator = np.array([1., 0., 0.])
+        assert _ellipsoid_normal(equator, factor) == pytest.approx(np.array([1., 0., 0.]))
+
+
+def test_bill_of_materials_with_elongation_still_produces_valid_report(capsys):
+    # end-to-end sanity check: elongating shouldn't break report
+    # generation, and chord-length/count totals must still be internally
+    # consistent regardless of the (non-uniform) vertex scaling
+    V, C = build_sphere(frequency=3)
+    V = elongate(V, 1.8)
+
+    get_bill_of_materials(V, C, 5, elongation_factor=1.8)
+
+    captured = capsys.readouterr()
+    report = json.loads(captured.out)["pyDome report"]
+
+    rows = report["Bill of materials"]["Chord Lengths and Counts"]
+    assert sum(row["count"] for row in rows) == len(C)
+
+    angle_rows = report["Angles at hub between outbound cords and tangential plane"]
+    assert len(angle_rows) > 0
+    for row in angle_rows:
+        assert -90. <= row["angle (degrees)"] <= 90.

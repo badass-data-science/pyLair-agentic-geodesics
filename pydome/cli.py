@@ -34,6 +34,7 @@ from .output import OutputDXF, OutputWireframeVRML, OutputFaceVRML, OutputSTL, O
 from .truncation import truncate
 from .bill_of_materials import get_bill_of_materials
 from .preview import save_preview
+from .elongation import elongate
 
 
 def display_help():
@@ -70,6 +71,8 @@ Options:
 \t-m, --material-cost\tPrice per unit length of strut material. If given, adds an estimated total material cost to the Bill of Materials, in addition to the total strut length (which is always reported). Must be a positive floating point number.
 
 \t-H, --hub-templates\tAlso save one 2D DXF cutting template per unique hub connector shape ("<output>_hubtype1.dxf", "<output>_hubtype2.dxf", ...), for laser-cutting/CNC connector plates. Each template shows one radiating line per strut at its spoke angle, labeled with that strut's tangential (out-of-plane) deflection angle.
+
+\t-e, --elongation\tStretches the dome along its vertical (Z) axis by this factor before truncation, turning the sphere into an axis-aligned ellipsoid -- values > 1 raise the ceiling height, values < 1 flatten it for a wider footprint. All angle-based output (Bill of Materials angles, hub connector templates) correctly accounts for the resulting ellipsoid's true surface normal, not just the sphere approximation. Must be a positive floating point number. Default 1.0 (no elongation).
 """
   print(help_text)
 
@@ -92,6 +95,7 @@ def main():
   obj_output = False
   cost_per_unit_length = None
   hub_templates_output = False
+  elongation_factor = 1.0
   output_path = None
 
   #
@@ -105,7 +109,7 @@ def main():
   # parse command line
   #
   try:
-    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:c:m:FPsOHho:', ['truncation=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'class=', 'material-cost=', 'face', 'preview', 'stl', 'obj', 'hub-templates', 'output='])
+    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:c:m:e:FPsOHho:', ['truncation=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'class=', 'material-cost=', 'elongation=', 'face', 'preview', 'stl', 'obj', 'hub-templates', 'output='])
   except getopt.error as msg:
     print(str(msg) + ' (for help use --help)')
     sys.exit(-1)
@@ -138,6 +142,15 @@ def main():
         sys.exit(-1)
       if cost_per_unit_length <= 0:
         print('-m or --material-cost argument must be greater than zero. Exiting.')
+        sys.exit(-1)
+    if o in ('-e', '--elongation'):
+      try:
+        elongation_factor = float(a)
+      except ValueError:
+        print('-e or --elongation argument must be a floating point number. Exiting.')
+        sys.exit(-1)
+      if elongation_factor <= 0:
+        print('-e or --elongation argument must be greater than zero. Exiting.')
         sys.exit(-1)
     if o in ('-h', '--help'):
       display_help()
@@ -223,6 +236,13 @@ def main():
   V_sphere = sphere.sphere_vertices
 
   #
+  # elongate (before truncation, so a truncation ratio applies to the
+  # dome's final, possibly-elongated height range)
+  #
+  if elongation_factor != 1.0:
+    V_sphere = elongate(V_sphere, elongation_factor)
+
+  #
   # truncate
   #
   V = V_sphere
@@ -257,7 +277,7 @@ def main():
   # bill of materials
   #
   hub_template_output_path = output_path if hub_templates_output else None
-  get_bill_of_materials(V, C, bom_rounding_precision, cost_per_unit_length, hub_template_output_path)
+  get_bill_of_materials(V, C, bom_rounding_precision, cost_per_unit_length, hub_template_output_path, elongation_factor)
 
 #
 # run the main function
