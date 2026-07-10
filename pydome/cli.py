@@ -32,6 +32,7 @@ from .geodesic_sphere import GeodesicSphere
 from .output import OutputDXF, OutputWireframeVRML, OutputFaceVRML
 from .truncation import truncate
 from .bill_of_materials import get_bill_of_materials
+from .preview import save_preview
 
 
 def display_help():
@@ -56,6 +57,8 @@ Options:
 \t-p, --polyhedron\tEither "octahedron" or "icosahedron". Default icosahedron.
 
 \t-F, --face\tFlag specifying whether to generate face output in WRL file. Cancels DXF file output and cannot be used with truncation.
+
+\t-P, --preview\tAlso save a quick 3D wireframe preview image ("<output>_preview.png") alongside the usual output files, so you can sanity-check the dome without opening a CAD or VRML viewer.
 """
   print(help_text)
 
@@ -72,6 +75,7 @@ def main():
   run_truncate = False
   bom_rounding_precision = 9
   face_output = False
+  preview_output = False
   output_path = None
 
   #
@@ -85,7 +89,7 @@ def main():
   # parse command line
   #
   try:
-    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:Fho:', ['truncation=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'face', 'output='])
+    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:FPho:', ['truncation=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'face', 'preview', 'output='])
   except getopt.error as msg:
     print(str(msg) + ' (for help use --help)')
     sys.exit(-1)
@@ -106,6 +110,8 @@ def main():
       sys.exit(0)
     if o in ('-F', '--face'):
       face_output = True
+    if o in ('-P', '--preview'):
+      preview_output = True
     if o in ('-r', '--radius'):
       try:
         a = float(a)
@@ -180,6 +186,12 @@ def main():
   else:
     OutputWireframeVRML(V, C, output_path + '.wrl')
     OutputDXF(V, C, output_path + '.dxf')
+
+  #
+  # preview image
+  #
+  if preview_output:
+    save_preview(V, C, output_path + '_preview.png')
 
   #
   # bill of materials

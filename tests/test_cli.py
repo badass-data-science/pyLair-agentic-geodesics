@@ -82,3 +82,24 @@ def test_face_output_generates_only_wrl(tmp_path):
     assert result.returncode == 0
     assert out.with_suffix(".wrl").exists()
     assert not out.with_suffix(".dxf").exists()
+
+
+def test_preview_flag_writes_a_png_alongside_the_usual_output(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "1", "-P"])
+
+    assert result.returncode == 0
+    assert out.with_suffix(".dxf").exists()
+    assert out.with_suffix(".wrl").exists()
+
+    preview_file = tmp_path / "dome_preview.png"
+    assert preview_file.exists()
+    assert preview_file.read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"
+
+
+def test_no_preview_flag_means_no_preview_file(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "1"])
+
+    assert result.returncode == 0
+    assert not (tmp_path / "dome_preview.png").exists()

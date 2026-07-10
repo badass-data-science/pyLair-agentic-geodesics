@@ -15,7 +15,7 @@ Requires Python 3.9+.
 pip install -e .
 ```
 
-This installs `numpy`, `pandas`, and `scipy` as dependencies, and provides a `pydome` console command. For running the test suite, install the `test` extra instead:
+This installs `numpy`, `pandas`, `scipy`, and `matplotlib` as dependencies, and provides a `pydome` console command. For running the test suite, install the `test` extra instead:
 
 ```
 pip install -e ".[test]"
@@ -42,6 +42,7 @@ produces `output/mydome.dxf`, `output/mydome.wrl`, and prints a JSON Bill of Mat
 | `-v` | `--vthreshold` | Distance below which two computed vertices are treated as the same point. | `0.0000001` |
 | `-b` | `--bom-rounding` | Decimal places to display, and merge granularity, for the Bill of Materials (see caveats below). | `9` |
 | `-F` | `--face` | Emit face data (not wireframe) in the WRL output; skips DXF entirely. Incompatible with `-t`. | off |
+| `-P` | `--preview` | Also save a quick 3D wireframe preview image (`<output>_preview.png`) for a fast sanity check without opening a CAD/VRML viewer. | off |
 | `-h` | `--help` | Show usage and exit. | — |
 
 ## Caveats and known limitations
@@ -76,6 +77,7 @@ A few behaviors are worth understanding before relying on the output for a real 
 | `pydome/geodesic_sphere.py` | Replicates the symmetry triangle across every polyhedron face, deduplicates the vertices shared along adjacent-face edges (via a KD-tree), and projects the result onto a sphere of the requested radius. |
 | `pydome/truncation.py` | Cuts a geodesic sphere at a horizontal plane to produce a dome. |
 | `pydome/output.py` | DXF and VRML (wireframe or face) file writers. |
+| `pydome/preview.py` | Renders a quick 3D wireframe preview PNG (`-P/--preview`), with equal axis scaling so the plot itself never distorts the dome's proportions. |
 | `pydome/bill_of_materials.py` | Clusters chords into strut-length groups, computes hub tangent-plane and spoke angles, and prints the report as JSON. |
 | `tests/` | pytest suite: unit tests per module (importing from `pydome.*`) plus subprocess-level CLI integration tests (invoked via `python -m pydome`). |
 | `METHOD.md` | The geometric method walkthrough with reference images (icosahedron subdivision, projection, truncation). |
