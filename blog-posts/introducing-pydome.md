@@ -50,4 +50,20 @@ Put the two together and you know, for every single joint in the entire dome, ex
 
 A geodesic dome distributes structural stress across its entire surface rather than concentrating it in walls and a roof, which is the mathematical reason domes are strong for their weight and the practical reason people keep insisting on building them despite the aggravating number of distinct angles involved. pyDome exists so that the aggravating part — the angles, the strut lengths, the "wait, how many of these do I actually need to cut" part — gets handled by a computer instead of by increasingly creative profanity on a job site.
 
-Our heroine looked at that tradeoff, decided the computer should do the arithmetic, and wrote pyDome so it would. The dome, presumably, is out there somewhere now, standing on the strength of several hundred correctly-computed angles and not one single argument with a protractor.
+## She Did Not Stop There
+
+A person could reasonably assume that "computes a geodesic dome and reports the angles" would be enough software for one lifetime. Our heroine did not share this assumption. Six new abilities have since arrived, each delivered with the calm insistence of someone who has found a rough edge and will not be talked out of smoothing it.
+
+**A preview you don't need a CAD license to look at.** Add `-P` and pyDome renders a quick 3D wireframe of the dome straight to a PNG, so you can confirm the thing actually looks like a dome — and not, say, a lopsided egg — before you go hunting for software that still knows how to open a VRML file. Considerable stubbornness went into making sure the preview's three axes are scaled honestly relative to one another, on the theory that a tool which quietly lies to you about the shape of your own dome is worse than no tool at all.
+
+**Export formats for people who own more than a protractor.** `-s` and `-O` produce STL and OBJ files, meaning the dome can now go straight into a 3D printer and become a scale model you can hold, judge, and photograph next to a coffee cup for a sense of proportion.
+
+**A second way to cut up a sphere.** The original method (Class I, "Alternate") subdivides each icosahedron face with a grid running parallel to its own edges. `-c 2` switches to Class II, the "Triacon" method, which instead splits each face into six smaller triangles around its center first, producing a visibly different strut pattern — and, not incidentally, a frequency that must be even, a constraint the software enforces rather than politely suggests.
+
+**A running total, because "add it up yourself" is not a feature.** pyDome now reports the total length of every strut in the dome, and if you supply a price per unit length with `-m`, a total estimated cost too — sparing you the specific despair of doing that arithmetic by hand at 11pm the night before a materials run.
+
+**Cutting templates for the part everyone dreads.** The hard part of building one of these domes was never really the struts — it's the connector plates where five or six of them converge at a single point, each arriving at its own particular angle. `-H` now generates a 2D DXF cutting template for every genuinely distinct hub shape in the dome, correctly recognizing that two hubs which are secretly the same shape, just rotated relative to each other, only need one template between them, rather than needlessly multiplying your laser-cutting bill.
+
+**Domes that don't insist on being perfectly round.** `-e` stretches the whole structure along its vertical axis before it gets cut into a dome, for anyone whose ceiling-height ambitions exceed their footprint, or the reverse. Doing this properly required teaching the software that an ellipsoid's surface doesn't point straight outward from its center the way a sphere's does — a distinction most people are never required to think about, and one our heroine now thinks about rather more than she originally planned to.
+
+Our heroine looked at all of this, decided the computer should do the arithmetic, and wrote pyDome so it would. The dome, presumably, is out there somewhere now, standing on the strength of several hundred correctly-computed angles and not one single argument with a protractor.
