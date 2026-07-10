@@ -18,6 +18,9 @@ dependencies = [
   "pandas",
 ]
 
+[project.optional-dependencies]
+test = ["pytest"]
+
 [project.scripts]
 pydome = "pyDome:main"
 
@@ -31,3 +34,7 @@ py-modules = [
   "Truncation",
   "BillOfMaterials",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
