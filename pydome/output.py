@@ -119,6 +119,64 @@ def OutputOBJ(V, F, the_filename):
 
   outfile.close()
 
+def OutputHubConnectorTemplateDXF(spoke_angles, tangential_angles, the_filename, spoke_length=1.0):
+  # A flat 2D cutting template for one hub connector plate: one line
+  # per strut, radiating from the hub center at that strut's spoke
+  # angle (its position around the hub, projected onto the hub's
+  # tangent plane), labeled with that strut's tangential angle -- the
+  # out-of-plane deflection a flat plate can't show geometrically, so
+  # it's called out as text for drilling/beveling instead.
+  outfile = open(the_filename, 'w')
+  outfile.write('0\n')
+  outfile.write('SECTION\n')
+  outfile.write('2\n')
+  outfile.write('ENTITIES\n')
+
+  text_height = spoke_length * 0.08
+
+  for spoke in sorted(spoke_angles.keys()):
+    angle_rad = spoke_angles[spoke] * np.pi / 180.
+    x = spoke_length * np.cos(angle_rad)
+    y = spoke_length * np.sin(angle_rad)
+
+    outfile.write('0\n')
+    outfile.write('LINE\n')
+    outfile.write('8\n')
+    outfile.write('1\n')
+    outfile.write('10\n')
+    outfile.write('0.0\n')
+    outfile.write('20\n')
+    outfile.write('0.0\n')
+    outfile.write('30\n')
+    outfile.write('0.0\n')
+    outfile.write('11\n')
+    outfile.write(str(x) + '\n')
+    outfile.write('21\n')
+    outfile.write(str(y) + '\n')
+    outfile.write('31\n')
+    outfile.write('0.0\n')
+
+    outfile.write('0\n')
+    outfile.write('TEXT\n')
+    outfile.write('8\n')
+    outfile.write('1\n')
+    outfile.write('10\n')
+    outfile.write(str(x * 1.05) + '\n')
+    outfile.write('20\n')
+    outfile.write(str(y * 1.05) + '\n')
+    outfile.write('30\n')
+    outfile.write('0.0\n')
+    outfile.write('40\n')
+    outfile.write(str(text_height) + '\n')
+    outfile.write('1\n')
+    outfile.write('%.2f deg\n' % tangential_angles[spoke])
+
+  outfile.write('0\n')
+  outfile.write('ENDSEC\n')
+  outfile.write('0\n')
+  outfile.write('EOF\n')
+  outfile.close()
+
 def OutputFaceVRML(V, F, the_filename):
   outfile = open(the_filename, 'w')
   outfile.write("#VRML V2.0 utf8\n")

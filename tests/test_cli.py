@@ -1,6 +1,7 @@
 import json
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
 
@@ -207,3 +208,29 @@ def test_nonpositive_material_cost_reports_clear_error(tmp_path):
         assert result.returncode != 0
         assert "greater than zero" in result.stdout.lower()
         assert "Traceback" not in result.stderr
+
+
+def test_hub_templates_flag_writes_dxf_files_and_report_section(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "4", "-H"])
+
+    assert result.returncode == 0
+    report = json.loads(result.stdout)["pyDome report"]
+    assert "Hub Connector Templates" in report
+
+    rows = report["Hub Connector Templates"]
+    assert len(rows) > 0
+    for row in rows:
+        template_file = Path(row["template_file"])
+        assert template_file.exists()
+        assert template_file.name.startswith("dome_hubtype")
+
+
+def test_no_hub_templates_flag_means_no_template_files_or_section(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "4"])
+
+    assert result.returncode == 0
+    report = json.loads(result.stdout)["pyDome report"]
+    assert "Hub Connector Templates" not in report
+    assert list(tmp_path.glob("dome_hubtype*.dxf")) == []

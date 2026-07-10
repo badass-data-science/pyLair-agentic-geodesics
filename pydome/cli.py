@@ -68,6 +68,8 @@ Options:
 \t-O, --obj\tAlso save an OBJ file ("<output>.obj") of the dome's surface triangles. Requires face data, so cannot be used with truncation.
 
 \t-m, --material-cost\tPrice per unit length of strut material. If given, adds an estimated total material cost to the Bill of Materials, in addition to the total strut length (which is always reported). Must be a positive floating point number.
+
+\t-H, --hub-templates\tAlso save one 2D DXF cutting template per unique hub connector shape ("<output>_hubtype1.dxf", "<output>_hubtype2.dxf", ...), for laser-cutting/CNC connector plates. Each template shows one radiating line per strut at its spoke angle, labeled with that strut's tangential (out-of-plane) deflection angle.
 """
   print(help_text)
 
@@ -89,6 +91,7 @@ def main():
   stl_output = False
   obj_output = False
   cost_per_unit_length = None
+  hub_templates_output = False
   output_path = None
 
   #
@@ -102,7 +105,7 @@ def main():
   # parse command line
   #
   try:
-    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:c:m:FPsOho:', ['truncation=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'class=', 'material-cost=', 'face', 'preview', 'stl', 'obj', 'output='])
+    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:c:m:FPsOHho:', ['truncation=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'class=', 'material-cost=', 'face', 'preview', 'stl', 'obj', 'hub-templates', 'output='])
   except getopt.error as msg:
     print(str(msg) + ' (for help use --help)')
     sys.exit(-1)
@@ -147,6 +150,8 @@ def main():
       stl_output = True
     if o in ('-O', '--obj'):
       obj_output = True
+    if o in ('-H', '--hub-templates'):
+      hub_templates_output = True
     if o in ('-r', '--radius'):
       try:
         a = float(a)
@@ -251,7 +256,8 @@ def main():
   #
   # bill of materials
   #
-  get_bill_of_materials(V, C, bom_rounding_precision, cost_per_unit_length)
+  hub_template_output_path = output_path if hub_templates_output else None
+  get_bill_of_materials(V, C, bom_rounding_precision, cost_per_unit_length, hub_template_output_path)
 
 #
 # run the main function
