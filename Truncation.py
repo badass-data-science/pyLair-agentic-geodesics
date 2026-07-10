@@ -52,7 +52,7 @@ def truncate(V_sphere, C_sphere, cutoff_from_bottom):
     # vertex 1 below cutoff
     if v1[2] < cutoff and v2[2] >= cutoff:
       chords_to_remove.append(c_idx)
-      norm = np.linalg.linalg.norm(v1 - v2)
+      norm = np.linalg.norm(v1 - v2)
       norm_vec = (v1 - v2) / norm
       scalar = (cutoff - v2[2]) / norm_vec[2]
       V_new.append(v2 + scalar * norm_vec)
@@ -61,7 +61,7 @@ def truncate(V_sphere, C_sphere, cutoff_from_bottom):
     # vertex 2 below cutoff
     if v2[2] < cutoff and v1[2] >= cutoff:
       chords_to_remove.append(c_idx)
-      norm = np.linalg.linalg.norm(v2 - v1)
+      norm = np.linalg.norm(v2 - v1)
       norm_vec = (v2 - v1) / norm
       scalar = (cutoff - v1[2]) / norm_vec[2]
       V_new.append(v1 + scalar * norm_vec)

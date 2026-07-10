@@ -32,7 +32,7 @@ def get_bill_of_materials(vertices, chords, rounding_precision):
   for c in chords:
     v1 = vertices[c[0] - 1]
     v2 = vertices[c[1] - 1]
-    distance_between = round(np.linalg.linalg.norm(v1 - v2), rounding_precision)  # CHECK THIS!
+    distance_between = round(np.linalg.norm(v1 - v2), rounding_precision)  # CHECK THIS!
 
     if not distance_between in bom:
       bom[distance_between] = 0

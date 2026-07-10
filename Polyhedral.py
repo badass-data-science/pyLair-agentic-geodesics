@@ -29,9 +29,9 @@ class Face():
 
     # compute transfer matrix
     x = self.v2.xyz - self.v1.xyz
-    x = x / np.linalg.linalg.norm(x)
+    x = x / np.linalg.norm(x)
     y = self.v3.xyz - self.origin
-    y = y / np.linalg.linalg.norm(y)
+    y = y / np.linalg.norm(y)
     z = np.cross(x, y)
     self.transfer_matrix = np.transpose(np.matrix([x, y, z]))
 
@@ -45,7 +45,7 @@ class Vertex():
     self.xyz = np.array([x, y, z])
 		
   def distance_to(self, vertex):
-    return np.linalg.linalg.norm(self.xyz - vertex.xyz)
+    return np.linalg.norm(self.xyz - vertex.xyz)
 	
 class Polyhedron(object):
   def __init__(self):

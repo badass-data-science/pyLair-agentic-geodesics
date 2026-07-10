@@ -125,5 +125,5 @@ class GeodesicSphere():
   def project_onto_sphere(self):
     self.sphere_vertices = []
     for v in self.non_duplicate_vertices:
-      unit_v = v / np.linalg.linalg.norm(v)
+      unit_v = v / np.linalg.norm(v)
       self.sphere_vertices.append(unit_v * self.radius)

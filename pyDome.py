@@ -85,8 +85,8 @@ def main():
   # parse command line
   #
   try:
-    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:Fo:', ['truncation=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'face', 'output='])
-  except getopt.error, msg:
+    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:Fho:', ['truncation=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'face', 'output='])
+  except getopt.error as msg:
     print('for help use --help')
     sys.exit(-1)
   for o, a in opts:
