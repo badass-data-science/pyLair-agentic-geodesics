@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from scipy.spatial import cKDTree
 
 from pydome.polyhedral import Octahedron, Icosahedron
 from pydome.class_three import ClassThreeSymmetryTriangle
@@ -52,6 +53,45 @@ def test_class_three_sphere_satisfies_euler_formula(m, n):
     F = len(sphere.non_duplicate_face_nodes)
     assert V - E + F == 2
     assert 2 * E == 3 * F
+
+
+@pytest.mark.parametrize("polyhedron_cls,m,n", [(Icosahedron, 3, 2), (Octahedron, 3, 2)])
+def test_class_three_no_two_final_vertices_occupy_the_same_location(polyhedron_cls, m, n):
+    # Same guarantee GeodesicSphere has always provided for Class I/II:
+    # a vertex that's genuinely shared between adjacent faces must
+    # collapse to one entry in sphere_vertices, not survive as several
+    # near-identical ones. Class III adds "halo" points (see
+    # class_three.py) specifically to make this merging possible for a
+    # chiral lattice, so this also guards against a halo point that
+    # fails to merge and lingers as a stray near-duplicate vertex.
+    vpt = 1e-7
+    sphere = build_class_three_sphere(polyhedron_cls, m, n, vpt=vpt)
+    points = np.array(sphere.sphere_vertices)
+    pairs = cKDTree(points).query_pairs(vpt)
+    assert pairs == set()
+
+
+def test_class_three_cross_face_matches_are_necessary_not_just_helpful():
+    # Regression guard for the actual bug this feature was built around:
+    # proximity-only merging (GeodesicSphere's original Class I/II
+    # mechanism, i.e. omitting extra_pairs/local_priority) is NOT enough
+    # for a chiral lattice -- it only merges the 3 face corners, leaving
+    # every other genuinely-shared edge vertex duplicated once per
+    # adjacent face. If this test ever starts passing, it means
+    # cross_face_matches stopped doing anything, which would silently
+    # reintroduce the original bug (30 unsubdivided icosahedron edges).
+    poly = Icosahedron()
+    m, n = 3, 2
+    T = m * m + m * n + n * n
+    st = ClassThreeSymmetryTriangle(m, n, poly)
+
+    proximity_only = GeodesicSphere(poly, st, vpt=1e-7, radius=1.0)
+    with_stitching = GeodesicSphere(poly, st, vpt=1e-7, radius=1.0,
+                                     extra_pairs=st.cross_face_matches,
+                                     local_priority=st.local_priority)
+
+    assert len(proximity_only.non_duplicate_vertices) > len(with_stitching.non_duplicate_vertices)
+    assert len(with_stitching.non_duplicate_vertices) == 10 * T + 2
 
 
 def test_class_three_has_no_anomalously_long_chords():

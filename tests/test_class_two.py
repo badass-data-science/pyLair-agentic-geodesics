@@ -2,6 +2,7 @@ from types import SimpleNamespace
 
 import numpy as np
 import pytest
+from scipy.spatial import cKDTree
 
 from pydome.polyhedral import Octahedron, Icosahedron, build_lcd_faces
 from pydome.symmetry_triangle import ClassTwoMethodOneSymmetryTriangle
@@ -59,6 +60,20 @@ def test_class_two_sphere_vertices_lie_at_the_given_radius(radius):
     sphere = build_class_two_sphere(Icosahedron, 4, radius=radius)
     for v in sphere.sphere_vertices:
         assert np.linalg.norm(v) == pytest.approx(radius)
+
+
+@pytest.mark.parametrize("polyhedron_cls,dome_frequency", [(Icosahedron, 4), (Octahedron, 4)])
+def test_class_two_no_two_final_vertices_occupy_the_same_location(polyhedron_cls, dome_frequency):
+    # Same guarantee GeodesicSphere has always provided for Class I:
+    # vertices computed independently by adjacent faces along a shared
+    # seam must collapse into one before reaching sphere_vertices, so no
+    # two entries there should sit closer together than the merge
+    # threshold that was supposed to catch them.
+    vpt = 1e-7
+    sphere = build_class_two_sphere(polyhedron_cls, dome_frequency, vpt=vpt)
+    points = np.array(sphere.sphere_vertices)
+    pairs = cKDTree(points).query_pairs(vpt)
+    assert pairs == set()
 
 
 def test_class_two_no_duplicate_chords():
