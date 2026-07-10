@@ -43,9 +43,9 @@ Required Command-Line Input:
 
 Options:
 
-\t-r, --radius\tRadius of generated dome. Must be floating point. Default 1.0.
+\t-r, --radius\tRadius of generated dome. Must be a floating point number greater than zero. Default 1.0.
 
-\t-f, --frequency\tFrequency of generated dome. Must be an integer. Default 4.
+\t-f, --frequency\tFrequency of generated dome. Must be a positive integer. Default 4.
 
 \t-v, --vthreshold\tDistance required to consider two vertices equal. Default 0.0000001. Must be floating point.
 
@@ -98,7 +98,7 @@ def main():
     if o in ('-b', '--bom-rounding'):
       try:
         bom_rounding_precision = int(a)
-      except:
+      except ValueError:
         print('-b or --bom-rounding argument must be an integer. Exiting.')
         sys.exit(-1)
     if o in ('-h', '--help'):
@@ -110,20 +110,26 @@ def main():
       try:
         a = float(a)
         radius = np.float64(a)
-      except:
+      except ValueError:
         print('-r or --radius argument must be a floating point number. Exiting.')
+        sys.exit(-1)
+      if radius <= 0:
+        print('-r or --radius argument must be greater than zero. Exiting.')
         sys.exit(-1)
     if o in ('-f', '--frequency'):
       try:
         frequency = int(a)
-      except:
+      except ValueError:
         print('-f or --frequency argument must be an integer. Exiting.')
+        sys.exit(-1)
+      if frequency < 1:
+        print('-f or --frequency argument must be a positive integer. Exiting.')
         sys.exit(-1)
     if o in ('-v', '--vthreshold'):
       try:
         a = float(a)
         vertex_equal_threshold = np.float64(a)
-      except:
+      except ValueError:
         print('-v or --vthreshold argument must be a floating point number. Exiting.')
         sys.exit(-1)
     if o in ('-t', '--truncation'):
@@ -131,7 +137,7 @@ def main():
         a = float(a)
         truncation_amount = np.float64(a)
         run_truncate = True
-      except:
+      except ValueError:
         print('-t or --truncation argument must be a floating point number. Exiting.')
         sys.exit(-1)
 

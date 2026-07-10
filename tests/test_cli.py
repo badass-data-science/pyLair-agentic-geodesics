@@ -40,6 +40,24 @@ def test_missing_output_path_reports_error():
     assert "output path" in result.stdout.lower()
 
 
+def test_nonpositive_frequency_reports_clear_error(tmp_path):
+    out = tmp_path / "dome"
+    for freq in ["0", "-1"]:
+        result = run_cli(["-o", str(out), "-f", freq])
+        assert result.returncode != 0
+        assert "positive integer" in result.stdout.lower()
+        assert "Traceback" not in result.stderr
+
+
+def test_nonpositive_radius_reports_clear_error(tmp_path):
+    out = tmp_path / "dome"
+    for radius in ["0", "-2.0"]:
+        result = run_cli(["-o", str(out), "-r", radius])
+        assert result.returncode != 0
+        assert "greater than zero" in result.stdout.lower()
+        assert "Traceback" not in result.stderr
+
+
 def test_face_and_truncation_are_mutually_exclusive(tmp_path):
     out = tmp_path / "dome"
     result = run_cli(["-o", str(out), "-F", "-t", "0.5"])
