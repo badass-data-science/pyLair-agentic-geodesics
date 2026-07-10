@@ -2,10 +2,10 @@ import json
 
 import numpy as np
 
-from Polyhedral import Icosahedron
-from SymmetryTriangle import ClassOneMethodOneSymmetryTriangle
-from GeodesicSphere import GeodesicSphere
-from BillOfMaterials import get_bill_of_materials
+from pydome.polyhedral import Icosahedron
+from pydome.symmetry_triangle import ClassOneMethodOneSymmetryTriangle
+from pydome.geodesic_sphere import GeodesicSphere
+from pydome.bill_of_materials import get_bill_of_materials
 
 
 def build_sphere(frequency=1, radius=1.0):

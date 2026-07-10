@@ -1,14 +1,11 @@
 import json
 import subprocess
 import sys
-from pathlib import Path
-
-PYDOME = Path(__file__).resolve().parent.parent / "pyDome.py"
 
 
 def run_cli(args, cwd=None):
     return subprocess.run(
-        [sys.executable, str(PYDOME), *args],
+        [sys.executable, "-m", "pydome", *args],
         capture_output=True,
         text=True,
         cwd=cwd,

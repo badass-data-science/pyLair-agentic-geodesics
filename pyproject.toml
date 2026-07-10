@@ -22,19 +22,10 @@ dependencies = [
 test = ["pytest"]
 
 [project.scripts]
-pydome = "pyDome:main"
+pydome = "pydome.cli:main"
 
 [tool.setuptools]
-py-modules = [
-  "pyDome",
-  "Polyhedral",
-  "SymmetryTriangle",
-  "GeodesicSphere",
-  "Output",
-  "Truncation",
-  "BillOfMaterials",
-]
+packages = ["pydome"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["."]

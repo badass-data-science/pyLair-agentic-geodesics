@@ -1,6 +1,6 @@
 import numpy as np
 
-from Output import OutputDXF, OutputWireframeVRML, OutputFaceVRML
+from pydome.output import OutputDXF, OutputWireframeVRML, OutputFaceVRML
 
 
 def make_triangle():

@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
 
-from Polyhedral import Octahedron, Icosahedron
-from SymmetryTriangle import ClassOneMethodOneSymmetryTriangle
-from GeodesicSphere import GeodesicSphere
+from pydome.polyhedral import Octahedron, Icosahedron
+from pydome.symmetry_triangle import ClassOneMethodOneSymmetryTriangle
+from pydome.geodesic_sphere import GeodesicSphere
 
 
 def build_sphere(polyhedron_cls, frequency, radius=1.0, vpt=1e-7):

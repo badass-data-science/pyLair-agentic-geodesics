@@ -26,12 +26,12 @@ import sys
 #
 # load pyDome modules
 #
-from Polyhedral import Icosahedron, Octahedron
-from SymmetryTriangle import ClassOneMethodOneSymmetryTriangle
-from GeodesicSphere import GeodesicSphere
-from Output import OutputDXF, OutputWireframeVRML, OutputFaceVRML
-from Truncation import truncate
-from BillOfMaterials import get_bill_of_materials
+from .polyhedral import Icosahedron, Octahedron
+from .symmetry_triangle import ClassOneMethodOneSymmetryTriangle
+from .geodesic_sphere import GeodesicSphere
+from .output import OutputDXF, OutputWireframeVRML, OutputFaceVRML
+from .truncation import truncate
+from .bill_of_materials import get_bill_of_materials
 
 
 def display_help():

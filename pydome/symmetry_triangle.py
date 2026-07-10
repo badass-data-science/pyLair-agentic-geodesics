@@ -19,7 +19,7 @@ import numpy as np
 
 PI = np.pi
 
-from Polyhedral import Vertex
+from .polyhedral import Vertex
 
 
 class SymmetryTriangle(object):
@@ -37,7 +37,7 @@ class SymmetryTriangle(object):
 
     # self.chord_list and self.face_list contain integers indicating local position
     # on the symmetry triangle, and therefore do not use the Chord and Face 
-    # classes defined in Polyhedral.py
+    # classes defined in polyhedral.py
 
     # specify chords
     self.chord_list = []

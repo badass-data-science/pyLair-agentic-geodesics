@@ -1,7 +1,7 @@
 import pytest
 
-from Polyhedral import Icosahedron
-from SymmetryTriangle import ClassOneMethodOneSymmetryTriangle
+from pydome.polyhedral import Icosahedron
+from pydome.symmetry_triangle import ClassOneMethodOneSymmetryTriangle
 
 
 @pytest.mark.parametrize("frequency", [1, 2, 3, 4, 6])

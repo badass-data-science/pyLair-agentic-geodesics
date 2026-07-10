@@ -64,18 +64,20 @@ A few behaviors are worth understanding before relying on the output for a real 
 
 ## Project structure
 
-The codebase is a flat set of modules (no package directory) rather than a nested Python package; `pyproject.toml` lists them individually under `[tool.setuptools] py-modules`.
+`pydome` is a regular Python package (`pyproject.toml` declares it under `[tool.setuptools] packages = ["pydome"]`), not a flat collection of top-level modules.
 
 | File | Responsibility |
 |---|---|
-| `pyDome.py` | CLI entry point: argument parsing/validation and orchestration. |
-| `Polyhedral.py` | The base polyhedra (`Icosahedron`, `Octahedron`) and the `Vertex`/`Chord`/`Face` primitives. |
-| `SymmetryTriangle.py` | Class One subdivision of a single polyhedron face into a triangular vertex/chord/face grid. |
-| `GeodesicSphere.py` | Replicates the symmetry triangle across every polyhedron face, deduplicates the vertices shared along adjacent-face edges (via a KD-tree), and projects the result onto a sphere of the requested radius. |
-| `Truncation.py` | Cuts a geodesic sphere at a horizontal plane to produce a dome. |
-| `Output.py` | DXF and VRML (wireframe or face) file writers. |
-| `BillOfMaterials.py` | Clusters chords into strut-length groups, computes hub tangent-plane and spoke angles, and prints the report as JSON. |
-| `tests/` | pytest suite: unit tests per module plus subprocess-level CLI integration tests. |
+| `pydome/__init__.py` | Package marker; intentionally empty besides the license header. |
+| `pydome/__main__.py` | Enables `python -m pydome`; delegates to `cli.main()`. |
+| `pydome/cli.py` | CLI entry point (`pydome` console command → `cli:main`): argument parsing/validation and orchestration. |
+| `pydome/polyhedral.py` | The base polyhedra (`Icosahedron`, `Octahedron`) and the `Vertex`/`Chord`/`Face` primitives. |
+| `pydome/symmetry_triangle.py` | Class One subdivision of a single polyhedron face into a triangular vertex/chord/face grid. |
+| `pydome/geodesic_sphere.py` | Replicates the symmetry triangle across every polyhedron face, deduplicates the vertices shared along adjacent-face edges (via a KD-tree), and projects the result onto a sphere of the requested radius. |
+| `pydome/truncation.py` | Cuts a geodesic sphere at a horizontal plane to produce a dome. |
+| `pydome/output.py` | DXF and VRML (wireframe or face) file writers. |
+| `pydome/bill_of_materials.py` | Clusters chords into strut-length groups, computes hub tangent-plane and spoke angles, and prints the report as JSON. |
+| `tests/` | pytest suite: unit tests per module (importing from `pydome.*`) plus subprocess-level CLI integration tests (invoked via `python -m pydome`). |
 | `METHOD.md` | The geometric method walkthrough with reference images (icosahedron subdivision, projection, truncation). |
 | `images/` | Diagrams referenced by `METHOD.md`. |
 
@@ -90,7 +92,7 @@ pytest
 
 The test suite includes golden-value checks against known geodesic-dome vertex/edge/face-count formulas (e.g. an icosahedron-derived sphere at frequency `f` has `10f²+2` vertices, `30f²` edges, `20f²` faces), so a correctness regression in the geometry pipeline should show up as a failing count rather than just an exception.
 
-This codebase was ported from Python 2 to Python 3, and most of the Python 2-isms found along the way (bare `except:` clauses, wildcard imports, a private/deprecated `numpy.linalg.linalg`/`numpy.matrix` API, 1-indexed vertex numbering) have been cleaned up. If you spot code that still looks unusual for modern Python — e.g. the manual dict-based grouping in `BillOfMaterials.py` where a `collections.defaultdict` would read more clearly — it's likely another such holdover rather than an intentional design choice. Feel free to modernize it if you're in the area, just add/update tests alongside.
+This codebase was ported from Python 2 to Python 3, and most of the Python 2-isms found along the way (bare `except:` clauses, wildcard imports, a private/deprecated `numpy.linalg.linalg`/`numpy.matrix` API, 1-indexed vertex numbering) have been cleaned up. If you spot code that still looks unusual for modern Python — e.g. the manual dict-based grouping in `pydome/bill_of_materials.py` where a `collections.defaultdict` would read more clearly — it's likely another such holdover rather than an intentional design choice. Feel free to modernize it if you're in the area, just add/update tests alongside.
 
 ## License
 

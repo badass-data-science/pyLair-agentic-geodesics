@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from Polyhedral import Vertex, Face, Chord, Octahedron, Icosahedron
+from pydome.polyhedral import Vertex, Face, Chord, Octahedron, Icosahedron
 
 
 def test_vertex_distance_to():
