@@ -28,7 +28,21 @@ pytest
 pydome -o output/mydome -f 4 -r 1.0
 ```
 
-produces `output/mydome.dxf`, `output/mydome.wrl`, and prints a JSON Bill of Materials report to stdout. Run `pydome --help` for the full list of options (radius, frequency, polyhedron, truncation, vertex threshold, BOM rounding, face output).
+produces `output/mydome.dxf`, `output/mydome.wrl`, and prints a JSON Bill of Materials report to stdout.
+
+### Command-line options
+
+| Flag | Long form | Description | Default |
+|---|---|---|---|
+| `-o` | `--output` | Output file path; `.dxf`/`.wrl` are appended. Required. | — |
+| `-r` | `--radius` | Dome radius. Must be > 0. | `1.0` |
+| `-f` | `--frequency` | Subdivision frequency. Must be a positive integer. | `4` |
+| `-p` | `--polyhedron` | Base polyhedron: `icosahedron` or `octahedron`. | `icosahedron` |
+| `-t` | `--truncation` | Cutoff ratio (0-1) from the bottom of the sphere; passing this enables truncation. Incompatible with `-F`. | off (full sphere) |
+| `-v` | `--vthreshold` | Distance below which two computed vertices are treated as the same point. | `0.0000001` |
+| `-b` | `--bom-rounding` | Decimal places to display, and merge granularity, for the Bill of Materials (see caveats below). | `9` |
+| `-F` | `--face` | Emit face data (not wireframe) in the WRL output; skips DXF entirely. Incompatible with `-t`. | off |
+| `-h` | `--help` | Show usage and exit. | — |
 
 ## Caveats and known limitations
 
@@ -47,6 +61,36 @@ A few behaviors are worth understanding before relying on the output for a real 
 - **Chord/vertex counts grow with the square of frequency** (a Class One subdivision of an icosahedron produces `20*f^2` faces). Vertex deduplication uses a KD-tree and scales well even at high frequency, but very high frequencies will still produce large DXF/VRML files and correspondingly large Bill of Materials reports.
 
 - **Small-length chords in the output can be artifacts of the geometry pipeline** rather than intentional struts — the tool already surfaces this as a warning in the Bill of Materials report. Check any unexpectedly short chord in a DXF viewer before building.
+
+## Project structure
+
+The codebase is a flat set of modules (no package directory) rather than a nested Python package; `pyproject.toml` lists them individually under `[tool.setuptools] py-modules`.
+
+| File | Responsibility |
+|---|---|
+| `pyDome.py` | CLI entry point: argument parsing/validation and orchestration. |
+| `Polyhedral.py` | The base polyhedra (`Icosahedron`, `Octahedron`) and the `Vertex`/`Chord`/`Face` primitives. |
+| `SymmetryTriangle.py` | Class One subdivision of a single polyhedron face into a triangular vertex/chord/face grid. |
+| `GeodesicSphere.py` | Replicates the symmetry triangle across every polyhedron face, deduplicates the vertices shared along adjacent-face edges (via a KD-tree), and projects the result onto a sphere of the requested radius. |
+| `Truncation.py` | Cuts a geodesic sphere at a horizontal plane to produce a dome. |
+| `Output.py` | DXF and VRML (wireframe or face) file writers. |
+| `BillOfMaterials.py` | Clusters chords into strut-length groups, computes hub tangent-plane and spoke angles, and prints the report as JSON. |
+| `tests/` | pytest suite: unit tests per module plus subprocess-level CLI integration tests. |
+| `METHOD.md` | The geometric method walkthrough with reference images (icosahedron subdivision, projection, truncation). |
+| `images/` | Diagrams referenced by `METHOD.md`. |
+
+Internally, vertices/chords/faces are referenced by plain integer index into Python lists — 0-indexed throughout, matching how they're actually used (this wasn't always true; earlier versions numbered them 1-indexed and subtracted 1 at every point of use).
+
+## Development
+
+```
+pip install -e ".[test]"
+pytest
+```
+
+The test suite includes golden-value checks against known geodesic-dome vertex/edge/face-count formulas (e.g. an icosahedron-derived sphere at frequency `f` has `10f²+2` vertices, `30f²` edges, `20f²` faces), so a correctness regression in the geometry pipeline should show up as a failing count rather than just an exception.
+
+This codebase was ported from Python 2 to Python 3, and most of the Python 2-isms found along the way (bare `except:` clauses, wildcard imports, a private/deprecated `numpy.linalg.linalg`/`numpy.matrix` API, 1-indexed vertex numbering) have been cleaned up. If you spot code that still looks unusual for modern Python — e.g. the manual dict-based grouping in `BillOfMaterials.py` where a `collections.defaultdict` would read more clearly — it's likely another such holdover rather than an intentional design choice. Feel free to modernize it if you're in the area, just add/update tests alongside.
 
 ## License
 
