@@ -147,7 +147,7 @@ def main():
   #
   if face_output and run_truncate:
     print('Truncation does not work with face output at this time. Use either -t or -F but not both.')
-    exit(-1)
+    sys.exit(-1)
 
   #
   # generate geodesic sphere

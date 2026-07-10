@@ -36,10 +36,7 @@ class GeodesicSphere():
     self.unprojected_vertices = []
     for origin, M in [(x.origin, x.transfer_matrix) for x in self.polyhedral.faces]:
       for vi in self.symmetry_triangle.vertices:
-        rotation = M * np.transpose(np.matrix(vi.xyz)) 
-
-        # I'm sure there is a better way to do this:
-        new_vi = np.array([rotation[0,0], rotation[1,0], rotation[2,0]]) + origin
+        new_vi = M @ vi.xyz + origin
 
         self.unprojected_vertices.append(new_vi)
     

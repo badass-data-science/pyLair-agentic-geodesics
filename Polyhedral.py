@@ -33,7 +33,7 @@ class Face():
     y = self.v3.xyz - self.origin
     y = y / np.linalg.norm(y)
     z = np.cross(x, y)
-    self.transfer_matrix = np.transpose(np.matrix([x, y, z]))
+    self.transfer_matrix = np.transpose(np.array([x, y, z]))
 
 class Chord():
   def __init__(self, v1, v2):
