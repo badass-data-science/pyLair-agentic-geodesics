@@ -29,6 +29,7 @@ from types import SimpleNamespace
 #
 from .polyhedral import Icosahedron, Octahedron, build_lcd_faces
 from .symmetry_triangle import ClassOneMethodOneSymmetryTriangle, ClassTwoMethodOneSymmetryTriangle
+from .class_three import ClassThreeSymmetryTriangle
 from .geodesic_sphere import GeodesicSphere
 from .output import OutputDXF, OutputWireframeVRML, OutputFaceVRML, OutputSTL, OutputOBJ
 from .truncation import truncate
@@ -58,7 +59,9 @@ Options:
 
 \t-p, --polyhedron\tEither "octahedron" or "icosahedron". Default icosahedron.
 
-\t-c, --class\tSubdivision class: 1 (Alternate) or 2 (Triacon). Class 2 requires an even --frequency, since each original edge is already implicitly split once by its construction. Default 1.
+\t-c, --class\tSubdivision class: 1 (Alternate), 2 (Triacon), or 3 (Skew/chiral). Class 2 requires an even --frequency, since each original edge is already implicitly split once by its construction. Class 3 requires -n/--n-frequency (a second frequency parameter distinct from --frequency); --frequency and --n-frequency play the roles of m and n in the (m,n) Goldberg-Coxeter construction, with triangle count T = m^2 + mn + n^2. (m,n) and (n,m) are mirror-image (chiral) domes of the same size -- swap --frequency and --n-frequency to get the other one. Default 1.
+
+\t-n, --n-frequency\tSecond frequency parameter for -c 3 (Class III / Skew). Must be a positive integer different from --frequency. Ignored for classes 1 and 2.
 
 \t-F, --face\tFlag specifying whether to generate face output in WRL file. Cancels DXF file output and cannot be used with truncation.
 
@@ -97,6 +100,7 @@ def main():
   hub_templates_output = False
   elongation_factor = 1.0
   output_path = None
+  n_frequency = None
 
   #
   # no input arguments
@@ -109,7 +113,7 @@ def main():
   # parse command line
   #
   try:
-    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:c:m:e:FPsOHho:', ['truncation=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'class=', 'material-cost=', 'elongation=', 'face', 'preview', 'stl', 'obj', 'hub-templates', 'output='])
+    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:c:m:e:n:FPsOHho:', ['truncation=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'class=', 'material-cost=', 'elongation=', 'n-frequency=', 'face', 'preview', 'stl', 'obj', 'hub-templates', 'output='])
   except getopt.error as msg:
     print(str(msg) + ' (for help use --help)')
     sys.exit(-1)
@@ -123,10 +127,19 @@ def main():
       try:
         dome_class = int(a)
       except ValueError:
-        print('-c or --class argument must be an integer (1 or 2). Exiting.')
+        print('-c or --class argument must be an integer (1, 2, or 3). Exiting.')
         sys.exit(-1)
-      if dome_class not in (1, 2):
-        print('-c or --class argument must be 1 or 2. Exiting.')
+      if dome_class not in (1, 2, 3):
+        print('-c or --class argument must be 1, 2, or 3. Exiting.')
+        sys.exit(-1)
+    if o in ('-n', '--n-frequency'):
+      try:
+        n_frequency = int(a)
+      except ValueError:
+        print('-n or --n-frequency argument must be an integer. Exiting.')
+        sys.exit(-1)
+      if n_frequency < 1:
+        print('-n or --n-frequency argument must be a positive integer. Exiting.')
         sys.exit(-1)
     if o in ('-b', '--bom-rounding'):
       try:
@@ -221,16 +234,34 @@ def main():
     print('-c 2 (Class II / Triacon) requires an even --frequency. Exiting.')
     sys.exit(-1)
 
+  if dome_class == 3:
+    if n_frequency is None:
+      print('-c 3 (Class III / Skew) requires -n or --n-frequency. Exiting.')
+      sys.exit(-1)
+    if n_frequency == frequency:
+      print('-c 3 (Class III / Skew) requires --n-frequency to differ from --frequency (equal values are Class II -- use -c 2 instead). Exiting.')
+      sys.exit(-1)
+
   #
   # generate geodesic sphere
   #
   if dome_class == 2:
     symmetry_triangle = ClassTwoMethodOneSymmetryTriangle(frequency // 2, polyhedral)
     face_source = SimpleNamespace(faces=build_lcd_faces(polyhedral))
+    extra_pairs = None
+    local_priority = None
+  elif dome_class == 3:
+    symmetry_triangle = ClassThreeSymmetryTriangle(frequency, n_frequency, polyhedral)
+    face_source = polyhedral
+    extra_pairs = symmetry_triangle.cross_face_matches
+    local_priority = symmetry_triangle.local_priority
   else:
     symmetry_triangle = ClassOneMethodOneSymmetryTriangle(frequency, polyhedral)
     face_source = polyhedral
-  sphere = GeodesicSphere(face_source, symmetry_triangle, vertex_equal_threshold, radius)
+    extra_pairs = None
+    local_priority = None
+  sphere = GeodesicSphere(face_source, symmetry_triangle, vertex_equal_threshold, radius,
+                           extra_pairs=extra_pairs, local_priority=local_priority)
   C_sphere = sphere.non_duplicate_chords
   F_sphere = sphere.non_duplicate_face_nodes
   V_sphere = sphere.sphere_vertices

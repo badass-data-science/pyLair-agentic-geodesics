@@ -171,11 +171,41 @@ def test_class_two_generates_a_valid_dome(tmp_path):
 
 def test_invalid_class_reports_clear_error(tmp_path):
     out = tmp_path / "dome"
-    result = run_cli(["-o", str(out), "-c", "3"])
+    result = run_cli(["-o", str(out), "-c", "4"])
 
     assert result.returncode != 0
-    assert "1 or 2" in result.stdout
+    assert "1, 2, or 3" in result.stdout
     assert "Traceback" not in result.stderr
+
+
+def test_class_three_requires_n_frequency(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "3", "-c", "3"])
+
+    assert result.returncode != 0
+    assert "n-frequency" in result.stdout.lower()
+    assert "Traceback" not in result.stderr
+
+
+def test_class_three_rejects_equal_frequencies(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "3", "-n", "3", "-c", "3"])
+
+    assert result.returncode != 0
+    assert "differ" in result.stdout.lower()
+    assert "Traceback" not in result.stderr
+
+
+def test_class_three_generates_a_valid_dome(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "3", "-n", "2", "-c", "3"])
+
+    assert result.returncode == 0
+    assert out.with_suffix(".dxf").exists()
+    assert out.with_suffix(".wrl").exists()
+
+    report = json.loads(result.stdout)
+    assert "pyDome report" in report
 
 
 def test_default_run_reports_total_strut_length_without_cost(tmp_path):
