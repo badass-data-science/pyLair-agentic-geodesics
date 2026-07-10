@@ -51,3 +51,19 @@ def test_truncate_never_adds_chords(truncation_amount):
     V_new, C_new = truncate(V, C, truncation_amount)
     assert len(C_new) <= len(C)
     assert len(V_new) > 0
+
+
+def test_truncate_raises_clearly_on_horizontal_chord_at_cutoff():
+    # a chord whose two endpoints straddle the cutoff by less than
+    # HORIZONTAL_CHORD_EPSILON in z must fail loudly rather than silently
+    # dividing by a near-zero z-extent (numpy warns on divide-by-zero
+    # instead of raising, which would otherwise produce an inf/nan vertex).
+    V = [
+        np.array([0., 0., 0.]),
+        np.array([1., 0., 0.5 - 1e-13]),
+        np.array([1., 1., 0.5]),
+    ]
+    C = [[2, 3]]
+
+    with pytest.raises(ValueError):
+        truncate(V, C, 1.0)  # cutoff_from_bottom=1.0 -> cutoff = max z = 0.5

@@ -17,6 +17,12 @@
 
 import numpy as np
 
+# below this, a chord is considered exactly coincident with the cutoff
+# plane: dividing by its near-zero z-extent would silently produce an
+# inf/nan vertex (numpy division by zero warns rather than raising)
+# instead of failing loudly.
+HORIZONTAL_CHORD_EPSILON = 1e-12
+
 def truncate(V_sphere, C_sphere, cutoff_from_bottom):
 
   #
@@ -54,6 +60,12 @@ def truncate(V_sphere, C_sphere, cutoff_from_bottom):
       chords_to_remove.append(c_idx)
       norm = np.linalg.norm(v1 - v2)
       norm_vec = (v1 - v2) / norm
+      if abs(norm_vec[2]) < HORIZONTAL_CHORD_EPSILON:
+        raise ValueError(
+          'Truncation cutoff plane lies exactly on a horizontal chord '
+          '(vertices %s and %s). Choose a slightly different --truncation '
+          'value to avoid this degenerate case.' % (c[0], c[1])
+        )
       scalar = (cutoff - v2[2]) / norm_vec[2]
       V_new.append(v2 + scalar * norm_vec)
       chords_to_add.append([c[1], len(V_new)])
@@ -63,6 +75,12 @@ def truncate(V_sphere, C_sphere, cutoff_from_bottom):
       chords_to_remove.append(c_idx)
       norm = np.linalg.norm(v2 - v1)
       norm_vec = (v2 - v1) / norm
+      if abs(norm_vec[2]) < HORIZONTAL_CHORD_EPSILON:
+        raise ValueError(
+          'Truncation cutoff plane lies exactly on a horizontal chord '
+          '(vertices %s and %s). Choose a slightly different --truncation '
+          'value to avoid this degenerate case.' % (c[0], c[1])
+        )
       scalar = (cutoff - v1[2]) / norm_vec[2]
       V_new.append(v1 + scalar * norm_vec)
       chords_to_add.append([c[0], len(V_new)])
