@@ -2,6 +2,8 @@ import json
 import subprocess
 import sys
 
+import pytest
+
 
 def run_cli(args, cwd=None):
     return subprocess.run(
@@ -173,3 +175,35 @@ def test_invalid_class_reports_clear_error(tmp_path):
     assert result.returncode != 0
     assert "1 or 2" in result.stdout
     assert "Traceback" not in result.stderr
+
+
+def test_default_run_reports_total_strut_length_without_cost(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "1"])
+
+    assert result.returncode == 0
+    report = json.loads(result.stdout)["pyDome report"]
+    assert "Total strut length" in report["Total material"]
+    assert "Total estimated material cost" not in report["Total material"]
+
+
+def test_material_cost_flag_adds_estimated_cost(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "1", "-m", "2.5"])
+
+    assert result.returncode == 0
+    report = json.loads(result.stdout)["pyDome report"]
+    total_material = report["Total material"]
+
+    assert total_material["Total estimated material cost"] == pytest.approx(
+        total_material["Total strut length"] * 2.5, abs=0.01
+    )
+
+
+def test_nonpositive_material_cost_reports_clear_error(tmp_path):
+    out = tmp_path / "dome"
+    for cost in ["0", "-5"]:
+        result = run_cli(["-o", str(out), "-f", "1", "-m", cost])
+        assert result.returncode != 0
+        assert "greater than zero" in result.stdout.lower()
+        assert "Traceback" not in result.stderr

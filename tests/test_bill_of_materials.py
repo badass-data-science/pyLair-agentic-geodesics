@@ -1,6 +1,7 @@
 import json
 
 import numpy as np
+import pytest
 
 from pydome.polyhedral import Icosahedron
 from pydome.symmetry_triangle import ClassOneMethodOneSymmetryTriangle
@@ -81,6 +82,32 @@ def test_bill_of_materials_coarse_precision_merges_near_identical_lengths(capsys
 
     assert len(displayed_lengths) == len(set(displayed_lengths))
     assert sum(row["count"] for row in rows) == len(C)
+
+
+def test_bill_of_materials_reports_total_strut_length_by_default(capsys):
+    V, C = build_sphere()
+    get_bill_of_materials(V, C, 9)
+
+    captured = capsys.readouterr()
+    report = json.loads(captured.out)["pyDome report"]
+
+    assert "Total material" in report
+    expected_total = sum(np.linalg.norm(V[c[0]] - V[c[1]]) for c in C)
+    assert report["Total material"]["Total strut length"] == pytest.approx(expected_total)
+    assert "Total estimated material cost" not in report["Total material"]
+
+
+def test_bill_of_materials_reports_cost_when_given_a_unit_price(capsys):
+    V, C = build_sphere()
+    get_bill_of_materials(V, C, 9, cost_per_unit_length=2.5)
+
+    captured = capsys.readouterr()
+    report = json.loads(captured.out)["pyDome report"]
+    total_material = report["Total material"]
+
+    expected_total = sum(np.linalg.norm(V[c[0]] - V[c[1]]) for c in C)
+    assert total_material["Total strut length"] == pytest.approx(expected_total)
+    assert total_material["Total estimated material cost"] == pytest.approx(expected_total * 2.5, abs=0.01)
 
 
 def test_bill_of_materials_tangential_angles_are_small_for_a_smooth_sphere(capsys):

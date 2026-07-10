@@ -66,6 +66,8 @@ Options:
 \t-s, --stl\tAlso save an STL file ("<output>.stl") of the dome's surface triangles, e.g. for 3D-printing a scale model. Requires face data, so cannot be used with truncation.
 
 \t-O, --obj\tAlso save an OBJ file ("<output>.obj") of the dome's surface triangles. Requires face data, so cannot be used with truncation.
+
+\t-m, --material-cost\tPrice per unit length of strut material. If given, adds an estimated total material cost to the Bill of Materials, in addition to the total strut length (which is always reported). Must be a positive floating point number.
 """
   print(help_text)
 
@@ -86,6 +88,7 @@ def main():
   preview_output = False
   stl_output = False
   obj_output = False
+  cost_per_unit_length = None
   output_path = None
 
   #
@@ -99,7 +102,7 @@ def main():
   # parse command line
   #
   try:
-    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:c:FPsOho:', ['truncation=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'class=', 'face', 'preview', 'stl', 'obj', 'output='])
+    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:c:m:FPsOho:', ['truncation=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'class=', 'material-cost=', 'face', 'preview', 'stl', 'obj', 'output='])
   except getopt.error as msg:
     print(str(msg) + ' (for help use --help)')
     sys.exit(-1)
@@ -123,6 +126,15 @@ def main():
         bom_rounding_precision = int(a)
       except ValueError:
         print('-b or --bom-rounding argument must be an integer. Exiting.')
+        sys.exit(-1)
+    if o in ('-m', '--material-cost'):
+      try:
+        cost_per_unit_length = float(a)
+      except ValueError:
+        print('-m or --material-cost argument must be a floating point number. Exiting.')
+        sys.exit(-1)
+      if cost_per_unit_length <= 0:
+        print('-m or --material-cost argument must be greater than zero. Exiting.')
         sys.exit(-1)
     if o in ('-h', '--help'):
       display_help()
@@ -239,7 +251,7 @@ def main():
   #
   # bill of materials
   #
-  get_bill_of_materials(V, C, bom_rounding_precision)
+  get_bill_of_materials(V, C, bom_rounding_precision, cost_per_unit_length)
 
 #
 # run the main function

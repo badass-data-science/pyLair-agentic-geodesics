@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 import json
 
-def get_bill_of_materials(vertices, chords, rounding_precision):
+def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_length=None):
 
   report = {'pyDome report' : {}}
   
@@ -74,7 +74,21 @@ def get_bill_of_materials(vertices, chords, rounding_precision):
   # display Bill of Materials
   #
   report['pyDome report']['Bill of materials'] = dict_bom
-  
+
+  #
+  # total material length/cost, summed from the raw (unclustered,
+  # unrounded) lengths to avoid compounding the display rounding
+  # already applied above
+  #
+  total_length = sum(raw_lengths)
+  dict_total_material = {
+    'Total strut length' : round(total_length, rounding_precision),
+    }
+  if cost_per_unit_length is not None:
+    dict_total_material['Total estimated material cost'] = round(total_length * cost_per_unit_length, 2)
+  report['pyDome report']['Total material'] = dict_total_material
+
+
   #
   # data structure to store hub information
   #
