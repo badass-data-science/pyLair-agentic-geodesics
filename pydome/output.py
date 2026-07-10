@@ -15,6 +15,8 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+import numpy as np
+
 
 def OutputDXF(V, C, the_filename):
   outfile = open(the_filename, 'w')
@@ -77,6 +79,44 @@ def OutputWireframeVRML(V, C, the_filename):
   outfile.write("               ]")
   outfile.write("          }" )
   outfile.write("     }" )
+  outfile.close()
+
+def OutputSTL(V, F, the_filename):
+  outfile = open(the_filename, 'w')
+  outfile.write('solid pydome\n')
+
+  for f in F:
+    p0 = np.asarray(V[f[0]])
+    p1 = np.asarray(V[f[1]])
+    p2 = np.asarray(V[f[2]])
+
+    normal = np.cross(p1 - p0, p2 - p0)
+    norm = np.linalg.norm(normal)
+    if norm != 0:
+      normal = normal / norm
+
+    outfile.write('facet normal %s %s %s\n' % (normal[0], normal[1], normal[2]))
+    outfile.write('outer loop\n')
+    for p in (p0, p1, p2):
+      outfile.write('vertex %s %s %s\n' % (p[0], p[1], p[2]))
+    outfile.write('endloop\n')
+    outfile.write('endfacet\n')
+
+  outfile.write('endsolid pydome\n')
+  outfile.close()
+
+def OutputOBJ(V, F, the_filename):
+  outfile = open(the_filename, 'w')
+  outfile.write('# pyDome OBJ export\n')
+
+  for v in V:
+    outfile.write('v %s %s %s\n' % (v[0], v[1], v[2]))
+
+  # OBJ vertex references are 1-indexed per the file format spec, unlike
+  # pyDome's own internal 0-indexed convention
+  for f in F:
+    outfile.write('f %d %d %d\n' % (f[0] + 1, f[1] + 1, f[2] + 1))
+
   outfile.close()
 
 def OutputFaceVRML(V, F, the_filename):

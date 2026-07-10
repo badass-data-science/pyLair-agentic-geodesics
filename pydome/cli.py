@@ -29,7 +29,7 @@ import sys
 from .polyhedral import Icosahedron, Octahedron
 from .symmetry_triangle import ClassOneMethodOneSymmetryTriangle
 from .geodesic_sphere import GeodesicSphere
-from .output import OutputDXF, OutputWireframeVRML, OutputFaceVRML
+from .output import OutputDXF, OutputWireframeVRML, OutputFaceVRML, OutputSTL, OutputOBJ
 from .truncation import truncate
 from .bill_of_materials import get_bill_of_materials
 from .preview import save_preview
@@ -59,6 +59,10 @@ Options:
 \t-F, --face\tFlag specifying whether to generate face output in WRL file. Cancels DXF file output and cannot be used with truncation.
 
 \t-P, --preview\tAlso save a quick 3D wireframe preview image ("<output>.png") alongside the usual output files, so you can sanity-check the dome without opening a CAD or VRML viewer.
+
+\t-s, --stl\tAlso save an STL file ("<output>.stl") of the dome's surface triangles, e.g. for 3D-printing a scale model. Requires face data, so cannot be used with truncation.
+
+\t-O, --obj\tAlso save an OBJ file ("<output>.obj") of the dome's surface triangles. Requires face data, so cannot be used with truncation.
 """
   print(help_text)
 
@@ -76,6 +80,8 @@ def main():
   bom_rounding_precision = 9
   face_output = False
   preview_output = False
+  stl_output = False
+  obj_output = False
   output_path = None
 
   #
@@ -89,7 +95,7 @@ def main():
   # parse command line
   #
   try:
-    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:FPho:', ['truncation=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'face', 'preview', 'output='])
+    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:FPsOho:', ['truncation=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'face', 'preview', 'stl', 'obj', 'output='])
   except getopt.error as msg:
     print(str(msg) + ' (for help use --help)')
     sys.exit(-1)
@@ -112,6 +118,10 @@ def main():
       face_output = True
     if o in ('-P', '--preview'):
       preview_output = True
+    if o in ('-s', '--stl'):
+      stl_output = True
+    if o in ('-O', '--obj'):
+      obj_output = True
     if o in ('-r', '--radius'):
       try:
         a = float(a)
@@ -157,8 +167,11 @@ def main():
   #
   # check for mutually exclusive options
   #
-  if face_output and run_truncate:
-    print('Truncation does not work with face output at this time. Use either -t or -F but not both.')
+  # -F, -s, and -O all require face data, which truncate() does not
+  # recompute, so none of them can be combined with truncation without
+  # producing stale/incorrect geometry.
+  if run_truncate and (face_output or stl_output or obj_output):
+    print('Truncation does not work with face-based output (-F/-s/-O) at this time. Use either -t or one of those, but not both.')
     sys.exit(-1)
 
   #
@@ -192,6 +205,14 @@ def main():
   #
   if preview_output:
     save_preview(V, C, output_path + '.png')
+
+  #
+  # mesh export
+  #
+  if stl_output:
+    OutputSTL(V, F_sphere, output_path + '.stl')
+  if obj_output:
+    OutputOBJ(V, F_sphere, output_path + '.obj')
 
   #
   # bill of materials

@@ -56,11 +56,12 @@ def test_nonpositive_radius_reports_clear_error(tmp_path):
         assert "Traceback" not in result.stderr
 
 
-def test_face_and_truncation_are_mutually_exclusive(tmp_path):
+def test_face_based_output_and_truncation_are_mutually_exclusive(tmp_path):
     out = tmp_path / "dome"
-    result = run_cli(["-o", str(out), "-F", "-t", "0.5"])
-    assert result.returncode != 0
-    assert "cannot be used with truncation" in result.stdout.lower() or "does not work" in result.stdout.lower()
+    for flag in ["-F", "-s", "-O"]:
+        result = run_cli(["-o", str(out), flag, "-t", "0.5"])
+        assert result.returncode != 0
+        assert "cannot be used with truncation" in result.stdout.lower() or "does not work" in result.stdout.lower()
 
 
 def test_default_run_generates_dxf_and_wrl_with_valid_bom_report(tmp_path):
@@ -103,3 +104,42 @@ def test_no_preview_flag_means_no_preview_file(tmp_path):
 
     assert result.returncode == 0
     assert not out.with_suffix(".png").exists()
+
+
+def test_stl_flag_writes_a_valid_stl_alongside_the_usual_output(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "1", "-s"])
+
+    assert result.returncode == 0
+    assert out.with_suffix(".dxf").exists()
+    assert out.with_suffix(".wrl").exists()
+
+    stl_file = out.with_suffix(".stl")
+    assert stl_file.exists()
+    content = stl_file.read_text()
+    assert content.startswith("solid pydome\n")
+    assert content.rstrip().endswith("endsolid pydome")
+
+
+def test_obj_flag_writes_a_valid_obj_alongside_the_usual_output(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "1", "-O"])
+
+    assert result.returncode == 0
+    assert out.with_suffix(".dxf").exists()
+    assert out.with_suffix(".wrl").exists()
+
+    obj_file = out.with_suffix(".obj")
+    assert obj_file.exists()
+    content = obj_file.read_text()
+    assert any(line.startswith("v ") for line in content.splitlines())
+    assert any(line.startswith("f ") for line in content.splitlines())
+
+
+def test_no_stl_or_obj_flag_means_no_mesh_files(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "1"])
+
+    assert result.returncode == 0
+    assert not out.with_suffix(".stl").exists()
+    assert not out.with_suffix(".obj").exists()

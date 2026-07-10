@@ -43,6 +43,8 @@ produces `output/mydome.dxf`, `output/mydome.wrl`, and prints a JSON Bill of Mat
 | `-b` | `--bom-rounding` | Decimal places to display, and merge granularity, for the Bill of Materials (see caveats below). | `9` |
 | `-F` | `--face` | Emit face data (not wireframe) in the WRL output; skips DXF entirely. Incompatible with `-t`. | off |
 | `-P` | `--preview` | Also save a quick 3D wireframe preview image (`<output>.png`) for a fast sanity check without opening a CAD/VRML viewer. | off |
+| `-s` | `--stl` | Also save an STL file (`<output>.stl`) of the dome's surface triangles, e.g. for 3D-printing a scale model. Requires face data; incompatible with `-t`. | off |
+| `-O` | `--obj` | Also save an OBJ file (`<output>.obj`) of the dome's surface triangles. Requires face data; incompatible with `-t`. | off |
 | `-h` | `--help` | Show usage and exit. | — |
 
 ## Caveats and known limitations
@@ -57,7 +59,7 @@ A few behaviors are worth understanding before relying on the output for a real 
 
 - **`-v/--vthreshold` controls vertex deduplication**, i.e. how close two computed vertices must be to be treated as the same point where polyhedron faces meet. The default (`1e-7`) is tuned for the default unit radius; if you use a very large or very small `-r`, you may need to adjust `-v` proportionally.
 
-- **`-F/--face` (face output) cannot be combined with `-t/--truncation`.** Use one or the other.
+- **`-F/--face`, `-s/--stl`, and `-O/--obj` all require face data, and none of them can be combined with `-t/--truncation`.** `truncate()` only recomputes vertices and chords, not the face list, so any face-based output after truncation would be built from stale, mismatched geometry — the CLI rejects the combination outright rather than silently producing a wrong mesh.
 
 - **Chord/vertex counts grow with the square of frequency** (a Class One subdivision of an icosahedron produces `20*f^2` faces). Vertex deduplication uses a KD-tree and scales well even at high frequency, but very high frequencies will still produce large DXF/VRML files and correspondingly large Bill of Materials reports.
 
@@ -76,7 +78,7 @@ A few behaviors are worth understanding before relying on the output for a real 
 | `pydome/symmetry_triangle.py` | Class One subdivision of a single polyhedron face into a triangular vertex/chord/face grid. |
 | `pydome/geodesic_sphere.py` | Replicates the symmetry triangle across every polyhedron face, deduplicates the vertices shared along adjacent-face edges (via a KD-tree), and projects the result onto a sphere of the requested radius. |
 | `pydome/truncation.py` | Cuts a geodesic sphere at a horizontal plane to produce a dome. |
-| `pydome/output.py` | DXF and VRML (wireframe or face) file writers. |
+| `pydome/output.py` | DXF, VRML (wireframe or face), STL, and OBJ file writers. |
 | `pydome/preview.py` | Renders a quick 3D wireframe preview PNG (`-P/--preview`), with equal axis scaling so the plot itself never distorts the dome's proportions. |
 | `pydome/bill_of_materials.py` | Clusters chords into strut-length groups, computes hub tangent-plane and spoke angles, and prints the report as JSON. |
 | `tests/` | pytest suite: unit tests per module (importing from `pydome.*`) plus subprocess-level CLI integration tests (invoked via `python -m pydome`). |
