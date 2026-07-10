@@ -31,6 +31,7 @@ def test_no_arguments_prints_help_and_exits_nonzero():
 def test_unrecognized_flag_reports_error_and_exits_nonzero():
     result = run_cli(["-Z"])
     assert result.returncode != 0
+    assert "not recognized" in result.stdout
     assert "for help use --help" in result.stdout
 
 

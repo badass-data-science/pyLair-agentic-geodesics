@@ -42,18 +42,15 @@ def truncate(V_sphere, C_sphere, cutoff_from_bottom):
   V_new = list(V_sphere)
   chords_to_remove = []
   chords_to_add = []
-  vertices_to_remove = []
   for c_idx, c in enumerate(C_sphere):
     v1_idx = c[0]
     v2_idx = c[1]
     v1 = V_sphere[v1_idx]
     v2 = V_sphere[v2_idx]
-    
+
     # both vertices below cutoff
     if v1[2] < cutoff and v2[2] < cutoff:
       chords_to_remove.append(c_idx)
-      vertices_to_remove.append(v1_idx)
-      vertices_to_remove.append(v2_idx)
 
     # vertex 1 below cutoff
     if v1[2] < cutoff and v2[2] >= cutoff:

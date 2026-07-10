@@ -26,12 +26,12 @@ import sys
 #
 # load pyDome modules
 #
-from Polyhedral import *
-from SymmetryTriangle import *
-from GeodesicSphere import *
-from Output import *
-from Truncation import *
-from BillOfMaterials import *
+from Polyhedral import Icosahedron, Octahedron
+from SymmetryTriangle import ClassOneMethodOneSymmetryTriangle
+from GeodesicSphere import GeodesicSphere
+from Output import OutputDXF, OutputWireframeVRML, OutputFaceVRML
+from Truncation import truncate
+from BillOfMaterials import get_bill_of_materials
 
 
 def display_help():
@@ -87,7 +87,7 @@ def main():
   try:
     opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:Fho:', ['truncation=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'face', 'output='])
   except getopt.error as msg:
-    print('for help use --help')
+    print(str(msg) + ' (for help use --help)')
     sys.exit(-1)
   for o, a in opts:
     if o in ('-o', '--output'):

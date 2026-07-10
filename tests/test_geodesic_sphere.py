@@ -68,7 +68,6 @@ def test_no_duplicate_chords():
 
 
 def test_icosahedron_frequency_one_matches_original_icosahedron_edge_length():
-    poly = Icosahedron()
     sphere = build_sphere(Icosahedron, 1, radius=1.0)
     # frequency 1 performs no subdivision, so all edges should equal the
     # original icosahedron's edge length once projected onto the unit sphere.
