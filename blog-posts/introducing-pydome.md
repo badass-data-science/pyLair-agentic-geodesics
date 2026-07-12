@@ -67,10 +67,21 @@ Taken together, these two angle types define, for every single joint in the enti
 pyDome also produces a list of strut lengths and how many struts of each length are required to build the structure, as well as a summation of the total length of strut material required. If the user provides a price per unit length, then a cost estimate of total strut material required is reported as well.
 
 **Step eight: hub templates.** A geodesic project will likely require multiple (but repeated) distinct hub angle configurations. To assist designers, pyDome optionally creates 2D DXF cutting templates for each genuinely distinct hub shape in the structure, correctly recognizing that two hubs which are actually the same shape, just rotated relative to each other, only require one template between them.
+# Talking to pyDome
+
+Mojitos, as it turns out, do not mix well with typing `pydome -o output/lair -f 6 -c 3 -n 4 -t 0.4`, squinting at a JSON wall of hub angles, then opening a CAD program just to check whether frequency 6 actually looks like anything sensible before committing to it. Our heroine wanted to describe the dome she wanted in plain language and have something else handle the fiddly bits, so pyDome now speaks [MCP](https://modelcontextprotocol.io) (Model Context Protocol) as well as command-line flags.
+
+Running `pydome-mcp` starts a small server that hands an AI assistant four tools instead of one command:
+
+* **`design_dome`**, for cheaply asking "what does frequency 6 Class III with n=4 give me?" without writing a single file, just vertex/edge/face counts, a bounding box, and a total strut length to sanity-check against a budget.
+* **`preview_dome`**, which is the one pyDome could never do from the command line: it renders the wireframe and hands the picture straight back into the conversation. No CAD viewer, no opening a PNG in a separate window, just "here's your dome" right where you asked for it.
+* **`get_bill_of_materials`**, for interrogating strut counts and connector angles before deciding a design is worth building.
+* **`export_dome`**, for when the design is actually settled and it's time to write the DXF, VRML, STL, OBJ, and hub-connector-template files to disk for real.
+
+The idea is to let an assistant iterate the way our heroine would iterate herself: try a shape, look at it, check what it costs in struts, adjust, and only export once it's actually right — rather than round-tripping through the command line and a separate viewer for every guess. All four tools enforce the exact same validation rules as the CLI (an odd frequency is still not a valid Class II dome, no matter which door you walked in through), because underneath both interfaces now share one geometry engine instead of two copies of the same logic quietly drifting apart.
 # Next Steps
 
 * pyDome is currently strut-centric in its output, but our heroine's practical design requirements might evolve toward face-centric thinking. For example, suppose she decides to assemble her final structure out of 3D-printed symmetry triangles; this would require a face-centric point of view and the bill of materials would have to be enhanced accordingly to facilitate it. Possibly the templates too.
-* It would be cool to make agentic AI skill(s) to interface with pyDome.
 * Our heroine will likely experiment with AI-based interaction with pyDome's source code, such as asking Claude Code to review the existing code and then design a DXF file modification that creates a door-frame design. Our heroine is not sure if this will work, but thinks it worth a try. (Doorways are hell for any geodesic building design; if AI can improve this situation that would be awesome!).
 * This is going on PyPI soon!
 # Conclusion
@@ -90,7 +101,7 @@ pyDome is available [here](https://github.com/badass-data-science/Engineering/tr
 
 Our heroine wrote this article about 99% manually, with a small amount of outline assistance from Claude Code.
 
-She wrote the original pyDome implementation from scratch in Python, and then had Claude code refactor it a bit to make it PyPI-ready. She also collaborated with Claude Code to add features missing from her original implementation (Class II and III polyhedra face subdivision methods, sphere elongation functionality, and STL/OBJ/PNG output).
+She wrote the original pyDome implementation from scratch in Python, and then had Claude code refactor it a bit to make it PyPI-ready. She also collaborated with Claude Code to add features missing from her original implementation (Class II and III polyhedra face subdivision methods, sphere elongation functionality, and STL/OBJ/PNG output), and, most recently, to design and build the MCP server described above.
 # Tags
 
 geodesic
@@ -118,5 +129,7 @@ analytic geometry
 NumPy
 Claude Code
 agentic AI
+MCP
+Model Context Protocol
 Ultimate Cunning Master Plan
 
