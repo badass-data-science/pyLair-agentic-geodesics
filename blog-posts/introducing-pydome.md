@@ -6,9 +6,11 @@ Enter geodesic design.
 
 Geodesic structures distribute structural stress relatively evenly across their surfaces, rather than concentrate such stress in focal points such as walls and a roof. This makes them strong for their weight, the primary reason individuals keep building them despite the aggravating number of angular calculations involved. This also makes geodesic structures more robust to pressure variation when inserted deep into a water column.
 
-One can buy a geodesic dome kit, of course, but why do that when one wants extreme customization? Therefore, before touching any power tools or even any CAD interface, our heroine requires her own geodesic calculations.
+One can buy a geodesic dome kit, of course, but why do that when one wants extreme customization? Therefore, before touching any power tools or even a CAD interface, our heroine requires her own geodesic calculations.
 
-So she built pyDome.
+But she definitely doesn't want to do the math herself. And its far more fun to instruct a computer to perform the geodesic arithmetic instead whilst she slams Mojitos on the beach.
+
+So our heroine built pyDome.
 # What It Does
 
 Essentially, pyDome computes the vertices and chords of a geodesic dome (or sphere) and writes them out as both DXF and VRML files (for CAD software and for impressing friends with cool 3D graphics, respectively). Optionally it produces STL and OBJ files to facilitate 3D printing of scale models.
@@ -67,9 +69,9 @@ Taken together, these two angle types define, for every single joint in the enti
 pyDome also produces a list of strut lengths and how many struts of each length are required to build the structure, as well as a summation of the total length of strut material required. If the user provides a price per unit length, then a cost estimate of total strut material required is reported as well.
 
 **Step eight: hub templates.** A geodesic project will likely require multiple (but repeated) distinct hub angle configurations. To assist designers, pyDome optionally creates 2D DXF cutting templates for each genuinely distinct hub shape in the structure, correctly recognizing that two hubs which are actually the same shape, just rotated relative to each other, only require one template between them.
-# Talking to pyDome
+# pyDome's Agentic AI Interface
 
-Mojitos, as it turns out, do not mix well with typing `pydome -o output/lair -f 6 -c 3 -n 4 -t 0.4`, squinting at a JSON wall of hub angles, then opening a CAD program just to check whether frequency 6 actually looks like anything sensible before committing to it. Our heroine wanted to describe the dome she wanted in plain language and have something else handle the fiddly bits, so pyDome now speaks [MCP](https://modelcontextprotocol.io) (Model Context Protocol) as well as command-line flags.
+Mojitos, as it turns out, do not mix well with typing `pydome -o output/secret-lair -f 6 -c 3 -n 4 -t 0.4`, squinting at a JSON wall of hub angles, then opening a CAD program just to check whether frequency 6 actually looks like anything sensible before committing to it. Our heroine wanted to describe the dome she wanted in plain language and have something else handle the fiddly bits, so pyDome now speaks [MCP](https://modelcontextprotocol.io) (Model Context Protocol) as well as command-line flags.
 
 Running `pydome-mcp` starts a small server that hands an AI assistant four tools instead of one command:
 
@@ -86,7 +88,7 @@ The idea is to let an assistant iterate the way our heroine would iterate hersel
 * This is going on PyPI soon!
 # Conclusion
 
-Our heroine decided that a computer should perform the geodesic arithmetic necessary for designing her future secret laboratory whilst she drinks Mojitos on the beach. Therefore, she wrote pyDome to make these computations happen.
+Our heroine decided that a computer should perform the geodesic arithmetic necessary for designing her future secret laboratory, while she drinks cocktails by the pool. Therefore, she wrote pyDome to make these computations happen.
 
 The actual construction of the forthcoming geodesic secret laboratory will (of course) be kept secret.
 # Works Consulted
