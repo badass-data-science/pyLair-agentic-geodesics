@@ -1,6 +1,9 @@
 import json
 import subprocess
 import sys
+from pathlib import Path
+
+import pytest
 
 
 def run_cli(args, cwd=None):
@@ -56,11 +59,12 @@ def test_nonpositive_radius_reports_clear_error(tmp_path):
         assert "Traceback" not in result.stderr
 
 
-def test_face_and_truncation_are_mutually_exclusive(tmp_path):
+def test_face_based_output_and_truncation_are_mutually_exclusive(tmp_path):
     out = tmp_path / "dome"
-    result = run_cli(["-o", str(out), "-F", "-t", "0.5"])
-    assert result.returncode != 0
-    assert "cannot be used with truncation" in result.stdout.lower() or "does not work" in result.stdout.lower()
+    for flag in ["-F", "-s", "-O"]:
+        result = run_cli(["-o", str(out), flag, "-t", "0.5"])
+        assert result.returncode != 0
+        assert "cannot be used with truncation" in result.stdout.lower() or "does not work" in result.stdout.lower()
 
 
 def test_default_run_generates_dxf_and_wrl_with_valid_bom_report(tmp_path):
@@ -82,3 +86,229 @@ def test_face_output_generates_only_wrl(tmp_path):
     assert result.returncode == 0
     assert out.with_suffix(".wrl").exists()
     assert not out.with_suffix(".dxf").exists()
+
+
+def test_preview_flag_writes_a_png_alongside_the_usual_output(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "1", "-P"])
+
+    assert result.returncode == 0
+    assert out.with_suffix(".dxf").exists()
+    assert out.with_suffix(".wrl").exists()
+
+    preview_file = out.with_suffix(".png")
+    assert preview_file.exists()
+    assert preview_file.read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"
+
+
+def test_no_preview_flag_means_no_preview_file(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "1"])
+
+    assert result.returncode == 0
+    assert not out.with_suffix(".png").exists()
+
+
+def test_stl_flag_writes_a_valid_stl_alongside_the_usual_output(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "1", "-s"])
+
+    assert result.returncode == 0
+    assert out.with_suffix(".dxf").exists()
+    assert out.with_suffix(".wrl").exists()
+
+    stl_file = out.with_suffix(".stl")
+    assert stl_file.exists()
+    content = stl_file.read_text()
+    assert content.startswith("solid pydome\n")
+    assert content.rstrip().endswith("endsolid pydome")
+
+
+def test_obj_flag_writes_a_valid_obj_alongside_the_usual_output(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "1", "-O"])
+
+    assert result.returncode == 0
+    assert out.with_suffix(".dxf").exists()
+    assert out.with_suffix(".wrl").exists()
+
+    obj_file = out.with_suffix(".obj")
+    assert obj_file.exists()
+    content = obj_file.read_text()
+    assert any(line.startswith("v ") for line in content.splitlines())
+    assert any(line.startswith("f ") for line in content.splitlines())
+
+
+def test_no_stl_or_obj_flag_means_no_mesh_files(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "1"])
+
+    assert result.returncode == 0
+    assert not out.with_suffix(".stl").exists()
+    assert not out.with_suffix(".obj").exists()
+
+
+def test_class_two_requires_even_frequency(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "3", "-c", "2"])
+
+    assert result.returncode != 0
+    assert "even" in result.stdout.lower()
+    assert "Traceback" not in result.stderr
+
+
+def test_class_two_generates_a_valid_dome(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "4", "-c", "2"])
+
+    assert result.returncode == 0
+    assert out.with_suffix(".dxf").exists()
+    assert out.with_suffix(".wrl").exists()
+
+    report = json.loads(result.stdout)
+    assert "pyDome report" in report
+
+
+def test_invalid_class_reports_clear_error(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-c", "4"])
+
+    assert result.returncode != 0
+    assert "1, 2, or 3" in result.stdout
+    assert "Traceback" not in result.stderr
+
+
+def test_class_three_requires_n_frequency(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "3", "-c", "3"])
+
+    assert result.returncode != 0
+    assert "n-frequency" in result.stdout.lower()
+    assert "Traceback" not in result.stderr
+
+
+def test_class_three_rejects_equal_frequencies(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "3", "-n", "3", "-c", "3"])
+
+    assert result.returncode != 0
+    assert "differ" in result.stdout.lower()
+    assert "Traceback" not in result.stderr
+
+
+def test_class_three_generates_a_valid_dome(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "3", "-n", "2", "-c", "3"])
+
+    assert result.returncode == 0
+    assert out.with_suffix(".dxf").exists()
+    assert out.with_suffix(".wrl").exists()
+
+    report = json.loads(result.stdout)
+    assert "pyDome report" in report
+
+
+def test_default_run_reports_total_strut_length_without_cost(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "1"])
+
+    assert result.returncode == 0
+    report = json.loads(result.stdout)["pyDome report"]
+    assert "Total strut length" in report["Total material"]
+    assert "Total estimated material cost" not in report["Total material"]
+
+
+def test_material_cost_flag_adds_estimated_cost(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "1", "-m", "2.5"])
+
+    assert result.returncode == 0
+    report = json.loads(result.stdout)["pyDome report"]
+    total_material = report["Total material"]
+
+    assert total_material["Total estimated material cost"] == pytest.approx(
+        total_material["Total strut length"] * 2.5, abs=0.01
+    )
+
+
+def test_nonpositive_material_cost_reports_clear_error(tmp_path):
+    out = tmp_path / "dome"
+    for cost in ["0", "-5"]:
+        result = run_cli(["-o", str(out), "-f", "1", "-m", cost])
+        assert result.returncode != 0
+        assert "greater than zero" in result.stdout.lower()
+        assert "Traceback" not in result.stderr
+
+
+def test_hub_templates_flag_writes_dxf_files_and_report_section(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "4", "-H"])
+
+    assert result.returncode == 0
+    report = json.loads(result.stdout)["pyDome report"]
+    assert "Hub Connector Templates" in report
+
+    rows = report["Hub Connector Templates"]
+    assert len(rows) > 0
+    for row in rows:
+        template_file = Path(row["template_file"])
+        assert template_file.exists()
+        assert template_file.name.startswith("dome_hubtype")
+
+
+def test_no_hub_templates_flag_means_no_template_files_or_section(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "4"])
+
+    assert result.returncode == 0
+    report = json.loads(result.stdout)["pyDome report"]
+    assert "Hub Connector Templates" not in report
+    assert list(tmp_path.glob("dome_hubtype*.dxf")) == []
+
+
+def test_default_elongation_produces_identical_output_to_explicit_one(tmp_path):
+    out1 = tmp_path / "default"
+    out2 = tmp_path / "explicit"
+
+    result1 = run_cli(["-o", str(out1), "-f", "4"])
+    result2 = run_cli(["-o", str(out2), "-f", "4", "-e", "1.0"])
+
+    assert result1.returncode == 0
+    assert result2.returncode == 0
+    assert result1.stdout == result2.stdout
+    assert out1.with_suffix(".dxf").read_text() == out2.with_suffix(".dxf").read_text()
+
+
+def test_elongation_flag_produces_a_taller_dome(tmp_path):
+    out_normal = tmp_path / "normal"
+    out_tall = tmp_path / "tall"
+
+    run_cli(["-o", str(out_normal), "-f", "4", "-P"])
+    run_cli(["-o", str(out_tall), "-f", "4", "-e", "1.8", "-P"])
+
+    normal_png = out_normal.with_suffix(".png").read_bytes()
+    tall_png = out_tall.with_suffix(".png").read_bytes()
+    # not a rigorous geometric check (that's covered elsewhere), just
+    # confirms elongation actually changed the rendered output
+    assert normal_png != tall_png
+
+
+def test_elongated_and_truncated_dome_generates_valid_hub_templates(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "4", "-e", "1.8", "-t", "0.499999", "-H"])
+
+    assert result.returncode == 0
+    report = json.loads(result.stdout)["pyDome report"]
+    rows = report["Hub Connector Templates"]
+    assert len(rows) > 0
+    for row in rows:
+        assert Path(row["template_file"]).exists()
+
+
+def test_nonpositive_elongation_reports_clear_error(tmp_path):
+    out = tmp_path / "dome"
+    for factor in ["0", "-2"]:
+        result = run_cli(["-o", str(out), "-f", "1", "-e", factor])
+        assert result.returncode != 0
+        assert "greater than zero" in result.stdout.lower()
+        assert "Traceback" not in result.stderr

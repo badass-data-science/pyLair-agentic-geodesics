@@ -15,6 +15,8 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+import numpy as np
+
 
 def OutputDXF(V, C, the_filename):
   outfile = open(the_filename, 'w')
@@ -77,6 +79,102 @@ def OutputWireframeVRML(V, C, the_filename):
   outfile.write("               ]")
   outfile.write("          }" )
   outfile.write("     }" )
+  outfile.close()
+
+def OutputSTL(V, F, the_filename):
+  outfile = open(the_filename, 'w')
+  outfile.write('solid pydome\n')
+
+  for f in F:
+    p0 = np.asarray(V[f[0]])
+    p1 = np.asarray(V[f[1]])
+    p2 = np.asarray(V[f[2]])
+
+    normal = np.cross(p1 - p0, p2 - p0)
+    norm = np.linalg.norm(normal)
+    if norm != 0:
+      normal = normal / norm
+
+    outfile.write('facet normal %s %s %s\n' % (normal[0], normal[1], normal[2]))
+    outfile.write('outer loop\n')
+    for p in (p0, p1, p2):
+      outfile.write('vertex %s %s %s\n' % (p[0], p[1], p[2]))
+    outfile.write('endloop\n')
+    outfile.write('endfacet\n')
+
+  outfile.write('endsolid pydome\n')
+  outfile.close()
+
+def OutputOBJ(V, F, the_filename):
+  outfile = open(the_filename, 'w')
+  outfile.write('# pyDome OBJ export\n')
+
+  for v in V:
+    outfile.write('v %s %s %s\n' % (v[0], v[1], v[2]))
+
+  # OBJ vertex references are 1-indexed per the file format spec, unlike
+  # pyDome's own internal 0-indexed convention
+  for f in F:
+    outfile.write('f %d %d %d\n' % (f[0] + 1, f[1] + 1, f[2] + 1))
+
+  outfile.close()
+
+def OutputHubConnectorTemplateDXF(spoke_angles, tangential_angles, the_filename, spoke_length=1.0):
+  # A flat 2D cutting template for one hub connector plate: one line
+  # per strut, radiating from the hub center at that strut's spoke
+  # angle (its position around the hub, projected onto the hub's
+  # tangent plane), labeled with that strut's tangential angle -- the
+  # out-of-plane deflection a flat plate can't show geometrically, so
+  # it's called out as text for drilling/beveling instead.
+  outfile = open(the_filename, 'w')
+  outfile.write('0\n')
+  outfile.write('SECTION\n')
+  outfile.write('2\n')
+  outfile.write('ENTITIES\n')
+
+  text_height = spoke_length * 0.08
+
+  for spoke in sorted(spoke_angles.keys()):
+    angle_rad = spoke_angles[spoke] * np.pi / 180.
+    x = spoke_length * np.cos(angle_rad)
+    y = spoke_length * np.sin(angle_rad)
+
+    outfile.write('0\n')
+    outfile.write('LINE\n')
+    outfile.write('8\n')
+    outfile.write('1\n')
+    outfile.write('10\n')
+    outfile.write('0.0\n')
+    outfile.write('20\n')
+    outfile.write('0.0\n')
+    outfile.write('30\n')
+    outfile.write('0.0\n')
+    outfile.write('11\n')
+    outfile.write(str(x) + '\n')
+    outfile.write('21\n')
+    outfile.write(str(y) + '\n')
+    outfile.write('31\n')
+    outfile.write('0.0\n')
+
+    outfile.write('0\n')
+    outfile.write('TEXT\n')
+    outfile.write('8\n')
+    outfile.write('1\n')
+    outfile.write('10\n')
+    outfile.write(str(x * 1.05) + '\n')
+    outfile.write('20\n')
+    outfile.write(str(y * 1.05) + '\n')
+    outfile.write('30\n')
+    outfile.write('0.0\n')
+    outfile.write('40\n')
+    outfile.write(str(text_height) + '\n')
+    outfile.write('1\n')
+    outfile.write('%.2f deg\n' % tangential_angles[spoke])
+
+  outfile.write('0\n')
+  outfile.write('ENDSEC\n')
+  outfile.write('0\n')
+  outfile.write('EOF\n')
   outfile.close()
 
 def OutputFaceVRML(V, F, the_filename):

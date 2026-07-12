@@ -93,3 +93,63 @@ class ClassOneMethodOneSymmetryTriangle(SymmetryTriangle):
 
     super(ClassOneMethodOneSymmetryTriangle, self).__init__(f)
 
+
+class ClassTwoMethodOneSymmetryTriangle(SymmetryTriangle):
+  # Class II ("Triacon") subdivision. polyhedral.build_lcd_faces splits
+  # each polyhedron face into six 30-60-90 LCD (lowest common
+  # denominator) right triangles around its centroid; this class
+  # produces the flat, frequency-m grid for ONE such LCD triangle,
+  # which GeodesicSphere then replicates across all of them (one per
+  # LCD face rather than one per original polyhedron face).
+  #
+  # Local corners, matching build_lcd_faces's (vertex, midpoint,
+  # centroid) argument order: A = the original face vertex, M = the
+  # adjacent edge's midpoint (the right angle -- a triangle's median
+  # is also its altitude), G = the face centroid. Leg A-M has length
+  # CL/2 (half the original edge); leg M-G has length CL*sqrt(3)/6.
+  #
+  # m here is half the requested dome frequency: Class II is only
+  # defined at even frequencies, since each original edge is already
+  # implicitly split once (at its midpoint) by the LCD construction
+  # itself, before this grid subdivides each LCD triangle m further.
+  def __init__(self, m, polyhedral):
+    CL = polyhedral.ppt_side_length
+    p = CL / np.float64(2.)
+    q = CL * np.sqrt(np.float64(3.)) / np.float64(6.)
+
+    # Local (2D) positions of the LCD triangle's own corners: A at the
+    # local origin, M along the local x-axis (a real LCD-triangle edge,
+    # length p), G positioned via the actual triangle geometry (leg
+    # length q, right angle at M).
+    A_local = np.array([0., 0.])
+    M_local = np.array([p, 0.])
+    G_local = np.array([p, q])
+    origin_local = (A_local + M_local + G_local) / np.float64(3.)
+
+    # GeodesicSphere places each grid point via
+    # origin_3D + a*x_dir + b*y_dir, where x_dir=unit(v2-v1) and
+    # y_dir=unit(v3-origin) come from Face.transfer_matrix. Unlike
+    # Class I's equilateral triangle (where vertex-to-centroid happens
+    # to be perpendicular to the opposite edge, since median=altitude
+    # there), this LCD triangle's x_dir/y_dir are NOT orthogonal, so
+    # solve for each point's (a, b) in that actual oblique basis
+    # rather than assuming an orthonormal one.
+    x_dir_local = (M_local - A_local)
+    x_dir_local = x_dir_local / np.linalg.norm(x_dir_local)
+    y_dir_local = (G_local - origin_local)
+    y_dir_local = y_dir_local / np.linalg.norm(y_dir_local)
+    basis = np.transpose(np.array([x_dir_local, y_dir_local]))
+
+    self.row_list = []
+    self.vertices = []
+    for r in range(0, m + 1):
+      col_list = []
+      for c in range(0, m - r + 1):
+        target_local = A_local + (np.float64(r) / m) * (G_local - A_local) + (np.float64(c) / m) * (M_local - A_local)
+        a, b = np.linalg.solve(basis, target_local - origin_local)
+        col_list.append(Vertex(a, b, 0.))
+        self.vertices.append(Vertex(a, b, 0.))
+      self.row_list.append(col_list)
+
+    super(ClassTwoMethodOneSymmetryTriangle, self).__init__(m)
+

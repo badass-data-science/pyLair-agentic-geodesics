@@ -3,7 +3,7 @@ pyDome
 
 A geodesic dome calculator written in Python.
 
-pyDome calculates vertices and chords of Class One geodesic domes of arbitrary size. Domes created by pyDome can be truncated to facilitate structure design. The program produces DXF for easy import into CAD programs, and VRML output for easy display, plus a Bill of Materials report (chord lengths/counts and hub angles) for construction.
+pyDome calculates vertices and chords of Class I ("Alternate"), Class II ("Triacon"), and Class III ("Skew"/chiral) geodesic domes of arbitrary size. Domes created by pyDome can be truncated to facilitate structure design. The program produces DXF for easy import into CAD programs, and VRML output for easy display, plus a Bill of Materials report (chord lengths/counts, hub angles, and total strut length/cost) for construction.
 
 For the geometric method (icosahedron/octahedron subdivision, projection, truncation) and reference images, see [METHOD.md](METHOD.md).
 
@@ -15,7 +15,7 @@ Requires Python 3.9+.
 pip install -e .
 ```
 
-This installs `numpy`, `pandas`, and `scipy` as dependencies, and provides a `pydome` console command. For running the test suite, install the `test` extra instead:
+This installs `numpy`, `pandas`, `scipy`, and `matplotlib` as dependencies, and provides a `pydome` console command. For running the test suite, install the `test` extra instead:
 
 ```
 pip install -e ".[test]"
@@ -38,10 +38,18 @@ produces `output/mydome.dxf`, `output/mydome.wrl`, and prints a JSON Bill of Mat
 | `-r` | `--radius` | Dome radius. Must be > 0. | `1.0` |
 | `-f` | `--frequency` | Subdivision frequency. Must be a positive integer. | `4` |
 | `-p` | `--polyhedron` | Base polyhedron: `icosahedron` or `octahedron`. | `icosahedron` |
+| `-c` | `--class` | Subdivision class: `1` (Alternate), `2` (Triacon), or `3` (Skew/chiral). Class 2 requires an even `-f`. Class 3 requires `-n`. | `1` |
+| `-n` | `--n-frequency` | Second frequency parameter for `-c 3`. `-f`/`-n` play the roles of `m`/`n` in the `(m,n)` Goldberg-Coxeter construction; must be a positive integer different from `-f`. Ignored for classes 1 and 2. | — |
 | `-t` | `--truncation` | Cutoff ratio (0-1) from the bottom of the sphere; passing this enables truncation. Incompatible with `-F`. | off (full sphere) |
 | `-v` | `--vthreshold` | Distance below which two computed vertices are treated as the same point. | `0.0000001` |
 | `-b` | `--bom-rounding` | Decimal places to display, and merge granularity, for the Bill of Materials (see caveats below). | `9` |
+| `-m` | `--material-cost` | Price per unit length of strut material. If given, adds an estimated total material cost to the report alongside the total strut length (which is always reported). Must be > 0. | off (length only) |
 | `-F` | `--face` | Emit face data (not wireframe) in the WRL output; skips DXF entirely. Incompatible with `-t`. | off |
+| `-P` | `--preview` | Also save a quick 3D wireframe preview image (`<output>.png`) for a fast sanity check without opening a CAD/VRML viewer. | off |
+| `-s` | `--stl` | Also save an STL file (`<output>.stl`) of the dome's surface triangles, e.g. for 3D-printing a scale model. Requires face data; incompatible with `-t`. | off |
+| `-O` | `--obj` | Also save an OBJ file (`<output>.obj`) of the dome's surface triangles. Requires face data; incompatible with `-t`. | off |
+| `-H` | `--hub-templates` | Also save one 2D DXF cutting template per unique hub connector shape (`<output>_hubtype1.dxf`, `<output>_hubtype2.dxf`, ...), for laser-cutting/CNC connector plates. | off |
+| `-e` | `--elongation` | Stretches the dome along its vertical (Z) axis by this factor before truncation, turning the sphere into an axis-aligned ellipsoid (values > 1 raise ceiling height, values < 1 widen the footprint). Must be > 0. | `1.0` (no elongation) |
 | `-h` | `--help` | Show usage and exit. | — |
 
 ## Caveats and known limitations
@@ -56,11 +64,19 @@ A few behaviors are worth understanding before relying on the output for a real 
 
 - **`-v/--vthreshold` controls vertex deduplication**, i.e. how close two computed vertices must be to be treated as the same point where polyhedron faces meet. The default (`1e-7`) is tuned for the default unit radius; if you use a very large or very small `-r`, you may need to adjust `-v` proportionally.
 
-- **`-F/--face` (face output) cannot be combined with `-t/--truncation`.** Use one or the other.
+- **`-F/--face`, `-s/--stl`, and `-O/--obj` all require face data, and none of them can be combined with `-t/--truncation`.** `truncate()` only recomputes vertices and chords, not the face list, so any face-based output after truncation would be built from stale, mismatched geometry — the CLI rejects the combination outright rather than silently producing a wrong mesh.
 
-- **Chord/vertex counts grow with the square of frequency** (a Class One subdivision of an icosahedron produces `20*f^2` faces). Vertex deduplication uses a KD-tree and scales well even at high frequency, but very high frequencies will still produce large DXF/VRML files and correspondingly large Bill of Materials reports.
+- **`-c 2` (Class II / Triacon) requires an even `-f/--frequency`.** Each polyhedron face is first split into 6 LCD (lowest common denominator) sub-triangles around its centroid before the requested frequency subdivides each of those further, so the frequency is implicitly divided by 2 internally; an odd frequency has no valid Class II construction and is rejected with a clear error.
+
+- **Chord/vertex counts grow with the square of frequency.** A Class I subdivision of an icosahedron produces `20*f^2` faces; Class II produces `120*(f/2)^2` faces (more, at a given frequency, since Class II is already 6-way subdivided before the frequency-level grid is applied); Class III produces `20*T` faces, where `T = m^2 + mn + n^2` (`m`/`n` from `-f`/`-n`). Vertex deduplication uses a KD-tree and scales well even at high frequency, but very high frequencies will still produce large DXF/VRML files and correspondingly large Bill of Materials reports.
+
+- **`-c 3` (Class III / Skew) requires `-n/--n-frequency`, a positive integer different from `-f/--frequency`.** `-f`/`-n` play the roles of `m`/`n` in the `(m,n)` Goldberg-Coxeter construction (equal values would be Class II — use `-c 2` instead). `(m,n)` and `(n,m)` are mirror-image (chiral) domes of the same size and strut-length total, but not the same specific strut pattern — swap `-f`/`-n` to get the other one. Unlike Class I/II, a chiral lattice's near-edge points don't land at coincident 3D positions when each polyhedron face computes its own grid independently, so pyDome stitches adjacent faces together combinatorially (matching each face's grid points by an integer index rather than 3D proximity) instead of relying solely on `-v/--vthreshold`. This construction was cross-checked bit-for-bit against the independent [`antitile`](https://github.com/brsr/antitile) library (used only as a development-time correctness oracle, not a runtime dependency) across several `(m,n)` pairs on both base polyhedra.
 
 - **Small-length chords in the output can be artifacts of the geometry pipeline** rather than intentional struts — the tool already surfaces this as a warning in the Bill of Materials report. Check any unexpectedly short chord in a DXF viewer before building.
+
+- **`-H/--hub-templates` clusters hubs by a rotation-invariant "shape" signature** (valence, plus the cyclic pattern of angular gaps and tangential angles going around the hub), not by symmetry group membership — two hubs get the same template if and only if one is a rotation of the other, regardless of *why*. The clustering tolerance (3 decimal places on angle values) was tuned empirically: the geometry pipeline's floating-point noise was observed to reach the 6th decimal place on otherwise-identical hubs, and a precision of 6 failed to merge them, silently doubling the reported template count. If you're working at a much higher frequency than has been tested (up to 16) and the template count looks suspiciously large for the dome's symmetry, that noise floor is the first thing to check.
+
+- **`-e/--elongation` is applied before truncation**, so a `-t` ratio always describes where to cut the dome's *final* (possibly-elongated) height range, not the original sphere's. All angle-based output correctly accounts for the resulting ellipsoid's true surface normal (the gradient of the ellipsoid equation) rather than naively treating each vertex's position vector as the normal — that naive approximation is only exact for a true sphere (`-e 1.0`), and silently gives wrong tangential/spoke angles for any other elongation factor if you're extending this code, so don't reintroduce it.
 
 ## Project structure
 
@@ -71,12 +87,15 @@ A few behaviors are worth understanding before relying on the output for a real 
 | `pydome/__init__.py` | Package marker; intentionally empty besides the license header. |
 | `pydome/__main__.py` | Enables `python -m pydome`; delegates to `cli.main()`. |
 | `pydome/cli.py` | CLI entry point (`pydome` console command → `cli:main`): argument parsing/validation and orchestration. |
-| `pydome/polyhedral.py` | The base polyhedra (`Icosahedron`, `Octahedron`) and the `Vertex`/`Chord`/`Face` primitives. |
-| `pydome/symmetry_triangle.py` | Class One subdivision of a single polyhedron face into a triangular vertex/chord/face grid. |
-| `pydome/geodesic_sphere.py` | Replicates the symmetry triangle across every polyhedron face, deduplicates the vertices shared along adjacent-face edges (via a KD-tree), and projects the result onto a sphere of the requested radius. |
+| `pydome/polyhedral.py` | The base polyhedra (`Icosahedron`, `Octahedron`), the `Vertex`/`Chord`/`Face` primitives, `build_lcd_faces` (splits each face into 6 sub-triangles for Class II), and `compute_face_adjacency` (which face/edge borders which, for Class III's cross-face stitching). |
+| `pydome/symmetry_triangle.py` | Subdivides a single polyhedron face (Class I) or LCD sub-triangle (Class II) into a triangular vertex/chord/face grid. |
+| `pydome/class_three.py` | Builds the Class III (chiral `(m,n)`) grid for a single polyhedron face, plus the combinatorial cross-face vertex-matching data (`cross_face_matches`, `local_priority`) `GeodesicSphere` needs to stitch adjacent faces together correctly. |
+| `pydome/geodesic_sphere.py` | Replicates the symmetry triangle across every polyhedron face, deduplicates the vertices shared along adjacent-face edges (via a KD-tree, plus Class III's combinatorial matches when supplied), and projects the result onto a sphere of the requested radius. |
 | `pydome/truncation.py` | Cuts a geodesic sphere at a horizontal plane to produce a dome. |
-| `pydome/output.py` | DXF and VRML (wireframe or face) file writers. |
-| `pydome/bill_of_materials.py` | Clusters chords into strut-length groups, computes hub tangent-plane and spoke angles, and prints the report as JSON. |
+| `pydome/elongation.py` | Scales the Z axis (`-e/--elongation`) to turn the sphere into an axis-aligned ellipsoid, for ceiling-height/footprint tradeoffs. |
+| `pydome/output.py` | DXF, VRML (wireframe or face), STL, OBJ, and hub-connector-template file writers. |
+| `pydome/preview.py` | Renders a quick 3D wireframe preview PNG (`-P/--preview`), with equal axis scaling so the plot itself never distorts the dome's proportions. |
+| `pydome/bill_of_materials.py` | Clusters chords into strut-length groups, computes hub tangent-plane and spoke angles (using the true ellipsoid surface normal when elongated), clusters hubs into connector-plate "types" (`-H/--hub-templates`), and prints the report as JSON. |
 | `tests/` | pytest suite: unit tests per module (importing from `pydome.*`) plus subprocess-level CLI integration tests (invoked via `python -m pydome`). |
 | `METHOD.md` | The geometric method walkthrough with reference images (icosahedron subdivision, projection, truncation). |
 | `images/` | Diagrams referenced by `METHOD.md`. |
@@ -90,9 +109,18 @@ pip install -e ".[test]"
 pytest
 ```
 
-The test suite includes golden-value checks against known geodesic-dome vertex/edge/face-count formulas (e.g. an icosahedron-derived sphere at frequency `f` has `10f²+2` vertices, `30f²` edges, `20f²` faces), so a correctness regression in the geometry pipeline should show up as a failing count rather than just an exception.
+The test suite includes golden-value checks against known geodesic-dome vertex/edge/face-count formulas (e.g. a Class I icosahedron-derived sphere at frequency `f` has `10f²+2` vertices, `30f²` edges, `20f²` faces; Class II has `60m²+2` vertices, `180m²` edges, `120m²` faces, where `m=f/2`; Class III has `10T+2` vertices, `30T` edges, `20T` faces, where `T=m²+mn+n²`), so a correctness regression in the geometry pipeline should show up as a failing count rather than just an exception. The Class II formulas were verified empirically (via Euler's formula `V-E+F=2` and `2E=3F`, which must hold for any closed triangulated mesh) rather than taken purely from a derivation — an earlier version of `ClassTwoMethodOneSymmetryTriangle` had a real bug (assumed an orthogonal local coordinate basis that only happens to hold for Class I's equilateral triangle) that these identities caught immediately, before the golden-value formulas were even known.
+
+Class III required more than Euler's formula to get right: a first implementation (per-face-independent grid, merged only by 3D proximity like Class I/II) satisfied Euler's formula and even the golden-value counts while still being *wrong* — it left all 30 of the icosahedron's original edges as long, unsubdivided chords, because a chiral (`m != n`) lattice has no reflection symmetry, so a point near a face's edge generally doesn't land at the same 3D position when computed independently from the neighboring face's own basis. The fix (`pydome/class_three.py`) stitches adjacent faces together combinatorially — matching grid points by an integer index derived from the lattice's own structure, not 3D coordinates — and was verified against the independent [`antitile`](https://github.com/brsr/antitile) library (a development-time-only oracle, not a runtime dependency): the full sorted, mean-normalized edge-length distribution matched antitile's output to within `1e-15` for several `(m,n)` pairs on both base polyhedra.
 
 This codebase was ported from Python 2 to Python 3, and most of the Python 2-isms found along the way (bare `except:` clauses, wildcard imports, a private/deprecated `numpy.linalg.linalg`/`numpy.matrix` API, 1-indexed vertex numbering) have been cleaned up. If you spot code that still looks unusual for modern Python — e.g. the manual dict-based grouping in `pydome/bill_of_materials.py` where a `collections.defaultdict` would read more clearly — it's likely another such holdover rather than an intentional design choice. Feel free to modernize it if you're in the area, just add/update tests alongside.
+
+## References
+
+Material consulted while building the Class III (Skew/chiral) subdivision:
+
+- Šiber, A. (2007). ["Icosadeltahedral geometry of fullerenes, viruses and geodesic domes"](https://arxiv.org/abs/0711.3527). arXiv:0711.3527. Source for the `(m,n)` Caspar-Klug/Goldberg-Coxeter framework and the `T = m² + mn + n²` triangulation-number formula that Class I, II, and III all turn out to be special cases of.
+- [`antitile`](https://github.com/brsr/antitile) (brsr). An open-source Python library implementing the general Goldberg-Coxeter construction. Used only as a development-time correctness oracle (installed in a scratch environment, never a pyDome runtime dependency) to verify `pydome/class_three.py`'s output bit-for-bit; reading its `breakdown.py`/`gcopoly.py` source was also what led to correctly diagnosing the cross-face stitching bug described above.
 
 ## License
 

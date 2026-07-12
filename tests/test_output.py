@@ -1,6 +1,13 @@
 import numpy as np
 
-from pydome.output import OutputDXF, OutputWireframeVRML, OutputFaceVRML
+from pydome.output import (
+    OutputDXF,
+    OutputWireframeVRML,
+    OutputFaceVRML,
+    OutputSTL,
+    OutputOBJ,
+    OutputHubConnectorTemplateDXF,
+)
 
 
 def make_triangle():
@@ -45,3 +52,75 @@ def test_output_face_vrml_contains_face_indices(tmp_path):
     assert "IndexedFaceSet" in content
     for f in F:
         assert f"{f[0]}, {f[1]}, {f[2]}, -1," in content
+
+
+def test_output_stl_writes_one_facet_per_face_with_correct_normal(tmp_path):
+    V, _, F = make_triangle()
+    out_file = tmp_path / "test.stl"
+    OutputSTL(V, F, str(out_file))
+
+    content = out_file.read_text()
+    assert content.startswith("solid pydome\n")
+    assert content.rstrip().endswith("endsolid pydome")
+    assert content.count("facet normal") == len(F)
+    assert content.count("vertex") == 3 * len(F)
+
+    # the sample triangle lies flat in the XY plane with a
+    # counterclockwise winding, so its normal should point along +Z
+    assert "facet normal 0.0 0.0 1.0" in content
+
+
+def test_output_obj_writes_1_indexed_face_references(tmp_path):
+    V, _, F = make_triangle()
+    out_file = tmp_path / "test.obj"
+    OutputOBJ(V, F, str(out_file))
+
+    content = out_file.read_text()
+    vertex_lines = [line for line in content.splitlines() if line.startswith("v ")]
+    face_lines = [line for line in content.splitlines() if line.startswith("f ")]
+
+    assert len(vertex_lines) == len(V)
+    assert len(face_lines) == len(F)
+    # OBJ indices are 1-based, so face [0, 1, 2] must be written as "1 2 3"
+    assert face_lines[0] == "f 1 2 3"
+
+
+def test_output_hub_connector_template_dxf_writes_one_line_and_label_per_spoke(tmp_path):
+    spoke_angles = {1: 0., 2: 90., 3: 180., 4: 270.}
+    tangential_angles = {1: 5.0, 2: 6.0, 3: 7.0, 4: 8.0}
+    out_file = tmp_path / "hub.dxf"
+
+    OutputHubConnectorTemplateDXF(spoke_angles, tangential_angles, str(out_file), spoke_length=2.0)
+
+    content = out_file.read_text()
+    assert content.startswith("0\nSECTION\n2\nENTITIES\n")
+    assert content.rstrip().endswith("0\nENDSEC\n0\nEOF")
+    assert content.count("LINE\n") == len(spoke_angles)
+    assert content.count("TEXT\n") == len(spoke_angles)
+
+    for tangential in tangential_angles.values():
+        assert ("%.2f deg" % tangential) in content
+
+
+def test_output_hub_connector_template_spoke_endpoints_match_the_given_angles(tmp_path):
+    spoke_angles = {1: 0., 2: 90.}
+    tangential_angles = {1: 0., 2: 0.}
+    out_file = tmp_path / "hub.dxf"
+
+    OutputHubConnectorTemplateDXF(spoke_angles, tangential_angles, str(out_file), spoke_length=1.0)
+
+    content = out_file.read_text()
+    # a LINE entity's endpoint is given by group codes 11/21 (x/y);
+    # spoke 1 (0 degrees) should end near x=1,y=0; spoke 2 (90 degrees)
+    # should end near x=0,y=1
+    lines = content.splitlines()
+    endpoints = []
+    for i, line in enumerate(lines):
+        if line == "LINE":
+            x = float(lines[i + lines[i:].index("11") + 1])
+            y = float(lines[i + lines[i:].index("21") + 1])
+            endpoints.append((x, y))
+
+    assert len(endpoints) == 2
+    assert any(abs(x - 1.0) < 1e-9 and abs(y) < 1e-9 for x, y in endpoints)
+    assert any(abs(x) < 1e-9 and abs(y - 1.0) < 1e-9 for x, y in endpoints)

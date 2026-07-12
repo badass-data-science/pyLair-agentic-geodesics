@@ -51,6 +51,63 @@ class Polyhedron(object):
   def __init__(self):
     self.ppt_side_length = self.vertices[0].distance_to(self.vertices[1])
 
+
+def build_lcd_faces(polyhedral):
+  # Class II ("Triacon") subdivision splits each polyhedron face into
+  # six LCD (lowest common denominator) right triangles arranged
+  # around its centroid: for each of the face's 3 vertices, one LCD
+  # triangle per adjacent edge, bounded by that vertex, the midpoint
+  # of the adjacent edge (a 90-degree corner, since a triangle's
+  # median is also its altitude), and the face's own centroid. Reuses
+  # Face unchanged, since Face's transfer-matrix construction is
+  # generic to any 3 given vertices.
+  lcd_faces = []
+  for face in polyhedral.faces:
+    v1, v2, v3 = face.v1, face.v2, face.v3
+    centroid = Vertex(*face.origin)
+    m12 = Vertex(*((v1.xyz + v2.xyz) / np.float64(2.)))
+    m23 = Vertex(*((v2.xyz + v3.xyz) / np.float64(2.)))
+    m31 = Vertex(*((v3.xyz + v1.xyz) / np.float64(2.)))
+    lcd_faces.extend([
+      Face(v1, m12, centroid),
+      Face(v1, m31, centroid),
+      Face(v2, m12, centroid),
+      Face(v2, m23, centroid),
+      Face(v3, m23, centroid),
+      Face(v3, m31, centroid),
+    ])
+  return lcd_faces
+
+def compute_face_adjacency(faces):
+  # For each face and each of its 3 local edges (0: v1-v2, 1: v2-v3,
+  # 2: v3-v1), find the neighboring face sharing that physical edge and
+  # which of ITS local edges it is. Needed by Class III to stitch
+  # adjacent faces' independently-built chiral lattices together by
+  # combinatorial index matching (see class_three.py): unlike Class I/
+  # II, a chiral (m != n) lattice's near-edge points don't generally
+  # land at coincident 3D positions when each face computes them from
+  # its own local basis, so 3D-proximity matching alone (as used
+  # elsewhere) isn't enough.
+  #
+  # Returns a list (indexed by face index) of 3-element lists (indexed
+  # by local edge index), each holding (neighbor_face_index,
+  # neighbor_local_edge_index).
+  edge_owners = {}
+  adjacency = [[None, None, None] for _ in faces]
+  for fi, face in enumerate(faces):
+    corners = [face.v1, face.v2, face.v3]
+    for k in range(3):
+      a, b = corners[k], corners[(k + 1) % 3]
+      key = frozenset((id(a), id(b)))
+      if key in edge_owners:
+        fj, kj = edge_owners.pop(key)
+        adjacency[fi][k] = (fj, kj)
+        adjacency[fj][kj] = (fi, k)
+      else:
+        edge_owners[key] = (fi, k)
+  return adjacency
+
+
 class Octahedron(Polyhedron):
   def __init__(self):
 

@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from scipy.spatial import cKDTree
 
 from pydome.polyhedral import Octahedron, Icosahedron
 from pydome.symmetry_triangle import ClassOneMethodOneSymmetryTriangle
@@ -65,6 +66,21 @@ def test_no_duplicate_chords():
         key = tuple(sorted(c))
         assert key not in seen
         seen.add(key)
+
+
+@pytest.mark.parametrize("polyhedron_cls,frequency", [(Icosahedron, 4), (Octahedron, 4)])
+def test_no_two_final_vertices_occupy_the_same_location(polyhedron_cls, frequency):
+    # Adjacent faces each independently compute the vertices along their
+    # shared seam, so a naive assembly would double them up; GeodesicSphere
+    # is supposed to collapse every such pair into one vertex before this
+    # point. If any survived, two entries in sphere_vertices would sit
+    # closer together than the merge threshold that was supposed to catch
+    # them.
+    vpt = 1e-7
+    sphere = build_sphere(polyhedron_cls, frequency, vpt=vpt)
+    points = np.array(sphere.sphere_vertices)
+    pairs = cKDTree(points).query_pairs(vpt)
+    assert pairs == set()
 
 
 def test_icosahedron_frequency_one_matches_original_icosahedron_edge_length():

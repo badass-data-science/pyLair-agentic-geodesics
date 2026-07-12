@@ -22,16 +22,20 @@
 import numpy as np
 import getopt
 import sys
+from types import SimpleNamespace
 
 #
 # load pyDome modules
 #
-from .polyhedral import Icosahedron, Octahedron
-from .symmetry_triangle import ClassOneMethodOneSymmetryTriangle
+from .polyhedral import Icosahedron, Octahedron, build_lcd_faces
+from .symmetry_triangle import ClassOneMethodOneSymmetryTriangle, ClassTwoMethodOneSymmetryTriangle
+from .class_three import ClassThreeSymmetryTriangle
 from .geodesic_sphere import GeodesicSphere
-from .output import OutputDXF, OutputWireframeVRML, OutputFaceVRML
+from .output import OutputDXF, OutputWireframeVRML, OutputFaceVRML, OutputSTL, OutputOBJ
 from .truncation import truncate
 from .bill_of_materials import get_bill_of_materials
+from .preview import save_preview
+from .elongation import elongate
 
 
 def display_help():
@@ -55,7 +59,23 @@ Options:
 
 \t-p, --polyhedron\tEither "octahedron" or "icosahedron". Default icosahedron.
 
+\t-c, --class\tSubdivision class: 1 (Alternate), 2 (Triacon), or 3 (Skew/chiral). Class 2 requires an even --frequency, since each original edge is already implicitly split once by its construction. Class 3 requires -n/--n-frequency (a second frequency parameter distinct from --frequency); --frequency and --n-frequency play the roles of m and n in the (m,n) Goldberg-Coxeter construction, with triangle count T = m^2 + mn + n^2. (m,n) and (n,m) are mirror-image (chiral) domes of the same size -- swap --frequency and --n-frequency to get the other one. Default 1.
+
+\t-n, --n-frequency\tSecond frequency parameter for -c 3 (Class III / Skew). Must be a positive integer different from --frequency. Ignored for classes 1 and 2.
+
 \t-F, --face\tFlag specifying whether to generate face output in WRL file. Cancels DXF file output and cannot be used with truncation.
+
+\t-P, --preview\tAlso save a quick 3D wireframe preview image ("<output>.png") alongside the usual output files, so you can sanity-check the dome without opening a CAD or VRML viewer.
+
+\t-s, --stl\tAlso save an STL file ("<output>.stl") of the dome's surface triangles, e.g. for 3D-printing a scale model. Requires face data, so cannot be used with truncation.
+
+\t-O, --obj\tAlso save an OBJ file ("<output>.obj") of the dome's surface triangles. Requires face data, so cannot be used with truncation.
+
+\t-m, --material-cost\tPrice per unit length of strut material. If given, adds an estimated total material cost to the Bill of Materials, in addition to the total strut length (which is always reported). Must be a positive floating point number.
+
+\t-H, --hub-templates\tAlso save one 2D DXF cutting template per unique hub connector shape ("<output>_hubtype1.dxf", "<output>_hubtype2.dxf", ...), for laser-cutting/CNC connector plates. Each template shows one radiating line per strut at its spoke angle, labeled with that strut's tangential (out-of-plane) deflection angle.
+
+\t-e, --elongation\tStretches the dome along its vertical (Z) axis by this factor before truncation, turning the sphere into an axis-aligned ellipsoid -- values > 1 raise the ceiling height, values < 1 flatten it for a wider footprint. All angle-based output (Bill of Materials angles, hub connector templates) correctly accounts for the resulting ellipsoid's true surface normal, not just the sphere approximation. Must be a positive floating point number. Default 1.0 (no elongation).
 """
   print(help_text)
 
@@ -66,13 +86,21 @@ def main():
   #
   radius = np.float64(1.)
   frequency = 4
+  dome_class = 1
   polyhedral = Icosahedron()
   vertex_equal_threshold = 0.0000001
   truncation_amount = 0.499999
   run_truncate = False
   bom_rounding_precision = 9
   face_output = False
+  preview_output = False
+  stl_output = False
+  obj_output = False
+  cost_per_unit_length = None
+  hub_templates_output = False
+  elongation_factor = 1.0
   output_path = None
+  n_frequency = None
 
   #
   # no input arguments
@@ -85,7 +113,7 @@ def main():
   # parse command line
   #
   try:
-    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:Fho:', ['truncation=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'face', 'output='])
+    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:c:m:e:n:FPsOHho:', ['truncation=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'class=', 'material-cost=', 'elongation=', 'n-frequency=', 'face', 'preview', 'stl', 'obj', 'hub-templates', 'output='])
   except getopt.error as msg:
     print(str(msg) + ' (for help use --help)')
     sys.exit(-1)
@@ -95,17 +123,61 @@ def main():
     if o in ('-p', '--polyhedron'):
       if a == 'octahedron':
         polyhedral = Octahedron()
+    if o in ('-c', '--class'):
+      try:
+        dome_class = int(a)
+      except ValueError:
+        print('-c or --class argument must be an integer (1, 2, or 3). Exiting.')
+        sys.exit(-1)
+      if dome_class not in (1, 2, 3):
+        print('-c or --class argument must be 1, 2, or 3. Exiting.')
+        sys.exit(-1)
+    if o in ('-n', '--n-frequency'):
+      try:
+        n_frequency = int(a)
+      except ValueError:
+        print('-n or --n-frequency argument must be an integer. Exiting.')
+        sys.exit(-1)
+      if n_frequency < 1:
+        print('-n or --n-frequency argument must be a positive integer. Exiting.')
+        sys.exit(-1)
     if o in ('-b', '--bom-rounding'):
       try:
         bom_rounding_precision = int(a)
       except ValueError:
         print('-b or --bom-rounding argument must be an integer. Exiting.')
         sys.exit(-1)
+    if o in ('-m', '--material-cost'):
+      try:
+        cost_per_unit_length = float(a)
+      except ValueError:
+        print('-m or --material-cost argument must be a floating point number. Exiting.')
+        sys.exit(-1)
+      if cost_per_unit_length <= 0:
+        print('-m or --material-cost argument must be greater than zero. Exiting.')
+        sys.exit(-1)
+    if o in ('-e', '--elongation'):
+      try:
+        elongation_factor = float(a)
+      except ValueError:
+        print('-e or --elongation argument must be a floating point number. Exiting.')
+        sys.exit(-1)
+      if elongation_factor <= 0:
+        print('-e or --elongation argument must be greater than zero. Exiting.')
+        sys.exit(-1)
     if o in ('-h', '--help'):
       display_help()
       sys.exit(0)
     if o in ('-F', '--face'):
       face_output = True
+    if o in ('-P', '--preview'):
+      preview_output = True
+    if o in ('-s', '--stl'):
+      stl_output = True
+    if o in ('-O', '--obj'):
+      obj_output = True
+    if o in ('-H', '--hub-templates'):
+      hub_templates_output = True
     if o in ('-r', '--radius'):
       try:
         a = float(a)
@@ -151,18 +223,55 @@ def main():
   #
   # check for mutually exclusive options
   #
-  if face_output and run_truncate:
-    print('Truncation does not work with face output at this time. Use either -t or -F but not both.')
+  # -F, -s, and -O all require face data, which truncate() does not
+  # recompute, so none of them can be combined with truncation without
+  # producing stale/incorrect geometry.
+  if run_truncate and (face_output or stl_output or obj_output):
+    print('Truncation does not work with face-based output (-F/-s/-O) at this time. Use either -t or one of those, but not both.')
     sys.exit(-1)
+
+  if dome_class == 2 and frequency % 2 != 0:
+    print('-c 2 (Class II / Triacon) requires an even --frequency. Exiting.')
+    sys.exit(-1)
+
+  if dome_class == 3:
+    if n_frequency is None:
+      print('-c 3 (Class III / Skew) requires -n or --n-frequency. Exiting.')
+      sys.exit(-1)
+    if n_frequency == frequency:
+      print('-c 3 (Class III / Skew) requires --n-frequency to differ from --frequency (equal values are Class II -- use -c 2 instead). Exiting.')
+      sys.exit(-1)
 
   #
   # generate geodesic sphere
   #
-  symmetry_triangle = ClassOneMethodOneSymmetryTriangle(frequency, polyhedral)
-  sphere = GeodesicSphere(polyhedral, symmetry_triangle, vertex_equal_threshold, radius)
+  if dome_class == 2:
+    symmetry_triangle = ClassTwoMethodOneSymmetryTriangle(frequency // 2, polyhedral)
+    face_source = SimpleNamespace(faces=build_lcd_faces(polyhedral))
+    extra_pairs = None
+    local_priority = None
+  elif dome_class == 3:
+    symmetry_triangle = ClassThreeSymmetryTriangle(frequency, n_frequency, polyhedral)
+    face_source = polyhedral
+    extra_pairs = symmetry_triangle.cross_face_matches
+    local_priority = symmetry_triangle.local_priority
+  else:
+    symmetry_triangle = ClassOneMethodOneSymmetryTriangle(frequency, polyhedral)
+    face_source = polyhedral
+    extra_pairs = None
+    local_priority = None
+  sphere = GeodesicSphere(face_source, symmetry_triangle, vertex_equal_threshold, radius,
+                           extra_pairs=extra_pairs, local_priority=local_priority)
   C_sphere = sphere.non_duplicate_chords
   F_sphere = sphere.non_duplicate_face_nodes
   V_sphere = sphere.sphere_vertices
+
+  #
+  # elongate (before truncation, so a truncation ratio applies to the
+  # dome's final, possibly-elongated height range)
+  #
+  if elongation_factor != 1.0:
+    V_sphere = elongate(V_sphere, elongation_factor)
 
   #
   # truncate
@@ -182,9 +291,24 @@ def main():
     OutputDXF(V, C, output_path + '.dxf')
 
   #
+  # preview image
+  #
+  if preview_output:
+    save_preview(V, C, output_path + '.png')
+
+  #
+  # mesh export
+  #
+  if stl_output:
+    OutputSTL(V, F_sphere, output_path + '.stl')
+  if obj_output:
+    OutputOBJ(V, F_sphere, output_path + '.obj')
+
+  #
   # bill of materials
   #
-  get_bill_of_materials(V, C, bom_rounding_precision)
+  hub_template_output_path = output_path if hub_templates_output else None
+  get_bill_of_materials(V, C, bom_rounding_precision, cost_per_unit_length, hub_template_output_path, elongation_factor)
 
 #
 # run the main function
