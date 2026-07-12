@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 import json
 
-from .output import OutputHubConnectorTemplateDXF
+from .output import OutputHubConnectorTemplateDXF, OutputFaceTemplateDXF
 
 
 def _ellipsoid_normal(vertex, elongation_factor):
@@ -194,7 +194,152 @@ def group_hub_types(hubs, angle_precision=3):
   return result
 
 
-def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_length=None, hub_template_output_path=None, elongation_factor=1.0, print_report=True):
+def compute_face_data(vertices, faces):
+  # Per face (triangle vertex indices [a, b, c]): vertex order corrected
+  # to outward-consistent winding, the 3 edge lengths in that winding
+  # order (AB, BC, CA), the unit outward normal, area, and centroid.
+  # Faces only ever exist for an untruncated dome, whose vertices sit
+  # roughly on a sphere/ellipsoid centered near the origin, so "outward"
+  # is resolved by checking whether cross(B-A, C-A) points away from the
+  # face's own centroid (a stand-in for the dome's center) and swapping
+  # B/C if not. Returned list is aligned by index with `faces`, which
+  # compute_dihedral_angles relies on to relate a shared edge back to
+  # its two bordering faces.
+  face_data = []
+  for f in faces:
+    a, b, c = f[0], f[1], f[2]
+    A, B, C = vertices[a], vertices[b], vertices[c]
+    normal = np.cross(B - A, C - A)
+    centroid = (A + B + C) / 3.
+    if np.dot(normal, centroid) < 0:
+      a, b, c = a, c, b
+      A, B, C = vertices[a], vertices[b], vertices[c]
+      normal = np.cross(B - A, C - A)
+
+    norm = np.linalg.norm(normal)
+    unit_normal = normal / norm if norm != 0 else normal
+    edge_lengths = (
+      np.linalg.norm(B - A),
+      np.linalg.norm(C - B),
+      np.linalg.norm(A - C),
+    )
+    face_data.append({
+      'vertices': (a, b, c),
+      'edge_lengths': edge_lengths,
+      'normal': unit_normal,
+      'area': 0.5 * norm,
+      'centroid': centroid,
+    })
+  return face_data
+
+
+def _face_type_signature(face_entry, length_precision=3):
+  # SSS shape fingerprint: sorted, rounded edge lengths. Two faces
+  # sharing this signature have an identical cutting outline -- mirror
+  # images included, since SSS alone can't distinguish those (see
+  # _face_chirality_key).
+  return tuple(sorted(round(l, length_precision) for l in face_entry['edge_lengths']))
+
+
+def _face_chirality_key(face_entry, length_precision=3):
+  # Rotation-invariant (NOT reflection-invariant) fingerprint: the
+  # winding-order edge-length triple, canonicalized over its 3 rotations
+  # by keeping the lexicographically smallest. Two faces that share a
+  # _face_type_signature but differ here are mirror images of each
+  # other -- for a scalene triangle, reversing the winding direction
+  # produces a cyclic sequence that is not a rotation of the original,
+  # while an isosceles/equilateral triangle's sequence always re-
+  # canonicalizes to itself either way (no meaningful chirality).
+  lengths = tuple(round(l, length_precision) for l in face_entry['edge_lengths'])
+  n = len(lengths)
+  return min(tuple(lengths[(start + i) % n] for i in range(n)) for start in range(n))
+
+
+def group_face_types(faces_data, length_precision=3):
+  # Cluster faces into panel "types": faces whose edge-length signature
+  # matches exactly (see _face_type_signature) share a single cutting
+  # template. Groups are sorted largest-first, matching the Bill of
+  # Materials' own biggest-group-first convention (see group_hub_types).
+  groups = {}
+  for idx, fd in enumerate(faces_data):
+    sig = _face_type_signature(fd, length_precision)
+    groups.setdefault(sig, []).append(idx)
+
+  result = []
+  for sig, face_indices in groups.items():
+    is_scalene = len(set(sig)) == 3
+
+    chirality_buckets = {}
+    for idx in face_indices:
+      key = _face_chirality_key(faces_data[idx], length_precision)
+      chirality_buckets.setdefault(key, []).append(idx)
+
+    chiral = is_scalene and len(chirality_buckets) > 1
+    orientations = None
+    if chiral:
+      orientations = [
+        {
+          'edge_lengths': faces_data[idxs[0]]['edge_lengths'],
+          'count': len(idxs),
+        }
+        for idxs in chirality_buckets.values()
+      ]
+
+    representative_face = face_indices[0]
+    result.append({
+      'edge_lengths': sig,
+      'representative_face': representative_face,
+      'face_indices': face_indices,
+      'count': len(face_indices),
+      'area': round(faces_data[representative_face]['area'], length_precision),
+      'chiral': chiral,
+      'orientations': orientations,
+    })
+  result.sort(key=lambda g: -g['count'])
+  return result
+
+
+def compute_dihedral_angles(face_data, chords):
+  # Every chord in an untruncated dome (the only case faces exist for)
+  # borders exactly 2 triangular faces -- a closed 2-manifold
+  # triangulation, verified across Class I/II/III on both polyhedra at
+  # multiple frequencies. For each chord, the angle needed to bevel each
+  # bordering panel's edge so the two flat panels meet flush at the
+  # true (interior) dihedral angle:
+  #   normal_angle = angle between the two faces' outward unit normals
+  #   dihedral (interior) = 180 - normal_angle
+  #   bevel = normal_angle / 2  -- the cut angle away from a flat
+  #     (perpendicular, 90-degree) reference edge, on each panel, so
+  #     that placed together they reproduce the true dihedral angle
+  # This formula was verified against the textbook icosahedron
+  # (138.19 degrees) and octahedron (109.47 degrees) dihedral angles on
+  # a frequency-1 dome of each.
+  edge_to_faces = {}
+  for idx, fd in enumerate(face_data):
+    a, b, c = fd['vertices']
+    for u, v in ((a, b), (b, c), (c, a)):
+      edge_to_faces.setdefault(frozenset((u, v)), []).append(idx)
+
+  results = []
+  for chord in chords:
+    bordering = edge_to_faces.get(frozenset((chord[0], chord[1])), [])
+    if len(bordering) != 2:
+      continue
+    n1 = face_data[bordering[0]]['normal']
+    n2 = face_data[bordering[1]]['normal']
+    normal_angle = 180. * np.arccos(np.clip(np.dot(n1, n2), -1., 1.)) / np.pi
+    results.append({
+      'vertex 1': chord[0],
+      'vertex 2': chord[1],
+      'face 1': bordering[0],
+      'face 2': bordering[1],
+      'dihedral angle (degrees)': 180. - normal_angle,
+      'bevel angle (degrees)': normal_angle / 2.,
+    })
+  return results
+
+
+def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_length=None, hub_template_output_path=None, elongation_factor=1.0, print_report=True, faces=None, cost_per_unit_area=None, panel_areal_density=None, face_template_output_path=None):
 
   report = {'pyDome report' : {}}
   
@@ -341,6 +486,56 @@ def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_le
   df_spoke_angles = pd.DataFrame(list_spoke_angles).sort_values(by = ['hub', 'connecting hub']).reset_index()
   dict_spoke_angles = df_spoke_angles.to_dict(orient = 'records')
   report['pyDome report']['Spoke angles'] = dict_spoke_angles
+
+  #
+  # panel (face) sections: only meaningful for an untruncated dome,
+  # since truncate() never recomputes face data
+  #
+  if faces is not None:
+    face_data = compute_face_data(vertices, faces)
+    face_groups = group_face_types(face_data)
+
+    list_face_types = [
+      {
+        'edge_lengths': g['edge_lengths'],
+        'area': g['area'],
+        'count': g['count'],
+        'chiral': g['chiral'],
+        'orientations': g['orientations'],
+      }
+      for g in face_groups
+    ]
+    report['pyDome report']['Panel shapes and counts'] = {
+      'Panel Types and Counts': list_face_types,
+      'Warning': 'Panels sharing the same edge lengths can still be mirror images of each '
+                 'other (see "chiral") -- check "orientations" before cutting from a '
+                 'directional material such as wood grain or printed film.',
+    }
+
+    total_area = sum(fd['area'] for fd in face_data)
+    dict_total_panel_material = {
+      'Total panel area': round(total_area, rounding_precision),
+    }
+    if cost_per_unit_area is not None:
+      dict_total_panel_material['Total estimated panel material cost'] = round(total_area * cost_per_unit_area, 2)
+    if panel_areal_density is not None:
+      dict_total_panel_material['Total estimated panel weight'] = round(total_area * panel_areal_density, 2)
+    report['pyDome report']['Total panel material'] = dict_total_panel_material
+
+    report['pyDome report']['Bevel angles at panel edges'] = compute_dihedral_angles(face_data, chords)
+
+    if face_template_output_path is not None:
+      list_face_templates = []
+      for template_number, group in enumerate(face_groups, start=1):
+        template_filename = '%s_facetype%d.dxf' % (face_template_output_path, template_number)
+        representative_edges = face_data[group['representative_face']]['edge_lengths']
+        OutputFaceTemplateDXF(representative_edges, template_filename)
+        list_face_templates.append({
+          'template_file': template_filename,
+          'edge_lengths': group['edge_lengths'],
+          'panel_count': group['count'],
+        })
+      report['pyDome report']['Panel Cutting Templates'] = list_face_templates
 
   if print_report:
     print(json.dumps(report, indent = 2))

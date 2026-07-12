@@ -109,3 +109,19 @@ def test_validate_output_combo_allows_face_formats_without_truncation():
 
 def test_validate_output_combo_allows_truncation_without_face_formats():
     validate_output_combo(True)
+
+
+def test_validate_output_combo_rejects_face_templates_with_truncation():
+    with pytest.raises(ValueError, match="does not work"):
+        validate_output_combo(True, face_template_output=True)
+
+
+def test_validate_output_combo_rejects_area_cost_or_panel_density_with_truncation():
+    for kwargs in (dict(cost_per_unit_area=2.0), dict(panel_areal_density=0.5)):
+        with pytest.raises(ValueError, match="does not work"):
+            validate_output_combo(True, **kwargs)
+
+
+def test_validate_output_combo_allows_panel_options_without_truncation():
+    validate_output_combo(False, face_template_output=True, cost_per_unit_area=2.0,
+                           panel_areal_density=0.5)

@@ -312,3 +312,92 @@ def test_nonpositive_elongation_reports_clear_error(tmp_path):
         assert result.returncode != 0
         assert "greater than zero" in result.stdout.lower()
         assert "Traceback" not in result.stderr
+
+
+def test_default_run_reports_panel_sections_without_cost_or_weight(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "3"])
+
+    assert result.returncode == 0
+    report = json.loads(result.stdout)["pyDome report"]
+    assert "Panel shapes and counts" in report
+    assert "Total panel area" in report["Total panel material"]
+    assert "Total estimated panel material cost" not in report["Total panel material"]
+    assert "Total estimated panel weight" not in report["Total panel material"]
+    assert "Bevel angles at panel edges" in report
+
+
+def test_area_cost_flag_adds_estimated_panel_cost(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "3", "-a", "2.5"])
+
+    assert result.returncode == 0
+    report = json.loads(result.stdout)["pyDome report"]
+    total_panel_material = report["Total panel material"]
+
+    assert total_panel_material["Total estimated panel material cost"] == pytest.approx(
+        total_panel_material["Total panel area"] * 2.5, abs=0.01
+    )
+
+
+def test_panel_density_flag_adds_estimated_panel_weight(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "3", "-w", "0.5"])
+
+    assert result.returncode == 0
+    report = json.loads(result.stdout)["pyDome report"]
+    total_panel_material = report["Total panel material"]
+
+    assert total_panel_material["Total estimated panel weight"] == pytest.approx(
+        total_panel_material["Total panel area"] * 0.5, abs=0.01
+    )
+
+
+def test_nonpositive_area_cost_and_panel_density_report_clear_errors(tmp_path):
+    out = tmp_path / "dome"
+    for flag in ["-a", "-w"]:
+        for value in ["0", "-1"]:
+            result = run_cli(["-o", str(out), "-f", "1", flag, value])
+            assert result.returncode != 0
+            assert "greater than zero" in result.stdout.lower()
+            assert "Traceback" not in result.stderr
+
+
+def test_face_templates_flag_writes_dxf_files_and_report_section(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "4", "-T"])
+
+    assert result.returncode == 0
+    report = json.loads(result.stdout)["pyDome report"]
+    assert "Panel Cutting Templates" in report
+
+    rows = report["Panel Cutting Templates"]
+    assert len(rows) > 0
+    for row in rows:
+        template_file = Path(row["template_file"])
+        assert template_file.exists()
+        assert template_file.name.startswith("dome_facetype")
+
+
+def test_no_face_templates_flag_means_no_template_files_or_section(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "4"])
+
+    assert result.returncode == 0
+    report = json.loads(result.stdout)["pyDome report"]
+    assert "Panel Cutting Templates" not in report
+    assert list(tmp_path.glob("dome_facetype*.dxf")) == []
+
+
+def test_face_templates_and_truncation_are_mutually_exclusive(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-T", "-t", "0.5"])
+    assert result.returncode != 0
+    assert "does not work" in result.stdout.lower()
+
+
+def test_area_cost_and_truncation_are_mutually_exclusive(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-a", "2.0", "-t", "0.5"])
+    assert result.returncode != 0
+    assert "does not work" in result.stdout.lower()

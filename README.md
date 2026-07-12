@@ -44,8 +44,8 @@ This provides a `pydome-mcp` console command: an [MCP](https://modelcontextproto
 |---|---|
 | `design_dome` | Computes geometry only (no files) and returns vertex/edge/face counts, bounding box, height, footprint, and total strut length — a cheap way to try configurations. |
 | `preview_dome` | Renders the wireframe preview and returns it as an inline image, so the dome can be seen in-conversation before any file is written. |
-| `get_bill_of_materials` | Returns the JSON Bill of Materials (strut lengths/counts, hub angles, total length/cost) as structured data, no files. |
-| `export_dome` | Writes output files to disk (DXF/VRML by default; STL/OBJ/hub-templates/preview PNG optionally), mirroring the CLI's `-F/-s/-O` vs `-t` mutual-exclusion rule. Returns the paths written plus the Bill of Materials. |
+| `get_bill_of_materials` | Returns the JSON Bill of Materials (strut lengths/counts, hub angles, total length/cost, and — whenever the dome isn't truncated — panel shapes/counts with a chirality flag, total panel area/cost/weight, and bevel angles between adjacent panels) as structured data, no files. Accepts optional `cost_per_unit_area`/`panel_areal_density`. |
+| `export_dome` | Writes output files to disk (DXF/VRML by default; STL/OBJ/hub-templates/face-templates/preview PNG optionally), mirroring the CLI's `-F/-s/-O/-T` vs `-t` mutual-exclusion rule. Returns the paths written plus the Bill of Materials. |
 
 Configure it in an MCP client (e.g. Claude Code/Desktop) by pointing at the `pydome-mcp` command. All four tools share the same validation as the CLI (`pydome/api.py:validate_geometry_params`/`validate_output_combo`) — an invalid combination (e.g. Class II with an odd frequency) raises a clear error rather than producing bad geometry.
 
@@ -68,6 +68,9 @@ Configure it in an MCP client (e.g. Claude Code/Desktop) by pointing at the `pyd
 | `-s` | `--stl` | Also save an STL file (`<output>.stl`) of the dome's surface triangles, e.g. for 3D-printing a scale model. Requires face data; incompatible with `-t`. | off |
 | `-O` | `--obj` | Also save an OBJ file (`<output>.obj`) of the dome's surface triangles. Requires face data; incompatible with `-t`. | off |
 | `-H` | `--hub-templates` | Also save one 2D DXF cutting template per unique hub connector shape (`<output>_hubtype1.dxf`, `<output>_hubtype2.dxf`, ...), for laser-cutting/CNC connector plates. | off |
+| `-T` | `--face-templates` | Also save one 2D DXF cutting template per unique panel (face) shape (`<output>_facetype1.dxf`, `<output>_facetype2.dxf`, ...), for laser-cutting/CNC panel material. Requires face data; incompatible with `-t`. | off |
+| `-a` | `--area-cost` | Price per unit area of panel material. If given, adds an estimated total panel material cost to the report alongside the total panel area (both reported whenever face data is available). Must be > 0. | off (area only) |
+| `-w` | `--panel-density` | Areal density (mass per unit area, e.g. kg/m²) of panel material. If given, adds an estimated total panel weight to the report. Must be > 0. | off |
 | `-e` | `--elongation` | Stretches the dome along its vertical (Z) axis by this factor before truncation, turning the sphere into an axis-aligned ellipsoid (values > 1 raise ceiling height, values < 1 widen the footprint). Must be > 0. | `1.0` (no elongation) |
 | `-h` | `--help` | Show usage and exit. | — |
 
@@ -83,7 +86,7 @@ A few behaviors are worth understanding before relying on the output for a real 
 
 - **`-v/--vthreshold` controls vertex deduplication**, i.e. how close two computed vertices must be to be treated as the same point where polyhedron faces meet. The default (`1e-7`) is tuned for the default unit radius; if you use a very large or very small `-r`, you may need to adjust `-v` proportionally.
 
-- **`-F/--face`, `-s/--stl`, and `-O/--obj` all require face data, and none of them can be combined with `-t/--truncation`.** `truncate()` only recomputes vertices and chords, not the face list, so any face-based output after truncation would be built from stale, mismatched geometry — the CLI rejects the combination outright rather than silently producing a wrong mesh.
+- **`-F/--face`, `-s/--stl`, `-O/--obj`, `-T/--face-templates`, `-a/--area-cost`, and `-w/--panel-density` all require face data, and none of them can be combined with `-t/--truncation`.** `truncate()` only recomputes vertices and chords, not the face list, so any face-based output after truncation would be built from stale, mismatched geometry — the CLI rejects the combination outright rather than silently producing a wrong mesh (or, for `-a`/`-w`, simply having no area to report).
 
 - **`-c 2` (Class II / Triacon) requires an even `-f/--frequency`.** Each polyhedron face is first split into 6 LCD (lowest common denominator) sub-triangles around its centroid before the requested frequency subdivides each of those further, so the frequency is implicitly divided by 2 internally; an odd frequency has no valid Class II construction and is rejected with a clear error.
 
@@ -96,6 +99,10 @@ A few behaviors are worth understanding before relying on the output for a real 
 - **`-H/--hub-templates` clusters hubs by a rotation-invariant "shape" signature** (valence, plus the cyclic pattern of angular gaps and tangential angles going around the hub), not by symmetry group membership — two hubs get the same template if and only if one is a rotation of the other, regardless of *why*. The clustering tolerance (3 decimal places on angle values) was tuned empirically: the geometry pipeline's floating-point noise was observed to reach the 6th decimal place on otherwise-identical hubs, and a precision of 6 failed to merge them, silently doubling the reported template count. If you're working at a much higher frequency than has been tested (up to 16) and the template count looks suspiciously large for the dome's symmetry, that noise floor is the first thing to check.
 
 - **`-e/--elongation` is applied before truncation**, so a `-t` ratio always describes where to cut the dome's *final* (possibly-elongated) height range, not the original sphere's. All angle-based output correctly accounts for the resulting ellipsoid's true surface normal (the gradient of the ellipsoid equation) rather than naively treating each vertex's position vector as the normal — that naive approximation is only exact for a true sphere (`-e 1.0`), and silently gives wrong tangential/spoke angles for any other elongation factor if you're extending this code, so don't reintroduce it.
+
+- **Panel shapes are grouped by edge length alone (SSS), which can't distinguish a triangle from its mirror image.** Every dome face is a triangle, so distinct panel "shapes" in the report are clustered by their 3 edge lengths, exactly like `-H`'s hub-shape clustering. Two panels with identical edge lengths can still be mirror images of each other — this is common even on a Class I dome, not just chiral Class III ones — so each group's `chiral` flag and `orientations` breakdown should be checked before cutting from a directional material (wood grain, printed film). A DXF cutting template covers both orientations of a shape (a physical template can always be flipped over), so `-T` only ever writes one file per shape group, not per orientation.
+
+- **Bevel angles between panels are reported per strut, not per panel shape**, because the same panel shape can border a different neighbor (and thus a different dihedral angle) at different places in the dome — unlike edge length, bevel angle isn't a property of the shape itself, so it can't be baked into the `-T` templates the way edge lengths are.
 
 ## Project structure
 
@@ -114,9 +121,9 @@ A few behaviors are worth understanding before relying on the output for a real 
 | `pydome/geodesic_sphere.py` | Replicates the symmetry triangle across every polyhedron face, deduplicates the vertices shared along adjacent-face edges (via a KD-tree, plus Class III's combinatorial matches when supplied), and projects the result onto a sphere of the requested radius. |
 | `pydome/truncation.py` | Cuts a geodesic sphere at a horizontal plane to produce a dome. |
 | `pydome/elongation.py` | Scales the Z axis (`-e/--elongation`) to turn the sphere into an axis-aligned ellipsoid, for ceiling-height/footprint tradeoffs. |
-| `pydome/output.py` | DXF, VRML (wireframe or face), STL, OBJ, and hub-connector-template file writers. |
+| `pydome/output.py` | DXF, VRML (wireframe or face), STL, OBJ, hub-connector-template, and panel(face)-template file writers. |
 | `pydome/preview.py` | Renders a quick 3D wireframe preview PNG (`-P/--preview`), with equal axis scaling so the plot itself never distorts the dome's proportions. |
-| `pydome/bill_of_materials.py` | Clusters chords into strut-length groups, computes hub tangent-plane and spoke angles (using the true ellipsoid surface normal when elongated), clusters hubs into connector-plate "types" (`-H/--hub-templates`), and prints the report as JSON. |
+| `pydome/bill_of_materials.py` | Clusters chords into strut-length groups, computes hub tangent-plane and spoke angles (using the true ellipsoid surface normal when elongated), clusters hubs into connector-plate "types" (`-H/--hub-templates`); on the face side, clusters triangular panels into shape "types" with a mirror-image (chirality) flag, computes total panel area/cost/weight and per-strut bevel angles between adjacent panels, and generates panel cutting templates (`-T/--face-templates`); prints the report as JSON. |
 | `tests/` | pytest suite: unit tests per module (importing from `pydome.*`) plus subprocess-level CLI integration tests (invoked via `python -m pydome`). |
 | `METHOD.md` | The geometric method walkthrough with reference images (icosahedron subdivision, projection, truncation). |
 | `images/` | Diagrams referenced by `METHOD.md`. |
