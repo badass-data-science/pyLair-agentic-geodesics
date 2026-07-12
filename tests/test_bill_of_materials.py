@@ -202,6 +202,26 @@ def test_bill_of_materials_tangential_angles_are_small_for_a_smooth_sphere(capsy
         assert abs(row["angle (degrees)"]) < 45
 
 
+def test_get_bill_of_materials_returns_the_report_dict(capsys):
+    V, C = build_sphere()
+    report = get_bill_of_materials(V, C, 5)
+
+    captured = capsys.readouterr()
+    assert captured.out != ""  # default print_report=True, unchanged
+    assert "Bill of materials" in report["pyDome report"]
+
+
+def test_get_bill_of_materials_print_report_false_suppresses_stdout(capsys):
+    # stdio-transport MCP uses stdout as the JSON-RPC wire, so tool
+    # handlers must be able to compute the report without printing
+    V, C = build_sphere()
+    report = get_bill_of_materials(V, C, 5, print_report=False)
+
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "Bill of materials" in report["pyDome report"]
+
+
 def test_ellipsoid_normal_matches_hand_computed_value():
     # a=1 (x/y semi-axis), c=2 (z semi-axis, elongation_factor=2), point
     # at theta=45 degrees on the x-z ellipse (y=0): x=cos(45)=0.7071,

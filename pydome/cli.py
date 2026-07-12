@@ -22,20 +22,15 @@
 import numpy as np
 import getopt
 import sys
-from types import SimpleNamespace
 
 #
 # load pyDome modules
 #
-from .polyhedral import Icosahedron, Octahedron, build_lcd_faces
-from .symmetry_triangle import ClassOneMethodOneSymmetryTriangle, ClassTwoMethodOneSymmetryTriangle
-from .class_three import ClassThreeSymmetryTriangle
-from .geodesic_sphere import GeodesicSphere
+from .polyhedral import Icosahedron, Octahedron
 from .output import OutputDXF, OutputWireframeVRML, OutputFaceVRML, OutputSTL, OutputOBJ
-from .truncation import truncate
 from .bill_of_materials import get_bill_of_materials
 from .preview import save_preview
-from .elongation import elongate
+from .api import build_dome, validate_output_combo
 
 
 def display_help():
@@ -129,17 +124,11 @@ def main():
       except ValueError:
         print('-c or --class argument must be an integer (1, 2, or 3). Exiting.')
         sys.exit(-1)
-      if dome_class not in (1, 2, 3):
-        print('-c or --class argument must be 1, 2, or 3. Exiting.')
-        sys.exit(-1)
     if o in ('-n', '--n-frequency'):
       try:
         n_frequency = int(a)
       except ValueError:
         print('-n or --n-frequency argument must be an integer. Exiting.')
-        sys.exit(-1)
-      if n_frequency < 1:
-        print('-n or --n-frequency argument must be a positive integer. Exiting.')
         sys.exit(-1)
     if o in ('-b', '--bom-rounding'):
       try:
@@ -162,9 +151,6 @@ def main():
       except ValueError:
         print('-e or --elongation argument must be a floating point number. Exiting.')
         sys.exit(-1)
-      if elongation_factor <= 0:
-        print('-e or --elongation argument must be greater than zero. Exiting.')
-        sys.exit(-1)
     if o in ('-h', '--help'):
       display_help()
       sys.exit(0)
@@ -185,17 +171,11 @@ def main():
       except ValueError:
         print('-r or --radius argument must be a floating point number. Exiting.')
         sys.exit(-1)
-      if radius <= 0:
-        print('-r or --radius argument must be greater than zero. Exiting.')
-        sys.exit(-1)
     if o in ('-f', '--frequency'):
       try:
         frequency = int(a)
       except ValueError:
         print('-f or --frequency argument must be an integer. Exiting.')
-        sys.exit(-1)
-      if frequency < 1:
-        print('-f or --frequency argument must be a positive integer. Exiting.')
         sys.exit(-1)
     if o in ('-v', '--vthreshold'):
       try:
@@ -221,65 +201,21 @@ def main():
     sys.exit(-1)
 
   #
-  # check for mutually exclusive options
+  # build the geodesic sphere/dome (validation, symmetry-triangle
+  # construction, projection, elongation, and truncation all happen
+  # inside build_dome -- shared with pydome/mcp_server.py)
   #
-  # -F, -s, and -O all require face data, which truncate() does not
-  # recompute, so none of them can be combined with truncation without
-  # producing stale/incorrect geometry.
-  if run_truncate and (face_output or stl_output or obj_output):
-    print('Truncation does not work with face-based output (-F/-s/-O) at this time. Use either -t or one of those, but not both.')
+  try:
+    validate_output_combo(run_truncate, face_output, stl_output, obj_output)
+    dome = build_dome(radius=radius, frequency=frequency, polyhedron=polyhedral,
+                       dome_class=dome_class, n_frequency=n_frequency,
+                       vertex_equal_threshold=vertex_equal_threshold,
+                       elongation_factor=elongation_factor,
+                       truncation_amount=(truncation_amount if run_truncate else None))
+  except ValueError as e:
+    print(str(e))
     sys.exit(-1)
-
-  if dome_class == 2 and frequency % 2 != 0:
-    print('-c 2 (Class II / Triacon) requires an even --frequency. Exiting.')
-    sys.exit(-1)
-
-  if dome_class == 3:
-    if n_frequency is None:
-      print('-c 3 (Class III / Skew) requires -n or --n-frequency. Exiting.')
-      sys.exit(-1)
-    if n_frequency == frequency:
-      print('-c 3 (Class III / Skew) requires --n-frequency to differ from --frequency (equal values are Class II -- use -c 2 instead). Exiting.')
-      sys.exit(-1)
-
-  #
-  # generate geodesic sphere
-  #
-  if dome_class == 2:
-    symmetry_triangle = ClassTwoMethodOneSymmetryTriangle(frequency // 2, polyhedral)
-    face_source = SimpleNamespace(faces=build_lcd_faces(polyhedral))
-    extra_pairs = None
-    local_priority = None
-  elif dome_class == 3:
-    symmetry_triangle = ClassThreeSymmetryTriangle(frequency, n_frequency, polyhedral)
-    face_source = polyhedral
-    extra_pairs = symmetry_triangle.cross_face_matches
-    local_priority = symmetry_triangle.local_priority
-  else:
-    symmetry_triangle = ClassOneMethodOneSymmetryTriangle(frequency, polyhedral)
-    face_source = polyhedral
-    extra_pairs = None
-    local_priority = None
-  sphere = GeodesicSphere(face_source, symmetry_triangle, vertex_equal_threshold, radius,
-                           extra_pairs=extra_pairs, local_priority=local_priority)
-  C_sphere = sphere.non_duplicate_chords
-  F_sphere = sphere.non_duplicate_face_nodes
-  V_sphere = sphere.sphere_vertices
-
-  #
-  # elongate (before truncation, so a truncation ratio applies to the
-  # dome's final, possibly-elongated height range)
-  #
-  if elongation_factor != 1.0:
-    V_sphere = elongate(V_sphere, elongation_factor)
-
-  #
-  # truncate
-  #
-  V = V_sphere
-  C = C_sphere
-  if run_truncate:
-    V, C = truncate(V_sphere, C_sphere, truncation_amount)
+  V, C, F_sphere = dome.V, dome.C, dome.F_sphere
 
   #
   # write model output

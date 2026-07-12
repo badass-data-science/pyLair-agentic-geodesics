@@ -194,7 +194,7 @@ def group_hub_types(hubs, angle_precision=3):
   return result
 
 
-def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_length=None, hub_template_output_path=None, elongation_factor=1.0):
+def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_length=None, hub_template_output_path=None, elongation_factor=1.0, print_report=True):
 
   report = {'pyDome report' : {}}
   
@@ -342,10 +342,13 @@ def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_le
   dict_spoke_angles = df_spoke_angles.to_dict(orient = 'records')
   report['pyDome report']['Spoke angles'] = dict_spoke_angles
 
-  print(json.dumps(report, indent = 2))
+  if print_report:
+    print(json.dumps(report, indent = 2))
+
+  return report
 
 
-      
+
   ##
   ## display unprojected spoke angles
   ##

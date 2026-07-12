@@ -14,6 +14,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import io
+
 import numpy as np
 
 import matplotlib
@@ -41,7 +43,7 @@ def equal_axis_limits(vertices):
   return tuple((mids[i] - half_range, mids[i] + half_range) for i in range(3))
 
 
-def save_preview(V, C, the_filename):
+def render_preview_png_bytes(V, C):
   fig = plt.figure()
   ax = fig.add_subplot(projection='3d')
 
@@ -55,5 +57,12 @@ def save_preview(V, C, the_filename):
   ax.set_box_aspect((1, 1, 1))
 
   ax.set_title('pyDome preview')
-  fig.savefig(the_filename, dpi=130)
+  buf = io.BytesIO()
+  fig.savefig(buf, format='png', dpi=130)
   plt.close(fig)
+  return buf.getvalue()
+
+
+def save_preview(V, C, the_filename):
+  with open(the_filename, 'wb') as outfile:
+    outfile.write(render_preview_png_bytes(V, C))

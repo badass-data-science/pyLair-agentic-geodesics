@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from pydome.preview import equal_axis_limits, save_preview
+from pydome.preview import equal_axis_limits, render_preview_png_bytes, save_preview
 
 
 def test_equal_axis_limits_gives_every_axis_the_same_span():
@@ -61,3 +61,31 @@ def test_save_preview_writes_a_png_file(tmp_path):
     assert out_file.stat().st_size > 0
     # PNG magic bytes
     assert out_file.read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"
+
+
+def test_render_preview_png_bytes_returns_valid_png_bytes():
+    V = [
+        np.array([0., 0., 0.]),
+        np.array([1., 0., 0.]),
+        np.array([0., 1., 0.]),
+    ]
+    C = [[0, 1], [1, 2], [2, 0]]
+
+    png_bytes = render_preview_png_bytes(V, C)
+
+    assert isinstance(png_bytes, bytes)
+    assert png_bytes[:8] == b"\x89PNG\r\n\x1a\n"
+
+
+def test_save_preview_writes_the_same_bytes_render_preview_png_bytes_returns(tmp_path):
+    V = [
+        np.array([0., 0., 0.]),
+        np.array([1., 0., 0.]),
+        np.array([0., 1., 0.]),
+    ]
+    C = [[0, 1], [1, 2], [2, 0]]
+
+    out_file = tmp_path / "preview.png"
+    save_preview(V, C, str(out_file))
+
+    assert out_file.read_bytes() == render_preview_png_bytes(V, C)
