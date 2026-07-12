@@ -22,6 +22,7 @@ dependencies = [
 [project.optional-dependencies]
 test = ["pytest"]
 mcp = ["mcp"]
+verify = ["trimesh", "ezdxf"]
 
 [project.scripts]
 pydome = "pydome.cli:main"

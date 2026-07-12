@@ -7,6 +7,7 @@ from pydome.output import (
     OutputSTL,
     OutputOBJ,
     OutputHubConnectorTemplateDXF,
+    OutputFaceTemplateDXF,
 )
 
 
@@ -100,6 +101,48 @@ def test_output_hub_connector_template_dxf_writes_one_line_and_label_per_spoke(t
 
     for tangential in tangential_angles.values():
         assert ("%.2f deg" % tangential) in content
+
+
+def test_output_face_template_dxf_writes_one_line_and_label_per_edge(tmp_path):
+    edge_lengths = (3.0, 4.0, 5.0)
+    out_file = tmp_path / "face.dxf"
+
+    OutputFaceTemplateDXF(edge_lengths, str(out_file))
+
+    content = out_file.read_text()
+    assert content.startswith("0\nSECTION\n2\nENTITIES\n")
+    assert content.rstrip().endswith("0\nENDSEC\n0\nEOF")
+    assert content.count("LINE\n") == 3
+    assert content.count("TEXT\n") == 3
+    for length in edge_lengths:
+        assert ("%.4f" % length) in content
+
+
+def test_output_face_template_dxf_vertex_placement_matches_edge_lengths(tmp_path):
+    # a 3-4-5 right triangle: A=(0,0), B=(3,0), and the law-of-cosines
+    # placement should put C at exactly (3,4), reproducing |BC|=4 and
+    # |CA|=5.
+    edge_lengths = (3.0, 4.0, 5.0)
+    out_file = tmp_path / "face.dxf"
+
+    OutputFaceTemplateDXF(edge_lengths, str(out_file))
+
+    content = out_file.read_text()
+    lines = content.splitlines()
+    endpoints = []
+    for i, line in enumerate(lines):
+        if line == "LINE":
+            x0 = float(lines[i + lines[i:].index("10") + 1])
+            y0 = float(lines[i + lines[i:].index("20") + 1])
+            x1 = float(lines[i + lines[i:].index("11") + 1])
+            y1 = float(lines[i + lines[i:].index("21") + 1])
+            endpoints.append(((x0, y0), (x1, y1)))
+
+    assert len(endpoints) == 3
+    all_points = [p for edge in endpoints for p in edge]
+    assert any(abs(x) < 1e-9 and abs(y) < 1e-9 for x, y in all_points)  # A
+    assert any(abs(x - 3.0) < 1e-9 and abs(y) < 1e-9 for x, y in all_points)  # B
+    assert any(abs(x - 3.0) < 1e-9 and abs(y - 4.0) < 1e-9 for x, y in all_points)  # C
 
 
 def test_output_hub_connector_template_spoke_endpoints_match_the_given_angles(tmp_path):

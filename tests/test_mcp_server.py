@@ -66,6 +66,33 @@ def test_export_dome_writes_dxf_and_wrl(tmp_path):
     assert "Bill of materials" in result["bill_of_materials"]["pyDome report"]
 
 
+def test_get_bill_of_materials_tool_reports_panel_sections_when_untruncated():
+    report = get_bill_of_materials(frequency=3, cost_per_unit_area=2.0)
+
+    sections = report["pyDome report"]
+    assert "Panel shapes and counts" in sections
+    assert "Total panel material" in sections
+    assert "Total estimated panel material cost" in sections["Total panel material"]
+    assert "Bevel angles at panel edges" in sections
+
+
+def test_export_dome_with_face_templates_writes_facetype_files(tmp_path):
+    out = str(tmp_path / "dome")
+    result = export_dome(out, frequency=4, face_templates=True)
+
+    files = result["files_written"]
+    assert any(f.endswith(".dxf") and "_facetype" in f for f in files)
+    for f in files:
+        assert Path(f).exists()
+    assert "Panel Cutting Templates" in result["bill_of_materials"]["pyDome report"]
+
+
+def test_export_dome_face_templates_incompatible_with_truncation(tmp_path):
+    out = str(tmp_path / "dome")
+    with pytest.raises(ValueError, match="does not work"):
+        export_dome(out, frequency=4, face_templates=True, truncation_amount=0.5)
+
+
 def test_export_dome_face_output_incompatible_with_truncation(tmp_path):
     out = str(tmp_path / "dome")
     with pytest.raises(ValueError, match="does not work"):

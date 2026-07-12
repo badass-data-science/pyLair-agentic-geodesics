@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from pydome.polyhedral import Icosahedron
+from pydome.polyhedral import Icosahedron, Octahedron
 from pydome.symmetry_triangle import ClassOneMethodOneSymmetryTriangle
 from pydome.geodesic_sphere import GeodesicSphere
 from pydome.bill_of_materials import (
@@ -14,15 +14,25 @@ from pydome.bill_of_materials import (
     group_hub_types,
     _hub_type_signature,
     _ellipsoid_normal,
+    compute_face_data,
+    group_face_types,
+    compute_dihedral_angles,
 )
 from pydome.elongation import elongate
 
 
-def build_sphere(frequency=1, radius=1.0):
-    poly = Icosahedron()
+def build_sphere(frequency=1, radius=1.0, polyhedron=None):
+    poly = polyhedron if polyhedron is not None else Icosahedron()
     st = ClassOneMethodOneSymmetryTriangle(frequency, poly)
     sphere = GeodesicSphere(poly, st, 1e-7, radius)
     return sphere.sphere_vertices, sphere.non_duplicate_chords
+
+
+def build_sphere_with_faces(frequency=1, radius=1.0, polyhedron=None):
+    poly = polyhedron if polyhedron is not None else Icosahedron()
+    st = ClassOneMethodOneSymmetryTriangle(frequency, poly)
+    sphere = GeodesicSphere(poly, st, 1e-7, radius)
+    return sphere.sphere_vertices, sphere.non_duplicate_chords, sphere.non_duplicate_face_nodes
 
 
 def test_bill_of_materials_reports_expected_sections(capsys):
@@ -258,6 +268,111 @@ def test_ellipsoid_normal_is_axis_aligned_at_the_pole_and_equator_regardless_of_
 
         equator = np.array([1., 0., 0.])
         assert _ellipsoid_normal(equator, factor) == pytest.approx(np.array([1., 0., 0.]))
+
+
+def test_compute_face_data_normals_point_outward():
+    V, C, F = build_sphere_with_faces(frequency=3)
+    face_data = compute_face_data(V, F)
+
+    for fd in face_data:
+        assert np.dot(fd['normal'], fd['centroid']) > 0
+
+
+def test_dihedral_angles_match_known_platonic_values():
+    # a frequency-1 dome is just the base polyhedron itself, so every
+    # pair of adjacent faces meets at exactly the textbook dihedral
+    # angle for that solid.
+    V, C, F = build_sphere_with_faces(frequency=1, polyhedron=Icosahedron())
+    face_data = compute_face_data(V, F)
+    angles = [row['dihedral angle (degrees)'] for row in compute_dihedral_angles(face_data, C)]
+    assert len(angles) == len(C)
+    for angle in angles:
+        assert angle == pytest.approx(138.18968510422, abs=1e-6)
+
+    V, C, F = build_sphere_with_faces(frequency=1, polyhedron=Octahedron())
+    face_data = compute_face_data(V, F)
+    angles = [row['dihedral angle (degrees)'] for row in compute_dihedral_angles(face_data, C)]
+    for angle in angles:
+        assert angle == pytest.approx(109.47122063449, abs=1e-6)
+
+
+def test_group_face_types_flags_chirality_on_scalene_group():
+    V, C, F = build_sphere_with_faces(frequency=4)
+    face_data = compute_face_data(V, F)
+    groups = group_face_types(face_data)
+
+    chiral_groups = [g for g in groups if g['chiral']]
+    assert len(chiral_groups) == 1
+    chiral_group = chiral_groups[0]
+    assert chiral_group['count'] == 120
+    assert sorted(o['count'] for o in chiral_group['orientations']) == [60, 60]
+
+
+def test_group_face_types_isosceles_and_equilateral_never_chiral():
+    V, C, F = build_sphere_with_faces(frequency=4)
+    face_data = compute_face_data(V, F)
+    groups = group_face_types(face_data)
+
+    non_chiral_groups = [g for g in groups if not g['chiral']]
+    assert len(non_chiral_groups) == 4
+    for g in non_chiral_groups:
+        assert g['orientations'] is None
+        assert len(set(g['edge_lengths'])) < 3  # isosceles or equilateral
+
+
+def test_get_bill_of_materials_skips_face_sections_when_faces_is_none(capsys):
+    V, C = build_sphere()
+    report = get_bill_of_materials(V, C, 5)
+
+    captured = capsys.readouterr()
+    assert captured.out != ""
+    for key in ('Panel shapes and counts', 'Total panel material',
+                'Bevel angles at panel edges', 'Panel Cutting Templates'):
+        assert key not in report['pyDome report']
+
+
+def test_get_bill_of_materials_reports_total_panel_area_and_optional_cost_and_weight(capsys):
+    V, C, F = build_sphere_with_faces(frequency=3)
+    report = get_bill_of_materials(V, C, 5, faces=F, cost_per_unit_area=2.0, panel_areal_density=0.5)
+
+    captured = capsys.readouterr()
+    report = json.loads(captured.out)['pyDome report']
+
+    total_panel_material = report['Total panel material']
+    expected_area = sum(fd['area'] for fd in compute_face_data(V, F))
+    assert total_panel_material['Total panel area'] == pytest.approx(expected_area, abs=1e-4)
+    assert total_panel_material['Total estimated panel material cost'] == pytest.approx(expected_area * 2.0, abs=0.01)
+    assert total_panel_material['Total estimated panel weight'] == pytest.approx(expected_area * 0.5, abs=0.01)
+
+    panel_types = report['Panel shapes and counts']['Panel Types and Counts']
+    assert sum(g['count'] for g in panel_types) == len(F)
+
+    bevel_rows = report['Bevel angles at panel edges']
+    assert len(bevel_rows) == len(C)
+
+
+def test_bill_of_materials_face_templates_writes_one_dxf_per_shape_and_covers_every_face(tmp_path, capsys):
+    V, C, F = build_sphere_with_faces(frequency=4)
+    output_prefix = str(tmp_path / "dome")
+
+    get_bill_of_materials(V, C, 5, faces=F, face_template_output_path=output_prefix)
+
+    captured = capsys.readouterr()
+    report = json.loads(captured.out)['pyDome report']
+    rows = report['Panel Cutting Templates']
+
+    face_data = compute_face_data(V, F)
+    groups = group_face_types(face_data)
+    assert len(rows) == len(groups)
+    assert sum(row['panel_count'] for row in rows) == len(F)
+
+    for row in rows:
+        template_path = Path(row['template_file'])
+        assert template_path.exists()
+        content = template_path.read_text()
+        assert content.startswith("0\nSECTION\n2\nENTITIES\n")
+        assert content.count("LINE\n") == 3
+        assert content.count("TEXT\n") == 3
 
 
 def test_bill_of_materials_with_elongation_still_produces_valid_report(capsys):

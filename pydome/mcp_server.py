@@ -84,17 +84,22 @@ def get_bill_of_materials(radius: float = 1.0, frequency: int = 4, polyhedron: P
                            truncation_amount: Optional[float] = None, elongation_factor: float = 1.0,
                            vertex_equal_threshold: float = 1e-7,
                            bom_rounding_precision: int = 9,
-                           cost_per_unit_length: Optional[float] = None) -> dict:
+                           cost_per_unit_length: Optional[float] = None,
+                           cost_per_unit_area: Optional[float] = None,
+                           panel_areal_density: Optional[float] = None) -> dict:
   """Compute the dome and return its Bill of Materials (strut lengths and
-  counts, hub angles, total strut length, and optional material cost) as
-  structured data, without writing any files."""
+  counts, hub angles, total strut length/cost, and -- when the dome isn't
+  truncated -- panel shapes and counts (with a chirality flag for mirror-
+  image panels), total panel area/cost/weight, and bevel angles between
+  adjacent panels) as structured data, without writing any files."""
   dome = build_dome(radius=radius, frequency=frequency, polyhedron=polyhedron,
                      dome_class=dome_class, n_frequency=n_frequency,
                      truncation_amount=truncation_amount, elongation_factor=elongation_factor,
                      vertex_equal_threshold=vertex_equal_threshold)
   return compute_bom(dome.V, dome.C, bom_rounding_precision, cost_per_unit_length,
                       hub_template_output_path=None, elongation_factor=dome.elongation_factor,
-                      print_report=False)
+                      print_report=False, faces=dome.F_sphere, cost_per_unit_area=cost_per_unit_area,
+                      panel_areal_density=panel_areal_density)
 
 
 @mcp.tool()
@@ -103,14 +108,21 @@ def export_dome(output_path: str, radius: float = 1.0, frequency: int = 4,
                  n_frequency: Optional[int] = None, truncation_amount: Optional[float] = None,
                  elongation_factor: float = 1.0, vertex_equal_threshold: float = 1e-7,
                  face_output: bool = False, preview: bool = False, stl: bool = False,
-                 obj: bool = False, hub_templates: bool = False,
-                 bom_rounding_precision: int = 9, cost_per_unit_length: Optional[float] = None) -> dict:
+                 obj: bool = False, hub_templates: bool = False, face_templates: bool = False,
+                 bom_rounding_precision: int = 9, cost_per_unit_length: Optional[float] = None,
+                 cost_per_unit_area: Optional[float] = None,
+                 panel_areal_density: Optional[float] = None) -> dict:
   """Compute the dome and write output files to disk (mirrors the `pydome`
   CLI): DXF+VRML by default, or face-only VRML with face_output=True
-  (required for stl/obj/hub_templates, and mutually exclusive with
-  truncation_amount, matching the CLI's own rule). Returns the list of
-  files written and the Bill of Materials."""
-  validate_output_combo(truncation_amount is not None, face_output, stl, obj)
+  (required for stl/obj/hub_templates/face_templates/cost_per_unit_area/
+  panel_areal_density, and mutually exclusive with truncation_amount,
+  matching the CLI's own rule). face_templates=True writes one DXF
+  cutting template per unique panel shape. Returns the list of files
+  written and the Bill of Materials (including panel shapes/counts,
+  chirality flags, panel area/cost/weight, and bevel angles, when face
+  data is available)."""
+  validate_output_combo(truncation_amount is not None, face_output, stl, obj,
+                         face_templates, cost_per_unit_area, panel_areal_density)
   dome = build_dome(radius=radius, frequency=frequency, polyhedron=polyhedron,
                      dome_class=dome_class, n_frequency=n_frequency,
                      truncation_amount=truncation_amount, elongation_factor=elongation_factor,
@@ -137,11 +149,16 @@ def export_dome(output_path: str, radius: float = 1.0, frequency: int = 4,
     files.append(output_path + '.obj')
 
   hub_path = output_path if hub_templates else None
+  face_template_path = output_path if face_templates else None
   report = compute_bom(dome.V, dome.C, bom_rounding_precision, cost_per_unit_length,
                         hub_template_output_path=hub_path, elongation_factor=dome.elongation_factor,
-                        print_report=False)
+                        print_report=False, faces=dome.F_sphere, cost_per_unit_area=cost_per_unit_area,
+                        panel_areal_density=panel_areal_density,
+                        face_template_output_path=face_template_path)
   if hub_templates:
     files.extend(t['template_file'] for t in report['pyDome report'].get('Hub Connector Templates', []))
+  if face_templates:
+    files.extend(t['template_file'] for t in report['pyDome report'].get('Panel Cutting Templates', []))
 
   return {"files_written": files, "bill_of_materials": report}
 

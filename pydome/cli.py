@@ -70,6 +70,12 @@ Options:
 
 \t-H, --hub-templates\tAlso save one 2D DXF cutting template per unique hub connector shape ("<output>_hubtype1.dxf", "<output>_hubtype2.dxf", ...), for laser-cutting/CNC connector plates. Each template shows one radiating line per strut at its spoke angle, labeled with that strut's tangential (out-of-plane) deflection angle.
 
+\t-T, --face-templates\tAlso save one 2D DXF cutting template per unique panel (face) shape ("<output>_facetype1.dxf", "<output>_facetype2.dxf", ...), for laser-cutting/CNC panel material. Each template shows the panel's 3 edges labeled with their lengths. Requires face data, so cannot be used with truncation.
+
+\t-a, --area-cost\tPrice per unit area of panel material. If given, adds an estimated total panel material cost to the Bill of Materials, in addition to the total panel area (both reported whenever face data is available, i.e. the dome isn't truncated). Must be a positive floating point number.
+
+\t-w, --panel-density\tAreal density (mass per unit area, e.g. kg per square meter) of panel material. If given, adds an estimated total panel weight to the Bill of Materials. Must be a positive floating point number.
+
 \t-e, --elongation\tStretches the dome along its vertical (Z) axis by this factor before truncation, turning the sphere into an axis-aligned ellipsoid -- values > 1 raise the ceiling height, values < 1 flatten it for a wider footprint. All angle-based output (Bill of Materials angles, hub connector templates) correctly accounts for the resulting ellipsoid's true surface normal, not just the sphere approximation. Must be a positive floating point number. Default 1.0 (no elongation).
 """
   print(help_text)
@@ -93,6 +99,9 @@ def main():
   obj_output = False
   cost_per_unit_length = None
   hub_templates_output = False
+  face_templates_output = False
+  cost_per_unit_area = None
+  panel_areal_density = None
   elongation_factor = 1.0
   output_path = None
   n_frequency = None
@@ -108,7 +117,7 @@ def main():
   # parse command line
   #
   try:
-    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:c:m:e:n:FPsOHho:', ['truncation=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'class=', 'material-cost=', 'elongation=', 'n-frequency=', 'face', 'preview', 'stl', 'obj', 'hub-templates', 'output='])
+    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:c:m:e:n:a:w:FPsOHTho:', ['truncation=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'class=', 'material-cost=', 'elongation=', 'n-frequency=', 'area-cost=', 'panel-density=', 'face', 'preview', 'stl', 'obj', 'hub-templates', 'face-templates', 'output='])
   except getopt.error as msg:
     print(str(msg) + ' (for help use --help)')
     sys.exit(-1)
@@ -145,6 +154,24 @@ def main():
       if cost_per_unit_length <= 0:
         print('-m or --material-cost argument must be greater than zero. Exiting.')
         sys.exit(-1)
+    if o in ('-a', '--area-cost'):
+      try:
+        cost_per_unit_area = float(a)
+      except ValueError:
+        print('-a or --area-cost argument must be a floating point number. Exiting.')
+        sys.exit(-1)
+      if cost_per_unit_area <= 0:
+        print('-a or --area-cost argument must be greater than zero. Exiting.')
+        sys.exit(-1)
+    if o in ('-w', '--panel-density'):
+      try:
+        panel_areal_density = float(a)
+      except ValueError:
+        print('-w or --panel-density argument must be a floating point number. Exiting.')
+        sys.exit(-1)
+      if panel_areal_density <= 0:
+        print('-w or --panel-density argument must be greater than zero. Exiting.')
+        sys.exit(-1)
     if o in ('-e', '--elongation'):
       try:
         elongation_factor = float(a)
@@ -164,6 +191,8 @@ def main():
       obj_output = True
     if o in ('-H', '--hub-templates'):
       hub_templates_output = True
+    if o in ('-T', '--face-templates'):
+      face_templates_output = True
     if o in ('-r', '--radius'):
       try:
         a = float(a)
@@ -206,7 +235,8 @@ def main():
   # inside build_dome -- shared with pydome/mcp_server.py)
   #
   try:
-    validate_output_combo(run_truncate, face_output, stl_output, obj_output)
+    validate_output_combo(run_truncate, face_output, stl_output, obj_output,
+                           face_templates_output, cost_per_unit_area, panel_areal_density)
     dome = build_dome(radius=radius, frequency=frequency, polyhedron=polyhedral,
                        dome_class=dome_class, n_frequency=n_frequency,
                        vertex_equal_threshold=vertex_equal_threshold,
@@ -244,7 +274,11 @@ def main():
   # bill of materials
   #
   hub_template_output_path = output_path if hub_templates_output else None
-  get_bill_of_materials(V, C, bom_rounding_precision, cost_per_unit_length, hub_template_output_path, elongation_factor)
+  face_template_output_path = output_path if face_templates_output else None
+  get_bill_of_materials(V, C, bom_rounding_precision, cost_per_unit_length, hub_template_output_path, elongation_factor,
+                         faces=F_sphere, cost_per_unit_area=cost_per_unit_area,
+                         panel_areal_density=panel_areal_density,
+                         face_template_output_path=face_template_output_path)
 
 #
 # run the main function

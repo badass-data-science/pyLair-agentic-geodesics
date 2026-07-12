@@ -177,6 +177,85 @@ def OutputHubConnectorTemplateDXF(spoke_angles, tangential_angles, the_filename,
   outfile.write('EOF\n')
   outfile.close()
 
+def OutputFaceTemplateDXF(edge_lengths, the_filename):
+  # A flat 2D cutting template for one triangular panel. edge_lengths is
+  # (|AB|, |BC|, |CA|) in winding order (matches
+  # bill_of_materials.compute_face_data). Vertex A is placed at the
+  # origin, B along +x at distance |AB|, and C is solved via the law of
+  # cosines using the angle at A -- SSS uniquely determines a flat
+  # triangle's shape, up to the mirror reflection a physical template
+  # can always be flipped over to cover anyway. No bevel-angle labeling
+  # here: unlike edge length, bevel angle isn't a property of the panel
+  # shape itself -- the same shape can border different neighbors (and
+  # thus different dihedral angles) at different places in the dome, so
+  # bevel angles are reported per-chord-instance in the Bill of
+  # Materials instead (see compute_dihedral_angles).
+  ab, bc, ca = edge_lengths
+  cos_a = (ab ** 2 + ca ** 2 - bc ** 2) / (2 * ab * ca)
+  angle_a = np.arccos(np.clip(cos_a, -1., 1.))
+
+  A = np.array([0., 0.])
+  B = np.array([ab, 0.])
+  C = np.array([ca * np.cos(angle_a), ca * np.sin(angle_a)])
+  vertices = [A, B, C]
+  centroid = (A + B + C) / 3.
+  text_height = max(edge_lengths) * 0.05
+
+  outfile = open(the_filename, 'w')
+  outfile.write('0\n')
+  outfile.write('SECTION\n')
+  outfile.write('2\n')
+  outfile.write('ENTITIES\n')
+
+  for i in range(3):
+    p0 = vertices[i]
+    p1 = vertices[(i + 1) % 3]
+
+    outfile.write('0\n')
+    outfile.write('LINE\n')
+    outfile.write('8\n')
+    outfile.write('1\n')
+    outfile.write('10\n')
+    outfile.write(str(p0[0]) + '\n')
+    outfile.write('20\n')
+    outfile.write(str(p0[1]) + '\n')
+    outfile.write('30\n')
+    outfile.write('0.0\n')
+    outfile.write('11\n')
+    outfile.write(str(p1[0]) + '\n')
+    outfile.write('21\n')
+    outfile.write(str(p1[1]) + '\n')
+    outfile.write('31\n')
+    outfile.write('0.0\n')
+
+    midpoint = (p0 + p1) / 2.
+    outward = midpoint - centroid
+    norm = np.linalg.norm(outward)
+    if norm != 0:
+      outward = outward / norm
+    label_point = midpoint + outward * text_height * 1.5
+
+    outfile.write('0\n')
+    outfile.write('TEXT\n')
+    outfile.write('8\n')
+    outfile.write('1\n')
+    outfile.write('10\n')
+    outfile.write(str(label_point[0]) + '\n')
+    outfile.write('20\n')
+    outfile.write(str(label_point[1]) + '\n')
+    outfile.write('30\n')
+    outfile.write('0.0\n')
+    outfile.write('40\n')
+    outfile.write(str(text_height) + '\n')
+    outfile.write('1\n')
+    outfile.write('%.4f\n' % edge_lengths[i])
+
+  outfile.write('0\n')
+  outfile.write('ENDSEC\n')
+  outfile.write('0\n')
+  outfile.write('EOF\n')
+  outfile.close()
+
 def OutputFaceVRML(V, F, the_filename):
   outfile = open(the_filename, 'w')
   outfile.write("#VRML V2.0 utf8\n")

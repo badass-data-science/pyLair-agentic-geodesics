@@ -78,12 +78,19 @@ def validate_geometry_params(radius, frequency, dome_class, n_frequency, elongat
       raise ValueError('-c 3 (Class III / Skew) requires --n-frequency to differ from --frequency (equal values are Class II -- use -c 2 instead). Exiting.')
 
 
-def validate_output_combo(run_truncate, face_output=False, stl_output=False, obj_output=False):
-  # -F, -s, and -O all require face data, which truncate() does not
+def validate_output_combo(run_truncate, face_output=False, stl_output=False, obj_output=False,
+                           face_template_output=False, cost_per_unit_area=None,
+                           panel_areal_density=None):
+  # -F, -s, -O, and -T all require face data, which truncate() does not
   # recompute, so none of them can be combined with truncation without
-  # producing stale/incorrect geometry.
-  if run_truncate and (face_output or stl_output or obj_output):
-    raise ValueError('Truncation does not work with face-based output (-F/-s/-O) at this time. Use either -t or one of those, but not both.')
+  # producing stale/incorrect geometry. -a/-w (panel cost/weight) also
+  # require face data to have anything to report.
+  needs_face_data = (face_output or stl_output or obj_output or face_template_output
+                      or cost_per_unit_area is not None or panel_areal_density is not None)
+  if run_truncate and needs_face_data:
+    raise ValueError('Truncation does not work with face-based output (-F/-s/-O/-T) or panel '
+                      'area/cost/weight options (-a/-w) at this time. Use either -t or one of '
+                      'those, but not both.')
 
 
 def build_dome(radius=1.0, frequency=4, polyhedron: Union[str, Polyhedron] = 'icosahedron',

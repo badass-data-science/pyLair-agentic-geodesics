@@ -6,9 +6,11 @@ Enter geodesic design.
 
 Geodesic structures distribute structural stress relatively evenly across their surfaces, rather than concentrate such stress in focal points such as walls and a roof. This makes them strong for their weight, the primary reason individuals keep building them despite the aggravating number of angular calculations involved. This also makes geodesic structures more robust to pressure variation when inserted deep into a water column.
 
-One can buy a geodesic dome kit, of course, but why do that when one wants extreme customization? Therefore, before touching any power tools or even any CAD interface, our heroine requires her own geodesic calculations.
+One can buy a geodesic dome kit, of course, but why do that when one wants extreme customization? Therefore, before touching any power tools or even a CAD interface, our heroine requires her own geodesic calculations.
 
-So she built pyDome.
+But she definitely doesn't want to do the math herself. And its far more fun to instruct a computer to perform the geodesic arithmetic instead whilst she slams Mojitos on the beach.
+
+So our heroine built pyDome.
 # What It Does
 
 Essentially, pyDome computes the vertices and chords of a geodesic dome (or sphere) and writes them out as both DXF and VRML files (for CAD software and for impressing friends with cool 3D graphics, respectively). Optionally it produces STL and OBJ files to facilitate 3D printing of scale models.
@@ -67,9 +69,9 @@ Taken together, these two angle types define, for every single joint in the enti
 pyDome also produces a list of strut lengths and how many struts of each length are required to build the structure, as well as a summation of the total length of strut material required. If the user provides a price per unit length, then a cost estimate of total strut material required is reported as well.
 
 **Step eight: hub templates.** A geodesic project will likely require multiple (but repeated) distinct hub angle configurations. To assist designers, pyDome optionally creates 2D DXF cutting templates for each genuinely distinct hub shape in the structure, correctly recognizing that two hubs which are actually the same shape, just rotated relative to each other, only require one template between them.
-# Talking to pyDome
+# pyDome's Agentic AI Interface
 
-Mojitos, as it turns out, do not mix well with typing `pydome -o output/lair -f 6 -c 3 -n 4 -t 0.4`, squinting at a JSON wall of hub angles, then opening a CAD program just to check whether frequency 6 actually looks like anything sensible before committing to it. Our heroine wanted to describe the dome she wanted in plain language and have something else handle the fiddly bits, so pyDome now speaks [MCP](https://modelcontextprotocol.io) (Model Context Protocol) as well as command-line flags.
+Mojitos, as it turns out, do not mix well with typing command line incantations like `pydome -o output/secret-lair -f 6 -c 3 -n 4 -t 0.4`, squinting at a JSON wall of hub angles, then opening a CAD program just to check whether frequency 6 actually looks like anything sensible before committing to it. Our heroine wanted to describe the dome she wanted in plain language and have something else handle the fiddly bits, so she added to pyDome an [MCP](https://modelcontextprotocol.io) (Model Context Protocol) agentic AI interface. (The pre-existing command line interface still remains for those who prefer the traditional method of interaction with the software).
 
 Running `pydome-mcp` starts a small server that hands an AI assistant four tools instead of one command:
 
@@ -79,20 +81,33 @@ Running `pydome-mcp` starts a small server that hands an AI assistant four tools
 * **`export_dome`**, for when the design is actually settled and it's time to write the DXF, VRML, STL, OBJ, and hub-connector-template files to disk for real.
 
 The idea is to let an assistant iterate the way our heroine would iterate herself: try a shape, look at it, check what it costs in struts, adjust, and only export once it's actually right — rather than round-tripping through the command line and a separate viewer for every guess. All four tools enforce the exact same validation rules as the CLI (an odd frequency is still not a valid Class II dome, no matter which door you walked in through), because underneath both interfaces now share one geometry engine instead of two copies of the same logic quietly drifting apart.
+# pyDome Gets a Face
+
+Our heroine's original bill of materials was entirely strut-centric — perfectly fine as long as her secret laboratory remained an exposed lattice of hubs and struts, appropriately villainous but not exactly draft-proof. Once she started sketching solid panels instead (glass? aluminum? something suitably opaque to hide the death ray from passing submarines?), she noticed pyDome had nothing to say about the dome's actual *skin*: no list of panel shapes, no cutting templates, no sense of how much material to order or how to bevel a panel's edge so it sits flush against its neighbor rather than leaving an ugly gap. So the bill of materials grew a face-shaped counterpart to its strut-shaped one.
+
+* **Panel shapes and counts** joins the report the same way strut lengths always have: every triangular panel in the dome gets grouped by its three edge lengths, and pyDome reports how many of each shape are needed. It also flags something our heroine hadn't originally considered — two panels with identical edge lengths can still be mirror images of each other rather than true duplicates. Obvious once you picture a chiral Class III dome; less obvious for an ordinary Class I one, where it turns out to happen too. That distinction only matters if the panel material itself has a direction to it (wood grain, a printed pattern, a one-sided finish), but pyDome now tells you when to check.
+* **`-T`/`--face-templates`** produces a flat 2D DXF cutting template for every distinct panel shape, laid out from nothing but its three edge lengths — the panel equivalent of the hub connector templates from Step Eight, so a laser cutter or CNC router can go straight from pyDome's report to material.
+* **Total panel area**, with an optional **`-a`/`--area-cost`** for a material cost estimate and **`-w`/`--panel-density`** for an estimated weight — the same "how much, and how much does it cost" arithmetic pyDome already did for struts, now available for skin material too.
+* **Bevel angles between panels**, reported for every strut in the structure, describe the angle each panel edge needs to be cut at so two flat panels actually meet flush along that strut instead of leaving a gap or an overlap — information our heroine didn't realize she needed until she pictured actually gluing solid panels together.
+
+None of this works once the dome has been truncated into its final shape — truncation only recomputes struts, not the faces sitting between them — so the panel sections politely disappear from the report whenever `-t`/`--truncation` is in play, exactly as the STL/OBJ output already did.
+
+Since a wrong dihedral-angle formula would mean panels that quietly don't fit, our heroine (working through Claude Code) checked the new math against known reference values before trusting it: the bevel-angle formula reproduces the textbook dihedral angles of a plain icosahedron and octahedron to six decimal places, and the whole thing got a second opinion from two independent, general-purpose libraries — [`trimesh`](https://trimesh.org/), which recomputes panel areas and angles straight from pyDome's own exported files, and [`ezdxf`](https://ezdxf.readthedocs.io/), which reads a generated cutting template back out and confirms it's actually the shape it claims to be.
 # Next Steps
 
-* pyDome is currently strut-centric in its output, but our heroine's practical design requirements might evolve toward face-centric thinking. For example, suppose she decides to assemble her final structure out of 3D-printed symmetry triangles; this would require a face-centric point of view and the bill of materials would have to be enhanced accordingly to facilitate it. Possibly the templates too.
+* Now that pyDome knows exactly which panel shapes it needs, the obvious next question is how to arrange them efficiently on a sheet of material without wasting half of it. Real nesting/bin-packing optimization is deliberately not part of pyDome yet, but it's the natural next step now that the shapes themselves are known.
 * Our heroine will likely experiment with AI-based interaction with pyDome's source code, such as asking Claude Code to review the existing code and then design a DXF file modification that creates a door-frame design. Our heroine is not sure if this will work, but thinks it worth a try. (Doorways are hell for any geodesic building design; if AI can improve this situation that would be awesome!).
 * This is going on PyPI soon!
 # Conclusion
 
-Our heroine decided that a computer should perform the geodesic arithmetic necessary for designing her future secret laboratory whilst she drinks Mojitos on the beach. Therefore, she wrote pyDome to make these computations happen.
+Our heroine decided that a computer should perform the geodesic arithmetic necessary for designing her future secret laboratory, while she drinks cocktails by the pool. Therefore, she wrote pyDome to make these computations happen.
 
 The actual construction of the forthcoming geodesic secret laboratory will (of course) be kept secret.
 # Works Consulted
 
 * Kenner, H. (1976). _Geodesic math and how to use it_. University of California Press.
 * [`antitile`](https://github.com/brsr/antitile). A well-established, independently written geodesic dome library used to validate pyDome's computation results. (Our heroine assumed that either both she and this project's authors are simultaneously correct--their results matched to 15 decimal places--or that both are wrong in the exactly same way!).
+* [`trimesh`](https://trimesh.org/) and [`ezdxf`](https://ezdxf.readthedocs.io/). Two independent, general-purpose Python libraries, used the same way as `antitile` above but for the panel-related bill of materials calculations and cutting templates: `trimesh` independently recomputes panel areas and inter-panel angles from pyDome's own exported files, and `ezdxf` reads a generated cutting template back out and confirms it actually reproduces the shape it claims to.
 * Šiber, A. (2007). _Icosadeltahedral geometry of fullerenes, viruses and geodesic domes_. [arXiv](https://arxiv.org/abs/0711.3527). https://arxiv.org/abs/0711.3527
 # Code
 
@@ -101,7 +116,7 @@ pyDome is available [here](https://github.com/badass-data-science/Engineering/tr
 
 Our heroine wrote this article about 99% manually, with a small amount of outline assistance from Claude Code.
 
-She wrote the original pyDome implementation from scratch in Python, and then had Claude code refactor it a bit to make it PyPI-ready. She also collaborated with Claude Code to add features missing from her original implementation (Class II and III polyhedra face subdivision methods, sphere elongation functionality, and STL/OBJ/PNG output), and, most recently, to design and build the MCP server described above.
+She wrote the original pyDome implementation from scratch in Python, and then had Claude code refactor it a bit to make it PyPI-ready. She also collaborated with Claude Code to add features missing from her original implementation (Class II and III polyhedra face subdivision methods, sphere elongation functionality, and STL/OBJ/PNG output), then to design and build the MCP server described above, and most recently to add the panel-focused bill of materials and cutting templates described in "pyDome Gets a Face."
 # Tags
 
 geodesic
@@ -131,5 +146,9 @@ Claude Code
 agentic AI
 MCP
 Model Context Protocol
+bill of materials
+laser cutting
+CNC
+chirality
 Ultimate Cunning Master Plan
 
