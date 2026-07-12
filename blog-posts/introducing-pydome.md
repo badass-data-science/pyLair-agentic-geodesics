@@ -1,59 +1,122 @@
-# Meet pyDome, or: How Our Heroine Decided a Regular House Was Beneath Her
+# Introducing pyDome (or, How Our Heroine Designed a Geodesic Secret Lair)
 
-Somewhere between "I would like a nice backyard structure" and "I have written a thousand lines of Python to compute the precise angle at which forty different steel struts must meet at a single point in three-dimensional space," our heroine made a decision. She called the resulting software **pyDome**.
+Our heroine's secret laboratory is quickly becoming too big to fit inside her studio apartment, and that issue's now throwing a real grenade into the wheels of her Ultimate Cunning Master Plan&trade;.  She needs more room to house her bold experiments, and, being rather stylish, she wants that additional space to look cool. Our heroine also wants the structure to handle pressure gradients well, because one should deploy a secret laboratory either deep under the ocean's surface or in circumpolar orbit; certainly not within an unassuming San Diego neighborhood!
 
-Most people, faced with the desire for a dome-shaped structure, consult a tape measure, possibly a friend, and definitely a beverage. Our heroine consulted the icosahedron instead. This is the correct order of operations if you consider "buy a kit" a deeply unsatisfying answer to "how do I build a dome," and would rather derive the entire thing from first principles, in code, with a bill of materials attached. pyDome is what happens when that instinct runs unsupervised for a while.
+Enter geodesic design.
 
-A geodesic dome distributes structural stress across its entire surface rather than concentrating it in walls and a roof, which is the mathematical reason domes are strong for their weight and the practical reason people keep insisting on building them despite the aggravating number of distinct angles involved. pyDome exists so a computer handles the aggravating part — the angles, the strut lengths, the "wait, how many of these do I actually need to cut" part — instead of leaving it to increasingly creative profanity on a job site.
+Geodesic structures distribute structural stress relatively evenly across their surfaces, rather than concentrate such stress in focal points such as walls and a roof. This makes them strong for their weight, the primary reason individuals keep building them despite the aggravating number of angular calculations involved. This also makes geodesic structures more robust to pressure variation when inserted deep into a water column.
 
-## So What Does It Actually Do?
+One can buy a geodesic dome kit, of course, but why do that when one wants extreme customization? Therefore, before touching any power tools or even any CAD interface, our heroine requires her own geodesic calculations.
 
-In the most boring possible terms: pyDome computes the vertices and chords of a geodesic dome and writes them out as a DXF file (for your CAD software), a VRML file (so you can spin it around on screen and feel powerful), and, if you ask nicely, an STL or OBJ file for 3D printing a scale model. It also hands you, unprompted, a full bill of materials — every strut length, how many of each you need, the exact angle at which they meet at every hub, and a running total cost if you tell it what your steel runs per foot — because our heroine decided that "I'll figure out the angles later, on site, with a protractor and my dignity" is not an acceptable plan.
+So she built pyDome.
+# What It Does
 
-You tell it how big you want the dome, how finely subdivided you want its surface (the "frequency" — higher numbers mean smaller, more numerous, more sphere-like triangles), which of three different subdivision patterns to draw that surface with, and whether you want the whole sphere, a dome-shaped slice of it, or something stretched tall or squashed wide. It hands back everything a person needs to actually go build the thing, which is either extremely convenient or extremely ambitious, depending on how much steel you own.
+Essentially, pyDome computes the vertices and chords of a geodesic dome (or sphere) and writes them out as both DXF and VRML files (for CAD software and for impressing friends with cool 3D graphics, respectively). Optionally it produces STL and OBJ files to facilitate 3D printing of scale models.
 
-## How It Actually Works, for People Who Enjoy Geometry as a Spectator Sport
+Additionally, pyDome delivers a full **bill of materials** for the user's geodesic project detailing every struct length, how many struts of each length the user needs, the exact angles at which each strut meets at the hubs, and a optional overall cost estimate if the user tells the software how much the user's chosen strut material costs per unit length.
 
-Here is the method, in the order pyDome performs it, narrated at a pace suitable for people who have not thought about polyhedra since a geometry class they resented at the time and now, inexplicably, miss.
+Users tell pyDome how big they want their geodesic dome/sphere to be by setting the radius. They also specify the "frequency" of the structure, i.e., how finely to divided the source polyhedra's faces (see below) into the sub-triangles which later get projected onto the sphere (again, see below). Users select between three different polyhedral face subdivision patterns, specify whether they want a whole sphere or a truncation of the sphere into a dome, and finally whether they want the structure optionally stretched tall or squashed wide. pyDome then returns all the strut and angle information required to actually produce a physical structure.
+# How It Works
 
-**Step one: pick a base polyhedron.** pyDome starts from an icosahedron by default — twenty triangular faces, twelve vertices, extremely pleased with itself — though it will just as happily start from an octahedron if you ask. Either way, the idea is the same: if you're going to approximate a sphere, start from something that already agrees to be reasonably sphere-shaped and symmetric about it.
+Here is the basic method pyDome applies:
 
-![An icosahedron](../images/edited_icosahedron1.png)
+**Step one: pick a base polyhedron.** pyDome starts from an icosahedron by default (twenty triangular faces, twelve vertices), although it can also start from an octahedron if the user requests it. Either way, the basic idea is that if one is going to approximate a sphere, one should start from an object that is already reasonably sphere-shaped and symmetric.
 
-**Step two: subdivide, one of three ways.** pyDome chops each face into a neat grid of smaller, equal triangles — it calls this smaller unit the "symmetry triangle," computes it once, and stamps a copy onto every face like a very geometrically disciplined rubber stamp. The "frequency" setting governs how fine that grid is: ask for a higher frequency, and you get more struts and a dome that looks less like a soccer ball and more like an actual sphere.
+![An icosahedron](edited_icosahedron1.png)
 
-![Each face subdivided into a triangular grid](../images/edited_4_unprojected1.png)
+**Step two: subdivide the polyhedral faces.** pyDome divides one of the faces into a grid of smaller triangles (taken together, the resulting face is called a "symmetry triangle"). After computing the symmetry triangle for one face, the software copies rotated versions of it onto the other faces, replacing those original faces with the new symmetry triangles as shown below:
 
-pyDome will draw that grid three different ways, and picking one is what the `-c`/`--class` flag is for. Class I, "Alternate," runs the grid parallel to each face's own edges — the default, and the one in the picture above. Class II, "Triacon," splits each face into six smaller triangles around its center first and grids those instead, producing a visibly different strut pattern and, not incidentally, demanding a frequency the software can actually divide evenly.
+![Each face subdivided into a triangular grid](edited_4_unprojected1.png)
 
-Class III, "Skew," is the one that fought back. It lays the grid down at an angle instead of running it parallel or radiating it from the center — the geodesic-dome equivalent of installing your hardwood floor on a diagonal, and just as fussy to get right. Our heroine built a first version and checked it against Euler's formula, the same "vertices minus edges plus faces equals two" identity that had already caught a real bug in Class II. It passed. She checked the vertex, edge, and face counts against the formulas the mathematics predicted. Those matched too, exactly. By every number she knew to compute, the dome was correct — and it was not correct: buried among several hundred properly-sized struts sat thirty long ones, one per edge of the original icosahedron, each roughly four times too long because nobody had subdivided it at all. Euler's formula only confirms a mesh is *some* valid closed shape; it has no opinion on whether it's the *particular* shape you meant to build, and a skewed pattern has no mirror symmetry to fall back on, so a point near one face's edge doesn't land on the same spot in space as the "same" point computed from the neighboring face. The two faces were shaking hands only at their three shared corners and shrugging at everything in between.
+pyDome's "frequency" setting enables users to specify how finely they want each of the original polyhedron's faces divided; the higher the frequency, the more spherical the final projection. The trade-off though is that the higher the frequency the more distinct strut types and hub angle configurations are required to actually build the structure.
 
-Rather than trust her own second attempt at the math, our heroine found someone else's math to check it against: [`antitile`](https://github.com/brsr/antitile), a well-established, independently written geodesic dome library, installed purely as a private fact-checker (it never touches pyDome's own dependency list). She rebuilt Class III to stitch adjacent faces together combinatorially instead of by 3D position, and didn't stop until her dome's edge lengths matched antitile's output to fifteen decimal places. `-c 3`, together with its companion flag `-n`, now produces a Class III dome — and for anyone who wants the underlying theory rather than the war story, the whole `(m,n)` construction traces back to [Šiber's 2007 paper on icosadeltahedral geometry](https://arxiv.org/abs/0711.3527), which she also read, presumably while muttering.
+When creating the initial symmetry triangle, pyDome will draw the grid in one of three distinct ways. The Class I, "Alternate" method draws the grid parallel to each face's own edges This is the software's default configuration and the one shown in the image above.
 
-**Step three: project onto the sphere.** Every point pyDome just created is still living smugly flat on the face of its polyhedron. pyDome pushes them all outward onto the surface of an actual sphere, preserving the chord pattern that connects them as it goes — the step that turns "a polyhedron with a lot of triangles on it" into "something that reads, to the human eye, as a sphere made of struts." Along the way it also notices any two points that landed on the seam between adjacent faces — computed twice, once by each face — and quietly merges them back into one, so the dome doesn't end up with a bunch of secretly-doubled vertices lurking at every seam.
+The Class II, "Triacon" method first splits each face into six smaller triangles around its center then divides those smaller triangles instead, producing a strut pattern significantly different from that of Class I. Class II requires an even frequency setting due to the nature of this construction method.
 
-![The subdivided grid projected onto a sphere](../images/edited_4_projected1.png)
+Class III, the "Skew" method, lays its grid down at an angle instead of running it parallel to the original polyhedron's face boundaries or radiating it from the polyhedron faces' centers.
 
-**Step four: stretch it, if you're feeling less than spherical.** Not everyone wants a perfect sphere. If you ask for elongation, pyDome stretches the whole structure along its vertical axis, turning it into an axis-aligned ellipsoid for anyone whose ceiling-height ambitions exceed their footprint, or the reverse — which required teaching the software that an ellipsoid's surface doesn't point straight outward from its center the way a sphere's does, a distinction most people never have to think about and one our heroine now thinks about rather more than she originally planned to.
+**Step three: project onto a sphere.** By this point, every point still flatly resides on the faces of the polyhedron. pyDome then pushes these points outward onto the surface of an actual sphere, preserving the chord pattern that connects them as it goes. The result appears to the human eye as a sphere composed of struts. As it does this, the software ensures that points computed for different symmetry triangles, but sharing the same physical location, are collapsed into single points, rather than simply duplicated in the structure's manifest.
 
-**Step five: cut it down to size.** Doors are hard to install on the underside of a complete sphere, so pyDome slices the (possibly now ellipsoidal) shape off at a chosen height and hands you a proper dome instead of a full globe.
+![The subdivided grid projected onto a sphere](edited_4_projected1.png)
 
-![The sphere truncated at the equator into a dome](../images/edited_truncated.png)
+**Step four: optional elliptical stretching.** Not everyone wants a perfect sphere. If the user asks for vertical elongation, pyDome stretches the whole structure along its vertical axis, increasing the ceiling height while maintaining the same equatorial radius. Similarly, the software can, if requested, squish the structure vertically to reduce the ceiling height while maintaining the original base equatorial radius.
 
-**Step six: write it all down.** pyDome saves the result as a DXF file, which loads into a CAD program looking like an actual, legitimate architectural drawing rather than the output of someone who spent their weekend deriving polyhedra, and as a VRML file for spinning around on screen. Ask it to, and it will also save an STL or OBJ mesh for 3D printing, or a quick 3D wireframe preview PNG so you can confirm the thing actually looks like a dome — and not, say, a lopsided egg — before hunting down software that still knows how to open a VRML file. Considerable stubbornness went into making sure that preview's three axes are scaled honestly relative to one another, on the theory that a tool which quietly lies to you about the shape of your own dome is worse than no tool at all.
+![elliptical stretching](ellipsoid.png)
 
-![The dome loaded into a CAD program](../images/CAD_dome.jpg)
+**Step five: optionally truncate the sphere/ellipsoid into a dome.** Doors prove difficult to install on the underside of a full sphere, so pyDome provides the option to slice the bottom of the (possibly now ellipsoidal) shape off at a chosen height, thus producing a dome-like structure. The user can specify exactly how much to take off the bottom; 1/3 and 1/2 the diameter of the sphere are common selections.
 
-**Step seven: report the angles, because someone has to.** This is our heroine's favorite part, and arguably the actual point of the whole exercise. For every hub in the structure — every point where multiple struts converge — pyDome computes two kinds of angle.
+![The sphere truncated at the equator into a dome](edited_truncated.png)
 
-First, the angle between each strut and the plane tangent to the sphere at that hub, which tells you how far a hub connector has to tilt inward to receive that particular strut:
+**Step six: produce visualizations.** In addition to providing a bill of material (discussed below), pyDome creates a DXF file for import into CAD software, and VRML file to help users impress their friends with archaic 3D web formats. Because VRML players sometimes prove difficult to track down, the software can also optionally produce STL or OBJ output, useful for not just 3D visualization but also 3D printing as well. Users can also ask the software to produce a preview PNG image to facilitate rapid concept iteration.
 
-![The tangent-plane deflection angle at a hub](../images/tangent_angle_image_CROPPED.png)
+![The dome loaded into a CAD program](CAD_dome.jpg)
 
-Second, the "spoke" angles: pyDome projects all the struts at a hub onto that same tangent plane, picks one as a reference, and measures how far around the hub each of the others sits relative to it:
+**Step seven: bill of materials.** This is our heroine's favorite part, and arguably the actual point of the whole exercise. For every hub in the structure (every point where two or more struts converge), pyDome reports two kinds of angle:
 
-![The spoke angles around a hub](../images/spoke_angle_image_CROPPED.png)
+First, the software reports the angles between each strut and the plane tangent to the sphere at that hub, which tells users how far a hub connector has to deflect inward to receive a given strut:
 
-Put the two together and you know, for every single joint in the entire dome, exactly how to bend metal or cut wood to make it meet correctly. pyDome also totals up every strut's length across the whole dome, adds an estimated material cost if you give it a price per foot, and — because the connector plates where five or six struts converge are the part everyone actually dreads building — generates a 2D DXF cutting template for every genuinely distinct hub shape in the dome, correctly recognizing that two hubs which are secretly the same shape, just rotated relative to each other, only need one template between them. This is the difference between a construction plan and a very expensive pile of triangles.
+![The tangent-plane deflection angle at a hub](tangent_angle_image_CROPPED.png)
 
-Our heroine looked at all of this, decided the computer should do the arithmetic, and wrote pyDome so it would. The dome, presumably, is out there somewhere now, standing on the strength of several hundred correctly-computed angles, three distinct ways of getting to a sphere, and not one single argument with a protractor.
+Second, the software reports the "spoke" angles: pyDome projects all struts entering a given hub onto same tangent plane discussed immediately above, picks one of the struts as the reference strut, and then measures how far around the hub each of the other struts sits relative to it:
+
+![The spoke angles around a hub](spoke_angle_image_CROPPED.png)
+
+Taken together, these two angle types define, for every single joint in the entire structure, exactly how to bend/cut/grow one's source material to fit the whole structure together correctly.
+
+pyDome also produces a list of strut lengths and how many struts of each length are required to build the structure, as well as a summation of the total length of strut material required. If the user provides a price per unit length, then a cost estimate of total strut material required is reported as well.
+
+**Step eight: hub templates.** A geodesic project will likely require multiple (but repeated) distinct hub angle configurations. To assist designers, pyDome optionally creates 2D DXF cutting templates for each genuinely distinct hub shape in the structure, correctly recognizing that two hubs which are actually the same shape, just rotated relative to each other, only require one template between them.
+# Next Steps
+
+* pyDome is currently strut-centric in its output, but our heroine's practical design requirements might evolve toward face-centric thinking. For example, suppose she decides to assemble her final structure out of 3D-printed symmetry triangles; this would require a face-centric point of view and the bill of materials would have to be enhanced accordingly to facilitate it. Possibly the templates too.
+* It would be cool to make agentic AI skill(s) to interface with pyDome.
+* Our heroine will likely experiment with AI-based interaction with pyDome's source code, such as asking Claude Code to review the existing code and then design a DXF file modification that creates a door-frame design. Our heroine is not sure if this will work, but thinks it worth a try. (Doorways are hell for any geodesic building design; if AI can improve this situation that would be awesome!).
+* This is going on PyPI soon!
+# Conclusion
+
+Our heroine decided that a computer should perform the geodesic arithmetic necessary for designing her future secret laboratory whilst she drinks Mojitos on the beach. Therefore, she wrote pyDome to make these computations happen.
+
+The actual construction of the forthcoming geodesic secret laboratory will (of course) be kept secret.
+# Works Consulted
+
+* Kenner, H. (1976). _Geodesic math and how to use it_. University of California Press.
+* [`antitile`](https://github.com/brsr/antitile). A well-established, independently written geodesic dome library used to validate pyDome's computation results. (Our heroine assumed that either both she and this project's authors are simultaneously correct--their results matched to 15 decimal places--or that both are wrong in the exactly same way!).
+* Šiber, A. (2007). _Icosadeltahedral geometry of fullerenes, viruses and geodesic domes_. [arXiv](https://arxiv.org/abs/0711.3527). https://arxiv.org/abs/0711.3527
+# Code
+
+pyDome is available [here](https://github.com/badass-data-science/Engineering/tree/main/Geodesic-Dome-Design/pyDome).
+# AI Use Statement
+
+Our heroine wrote this article about 99% manually, with a small amount of outline assistance from Claude Code.
+
+She wrote the original pyDome implementation from scratch in Python, and then had Claude code refactor it a bit to make it PyPI-ready. She also collaborated with Claude Code to add features missing from her original implementation (Class II and III polyhedra face subdivision methods, sphere elongation functionality, and STL/OBJ/PNG output).
+# Tags
+
+geodesic
+geodesic math
+geodesic dome
+pyDome
+Python
+PyPI
+engineering
+structural engineering
+mechanical engineering
+CAD
+DXF
+STL
+OBJ
+VRML
+3D printing
+triacon
+symmetry triangle
+polyhedron
+icosahedron
+octahedron
+geometry
+analytic geometry
+NumPy
+Claude Code
+agentic AI
+Ultimate Cunning Master Plan
+
