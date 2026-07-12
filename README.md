@@ -30,6 +30,25 @@ pydome -o output/mydome -f 4 -r 1.0
 
 produces `output/mydome.dxf`, `output/mydome.wrl`, and prints a JSON Bill of Materials report to stdout.
 
+## MCP interface
+
+For agentic use (an LLM assistant interactively designing a dome), install the `mcp` extra:
+
+```
+pip install -e ".[mcp]"
+```
+
+This provides a `pydome-mcp` console command: an [MCP](https://modelcontextprotocol.io) server (stdio transport) exposing four tools, all sharing one geometry parameter schema (`radius`, `frequency`, `polyhedron`, `dome_class`, `n_frequency`, `truncation_amount`, `elongation_factor`, `vertex_equal_threshold`):
+
+| Tool | Purpose |
+|---|---|
+| `design_dome` | Computes geometry only (no files) and returns vertex/edge/face counts, bounding box, height, footprint, and total strut length — a cheap way to try configurations. |
+| `preview_dome` | Renders the wireframe preview and returns it as an inline image, so the dome can be seen in-conversation before any file is written. |
+| `get_bill_of_materials` | Returns the JSON Bill of Materials (strut lengths/counts, hub angles, total length/cost) as structured data, no files. |
+| `export_dome` | Writes output files to disk (DXF/VRML by default; STL/OBJ/hub-templates/preview PNG optionally), mirroring the CLI's `-F/-s/-O` vs `-t` mutual-exclusion rule. Returns the paths written plus the Bill of Materials. |
+
+Configure it in an MCP client (e.g. Claude Code/Desktop) by pointing at the `pydome-mcp` command. All four tools share the same validation as the CLI (`pydome/api.py:validate_geometry_params`/`validate_output_combo`) — an invalid combination (e.g. Class II with an odd frequency) raises a clear error rather than producing bad geometry.
+
 ### Command-line options
 
 | Flag | Long form | Description | Default |
@@ -86,7 +105,9 @@ A few behaviors are worth understanding before relying on the output for a real 
 |---|---|
 | `pydome/__init__.py` | Package marker; intentionally empty besides the license header. |
 | `pydome/__main__.py` | Enables `python -m pydome`; delegates to `cli.main()`. |
-| `pydome/cli.py` | CLI entry point (`pydome` console command → `cli:main`): argument parsing/validation and orchestration. |
+| `pydome/cli.py` | CLI entry point (`pydome` console command → `cli:main`): argument parsing and orchestration via `pydome/api.py`. |
+| `pydome/api.py` | Programmatic entry point shared by the CLI and the MCP server: `build_dome(...)` (validation, symmetry-triangle construction, projection, elongation, truncation) and the shared `ValueError`-raising validators. |
+| `pydome/mcp_server.py` | MCP server (`pydome-mcp` console command, optional `mcp` extra): `design_dome`/`preview_dome`/`get_bill_of_materials`/`export_dome` tools built on `pydome/api.py`. |
 | `pydome/polyhedral.py` | The base polyhedra (`Icosahedron`, `Octahedron`), the `Vertex`/`Chord`/`Face` primitives, `build_lcd_faces` (splits each face into 6 sub-triangles for Class II), and `compute_face_adjacency` (which face/edge borders which, for Class III's cross-face stitching). |
 | `pydome/symmetry_triangle.py` | Subdivides a single polyhedron face (Class I) or LCD sub-triangle (Class II) into a triangular vertex/chord/face grid. |
 | `pydome/class_three.py` | Builds the Class III (chiral `(m,n)`) grid for a single polyhedron face, plus the combinatorial cross-face vertex-matching data (`cross_face_matches`, `local_priority`) `GeodesicSphere` needs to stitch adjacent faces together correctly. |
