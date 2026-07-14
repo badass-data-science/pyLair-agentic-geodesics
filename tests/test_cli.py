@@ -59,14 +59,13 @@ def test_nonpositive_radius_reports_clear_error(tmp_path):
         assert "Traceback" not in result.stderr
 
 
-def test_face_based_output_and_x_or_y_truncation_are_mutually_exclusive(tmp_path):
-    # Z-only truncation (-t) now supports face-based output -- only -x/-y
-    # still don't (see test_z_only_truncation_combines_with_face_output)
+def test_face_based_output_now_works_with_x_or_y_truncation(tmp_path):
+    # X/Y truncation used to discard face data entirely; sequential
+    # multi-axis face clipping now makes this work the same as -t
     out = tmp_path / "dome"
     for flag in ["-F", "-s", "-O"]:
-        result = run_cli(["-o", str(out), flag, "-x", "0.5"])
-        assert result.returncode != 0
-        assert "cannot be used with truncation" in result.stdout.lower() or "does not work" in result.stdout.lower()
+        result = run_cli(["-o", str(out), flag, "-x", "0.499999"])
+        assert result.returncode == 0
 
 
 def test_default_run_generates_dxf_and_wrl_with_valid_bom_report(tmp_path):
@@ -331,11 +330,10 @@ def test_truncation_x_and_y_flags_enable_truncation(tmp_path):
 
     assert result_x.returncode == 0
     assert result_y.returncode == 0
-    # truncation clears face data, so face-based output (-T etc.) would
-    # now be rejected exactly like -t already is
-    result_rejected = run_cli(["-o", str(out_x), "-f", "4", "-x", "0.499999", "-T"])
-    assert result_rejected.returncode != 0
-    assert "does not work" in result_rejected.stdout.lower()
+    # X/Y truncation clips faces correctly now, so combining -x with -T
+    # succeeds just like -t already did
+    result_with_faces = run_cli(["-o", str(out_x), "-f", "4", "-x", "0.499999", "-T"])
+    assert result_with_faces.returncode == 0
 
 
 def test_combined_x_y_z_truncation_produces_a_valid_smaller_dome(tmp_path):
@@ -345,7 +343,7 @@ def test_combined_x_y_z_truncation_produces_a_valid_smaller_dome(tmp_path):
     result_full = run_cli(["-o", str(out_full), "-f", "4"])
     result_clipped = run_cli([
         "-o", str(out_clipped), "-f", "4",
-        "-x", "0.5", "-y", "0.5", "-t", "0.499999",
+        "-x", "0.499999", "-y", "0.499999", "-t", "0.499999",
     ])
 
     assert result_full.returncode == 0
@@ -450,33 +448,34 @@ def test_no_face_templates_flag_means_no_template_files_or_section(tmp_path):
     assert list(tmp_path.glob("dome_facetype*.dxf")) == []
 
 
-def test_face_templates_and_x_or_y_truncation_are_mutually_exclusive(tmp_path):
+def test_face_templates_now_work_with_x_or_y_truncation(tmp_path):
     out = tmp_path / "dome"
-    result = run_cli(["-o", str(out), "-T", "-y", "0.5"])
-    assert result.returncode != 0
-    assert "does not work" in result.stdout.lower()
-
-
-def test_area_cost_and_x_or_y_truncation_are_mutually_exclusive(tmp_path):
-    out = tmp_path / "dome"
-    result = run_cli(["-o", str(out), "-a", "2.0", "-x", "0.5"])
-    assert result.returncode != 0
-    assert "does not work" in result.stdout.lower()
-
-
-def test_z_only_truncation_combines_with_face_output(tmp_path):
-    # the whole point of this feature: Z-only truncation clips faces
-    # correctly, so -t no longer needs to be mutually exclusive with
-    # face-based output the way -x/-y still are
-    out = tmp_path / "dome"
-    result = run_cli(["-o", str(out), "-T", "-t", "0.499999"])
+    result = run_cli(["-o", str(out), "-T", "-y", "0.499999"])
     assert result.returncode == 0
     report = json.loads(result.stdout)["pyDome report"]
     assert "Panel Cutting Templates" in report
     assert len(report["Panel Cutting Templates"]) > 0
 
 
-def test_z_only_truncation_combines_with_stl_obj_and_face_wrl_output(tmp_path):
+def test_area_cost_now_works_with_x_or_y_truncation(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-a", "2.0", "-x", "0.499999"])
+    assert result.returncode == 0
+    report = json.loads(result.stdout)["pyDome report"]
+    assert "Total estimated panel material cost" in report["Total panel material"]
+
+
+def test_truncation_combines_with_face_output_on_any_single_axis(tmp_path):
+    for flag in ["-t", "-x", "-y"]:
+        out = tmp_path / "dome"
+        result = run_cli(["-o", str(out), "-T", flag, "0.499999"])
+        assert result.returncode == 0
+        report = json.loads(result.stdout)["pyDome report"]
+        assert "Panel Cutting Templates" in report
+        assert len(report["Panel Cutting Templates"]) > 0
+
+
+def test_truncation_combines_with_stl_obj_and_face_wrl_output(tmp_path):
     for flag, suffix in (("-F", ".wrl"), ("-s", ".stl"), ("-O", ".obj")):
         out = tmp_path / ("dome" + suffix.strip("."))
         result = run_cli(["-o", str(out), flag, "-t", "0.499999"])
@@ -485,10 +484,22 @@ def test_z_only_truncation_combines_with_stl_obj_and_face_wrl_output(tmp_path):
         assert out.with_suffix(suffix).stat().st_size > 0
 
 
-def test_z_only_truncation_combines_with_area_cost_and_panel_density(tmp_path):
+def test_truncation_combines_with_area_cost_and_panel_density(tmp_path):
     out = tmp_path / "dome"
     result = run_cli(["-o", str(out), "-t", "0.499999", "-a", "2.0", "-w", "1.5"])
     assert result.returncode == 0
     report = json.loads(result.stdout)["pyDome report"]
     assert "Total estimated panel material cost" in report["Total panel material"]
     assert "Total estimated panel weight" in report["Total panel material"]
+
+
+def test_combined_x_y_z_truncation_still_produces_valid_face_output(tmp_path):
+    # the case that used to be entirely unsupported: all three axes
+    # truncated together, with face-based output requested
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-T", "-a", "2.0",
+                       "-x", "0.499999", "-y", "0.499999", "-t", "0.499999"])
+    assert result.returncode == 0
+    report = json.loads(result.stdout)["pyDome report"]
+    assert "Panel Cutting Templates" in report
+    assert len(report["Panel Cutting Templates"]) > 0

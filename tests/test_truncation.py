@@ -124,6 +124,34 @@ def _triangle_areas(V, F):
     return areas
 
 
+@pytest.mark.parametrize("axis", [0, 1, 2])
+def test_clip_face_one_vertex_above_cutoff_works_on_any_axis(axis):
+    # same shape as the Z-specific hand-computed case below, but with
+    # the distinguishing coordinate placed on whichever axis is under
+    # test -- confirms the clipping math is genuinely axis-generic
+    # (it never special-cases axis==2 anywhere) rather than something
+    # only verified to work for Z.
+    def vec(axis_value, other1, other2):
+        v = [0., 0., 0.]
+        v[axis] = axis_value
+        remaining = [a for a in range(3) if a != axis]
+        v[remaining[0]] = other1
+        v[remaining[1]] = other2
+        return np.array(v)
+
+    A = vec(2., 0., 0.)   # kept (axis coordinate above cutoff)
+    B = vec(0., 4., 0.)   # discarded
+    C = vec(0., 0., 4.)   # discarded
+    V = [A, B, C]
+    edges = [[0, 1], [1, 2], [2, 0]]
+
+    V_new, C_new, F_new = truncate(V, edges, 0.5, axis=axis, F_sphere=[[0, 1, 2]])
+
+    assert len(F_new) == 1
+    for i in F_new[0]:
+        assert V_new[i][axis] >= 1.0 - 1e-9
+
+
 def test_clip_face_fully_above_cutoff_is_kept_unchanged():
     V = [np.array([0., 0., 2.]), np.array([4., 0., 2.]), np.array([0., 4., 2.])]
     C = [[0, 1], [1, 2], [2, 0]]
@@ -220,3 +248,35 @@ def test_clip_face_reuses_the_same_crossing_point_as_the_bordering_chord():
                 chord_endpoint_points.add(tuple(v))
 
     assert face_crossing_points <= chord_endpoint_points
+
+
+def test_sequential_multi_axis_clip_reuses_diagonal_edge_without_keyerror():
+    # A (below Z=1) is discarded; B and C (both z=2) are kept, producing
+    # exactly the 2-above-1-below quad-split whose diagonal edge (from
+    # the new Z-crossing point to C) is NOT a real chord. A second
+    # truncation pass on a *different* axis (X here), chosen so that
+    # diagonal itself straddles the new cutoff, is exactly the scenario
+    # that used to raise a KeyError before crossing points could be
+    # computed on demand for any edge -- chord-backed or not.
+    A = np.array([0., 0., 0.])
+    B = np.array([4., 0., 2.])
+    C = np.array([0., 4., 2.])
+    V = [A, B, C]
+    edges = [[0, 1], [1, 2], [2, 0]]
+    F = [[0, 1, 2]]
+
+    V1, C1, F1 = truncate(V, edges, 0.5, axis=2, F_sphere=F)  # Z cutoff = 1
+    assert len(F1) == 2  # confirms the quad-split actually happened
+
+    # X spans 0 (C, and the Z-pass's crossing point on edge C-A) to 4
+    # (B); cutoff_from_bottom=0.25 -> cutoff = 1, landing strictly
+    # between the diagonal edge's two endpoints (x=2 and x=0)
+    V2, C2, F2 = truncate(V1, C1, 0.25, axis=0, F_sphere=F1)
+
+    assert len(F2) > 0
+    for f in F2:
+        assert len(f) == 3
+        for idx in f:
+            assert 0 <= idx < len(V2)
+    for v in V2:
+        assert v[0] >= 1.0 - 1e-9

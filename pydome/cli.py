@@ -30,7 +30,7 @@ from .polyhedral import Icosahedron, Octahedron
 from .output import OutputDXF, OutputWireframeVRML, OutputFaceVRML, OutputSTL, OutputOBJ
 from .bill_of_materials import get_bill_of_materials
 from .preview import save_preview
-from .api import build_dome, validate_output_combo
+from .api import build_dome
 
 
 def display_help():
@@ -62,23 +62,23 @@ Options:
 
 \t-n, --n-frequency\tSecond frequency parameter for -c 3 (Class III / Skew). Must be a positive integer different from --frequency. Ignored for classes 1 and 2.
 
-\t-F, --face\tFlag specifying whether to generate face output in WRL file. Cancels DXF file output. Requires face data, so cannot be combined with -x/-y truncation; works fine with Z-only -t.
+\t-F, --face\tFlag specifying whether to generate face output in WRL file. Cancels DXF file output. Requires face data, which truncation on any axis (or combination of axes) now correctly preserves.
 
 \t-P, --preview\tAlso save a quick 3D wireframe preview image ("<output>.png") alongside the usual output files, so you can sanity-check the dome without opening a CAD or VRML viewer.
 
-\t-s, --stl\tAlso save an STL file ("<output>.stl") of the dome's surface triangles, e.g. for 3D-printing a scale model. Requires face data, so cannot be combined with -x/-y truncation; works fine with Z-only -t.
+\t-s, --stl\tAlso save an STL file ("<output>.stl") of the dome's surface triangles, e.g. for 3D-printing a scale model. Requires face data, which truncation on any axis correctly preserves.
 
-\t-O, --obj\tAlso save an OBJ file ("<output>.obj") of the dome's surface triangles. Requires face data, so cannot be combined with -x/-y truncation; works fine with Z-only -t.
+\t-O, --obj\tAlso save an OBJ file ("<output>.obj") of the dome's surface triangles. Requires face data, which truncation on any axis correctly preserves.
 
 \t-m, --material-cost\tPrice per unit length of strut material. If given, adds an estimated total material cost to the Bill of Materials, in addition to the total strut length (which is always reported). Must be a positive floating point number.
 
 \t-H, --hub-templates\tAlso save one 2D DXF cutting template per unique hub connector shape ("<output>_hubtype1.dxf", "<output>_hubtype2.dxf", ...), for laser-cutting/CNC connector plates. Each template shows one radiating line per strut at its spoke angle, labeled with that strut's tangential (out-of-plane) deflection angle.
 
-\t-T, --face-templates\tAlso save one 2D DXF cutting template per unique panel (face) shape ("<output>_facetype1.dxf", "<output>_facetype2.dxf", ...), for laser-cutting/CNC panel material. Each template shows the panel's 3 edges labeled with their lengths. Requires face data, so cannot be combined with -x/-y truncation; works fine with Z-only -t.
+\t-T, --face-templates\tAlso save one 2D DXF cutting template per unique panel (face) shape ("<output>_facetype1.dxf", "<output>_facetype2.dxf", ...), for laser-cutting/CNC panel material. Each template shows the panel's 3 edges labeled with their lengths. Requires face data, which truncation on any axis correctly preserves.
 
-\t-a, --area-cost\tPrice per unit area of panel material. If given, adds an estimated total panel material cost to the Bill of Materials, in addition to the total panel area (both reported whenever face data is available -- an untruncated dome, or one truncated only along Z). Cannot be combined with -x/-y truncation. Must be a positive floating point number.
+\t-a, --area-cost\tPrice per unit area of panel material. If given, adds an estimated total panel material cost to the Bill of Materials, in addition to the total panel area (both reported whenever face data is available). Must be a positive floating point number.
 
-\t-w, --panel-density\tAreal density (mass per unit area, e.g. kg per square meter) of panel material. If given, adds an estimated total panel weight to the Bill of Materials. Cannot be combined with -x/-y truncation. Must be a positive floating point number.
+\t-w, --panel-density\tAreal density (mass per unit area, e.g. kg per square meter) of panel material. If given, adds an estimated total panel weight to the Bill of Materials. Must be a positive floating point number.
 
 \t-e, --elongation\tStretches the dome along all three axes by independent factors "fx,fy,fz", applied before truncation, turning the sphere into a general axis-aligned ellipsoid -- values > 1 stretch that axis, values < 1 squash it (e.g. "1.0,1.0,1.8" raises the ceiling height without touching the footprint; "1.3,1.0,1.0" widens the footprint along X only). All angle-based output (Bill of Materials angles, hub connector templates) correctly accounts for the resulting ellipsoid's true surface normal, not just the sphere approximation. All three factors must be positive floating point numbers. Default "1.0,1.0,1.0" (no elongation).
 """
@@ -256,9 +256,6 @@ def main():
   # inside build_dome -- shared with pydome/mcp_server.py)
   #
   try:
-    validate_output_combo(truncation_x, truncation_y, truncation_z, face_output, stl_output,
-                           obj_output, face_templates_output, cost_per_unit_area,
-                           panel_areal_density)
     dome = build_dome(radius=radius, frequency=frequency, polyhedron=polyhedral,
                        dome_class=dome_class, n_frequency=n_frequency,
                        vertex_equal_threshold=vertex_equal_threshold,

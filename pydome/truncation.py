@@ -42,14 +42,18 @@ def _edge_crossing(v_below, v_above, axis, cutoff):
   return v_above + scalar * norm_vec
 
 
-def _clip_face(face, V_sphere, edge_to_new_vertex, axis, cutoff):
+def _clip_face(face, V_sphere, register_crossing, axis, cutoff):
   # Clip a single triangular face against the same cutoff plane used for
-  # chords, reusing the exact intersection points already computed for
-  # that face's own edges (every triangle edge is also a chord, so each
-  # crossing point already exists in edge_to_new_vertex by the time this
-  # runs). Returns 0, 1, or 2 triangles (as [a, b, c] index triples,
-  # still indexing into the not-yet-renumbered vertex list), depending on
-  # how many of the face's 3 vertices survive the cut. Winding order is
+  # chords. `register_crossing(v1_idx, v2_idx)` returns the (possibly
+  # newly created) crossing point for ANY edge, not just real chords --
+  # this matters once a face has already been through a previous
+  # clipping pass on a different axis, since the diagonal edge a
+  # quad-split introduces (see below) is a face-only edge with no
+  # backing chord, and a second pass still needs a consistent crossing
+  # point for it if that diagonal itself straddles the new cutoff.
+  # Returns 0, 1, or 2 triangles (as [a, b, c] index triples, still
+  # indexing into the not-yet-renumbered vertex list), depending on how
+  # many of the face's 3 vertices survive the cut. Winding order is
   # preserved in every case: a kept triangle's corner(s) are simply
   # pulled inward along the edges leading to a discarded vertex, which
   # never reverses the cyclic order the original face was given in.
@@ -63,7 +67,7 @@ def _clip_face(face, V_sphere, edge_to_new_vertex, axis, cutoff):
     return []
 
   def crossing(i, j):
-    return edge_to_new_vertex[frozenset((verts[i], verts[j]))]
+    return register_crossing(verts[i], verts[j])
 
   if n_above == 1:
     i = above.index(True)
@@ -74,7 +78,9 @@ def _clip_face(face, V_sphere, edge_to_new_vertex, axis, cutoff):
   # (necessarily convex, since a straight line can only cut a triangle
   # into a triangle and a convex quadrilateral) quadrilateral, split
   # here into 2 triangles along a diagonal from one of the new crossing
-  # points.
+  # points. That diagonal is a purely artificial triangulation seam --
+  # not a real strut -- so it is never added to the chord list; see the
+  # "unstrutted diagonal" caveat in the README.
   disc = above.index(False)
   kept1, kept2 = (disc + 1) % 3, (disc + 2) % 3
   Pa = crossing(disc, kept1)
@@ -100,12 +106,31 @@ def truncate(V_sphere, C_sphere, cutoff_from_bottom, axis=2, F_sphere=None):
   cutoff = min_vy + cutoff_from_bottom * v_range
 
   #
-  # find chords to remove or modify
+  # crossing points, computed once per edge and cached regardless of
+  # whether that edge is a real chord or a face-only diagonal seam
+  # introduced by a previous clipping pass on a different axis -- see
+  # _clip_face for why the latter case matters.
   #
   V_new = list(V_sphere)
+  edge_to_new_vertex = {}
+
+  def _register_crossing(v1_idx, v2_idx):
+    key = frozenset((v1_idx, v2_idx))
+    if key not in edge_to_new_vertex:
+      v1, v2 = V_sphere[v1_idx], V_sphere[v2_idx]
+      if v1[axis] < cutoff:
+        point = _edge_crossing(v1, v2, axis, cutoff)
+      else:
+        point = _edge_crossing(v2, v1, axis, cutoff)
+      V_new.append(point)
+      edge_to_new_vertex[key] = len(V_new) - 1
+    return edge_to_new_vertex[key]
+
+  #
+  # find chords to remove or modify
+  #
   chords_to_remove = []
   chords_to_add = []
-  edge_to_new_vertex = {}
   for c_idx, c in enumerate(C_sphere):
     v1_idx = c[0]
     v2_idx = c[1]
@@ -117,18 +142,14 @@ def truncate(V_sphere, C_sphere, cutoff_from_bottom, axis=2, F_sphere=None):
       chords_to_remove.append(c_idx)
 
     # vertex 1 below cutoff
-    if v1[axis] < cutoff and v2[axis] >= cutoff:
+    elif v1[axis] < cutoff:
       chords_to_remove.append(c_idx)
-      V_new.append(_edge_crossing(v1, v2, axis, cutoff))
-      chords_to_add.append([c[1], len(V_new) - 1])
-      edge_to_new_vertex[frozenset((v1_idx, v2_idx))] = len(V_new) - 1
+      chords_to_add.append([c[1], _register_crossing(v1_idx, v2_idx)])
 
     # vertex 2 below cutoff
-    if v2[axis] < cutoff and v1[axis] >= cutoff:
+    elif v2[axis] < cutoff:
       chords_to_remove.append(c_idx)
-      V_new.append(_edge_crossing(v2, v1, axis, cutoff))
-      chords_to_add.append([c[0], len(V_new) - 1])
-      edge_to_new_vertex[frozenset((v1_idx, v2_idx))] = len(V_new) - 1
+      chords_to_add.append([c[0], _register_crossing(v1_idx, v2_idx)])
 
   #
   # consolidate chords
@@ -141,15 +162,14 @@ def truncate(V_sphere, C_sphere, cutoff_from_bottom, axis=2, F_sphere=None):
     C_next.append(c)
 
   #
-  # clip faces against the same cutoff plane, reusing the chord
-  # crossing points computed above (see _clip_face) -- only attempted
-  # when the caller actually has face data to begin with
+  # clip faces against the same cutoff plane (see _clip_face) -- only
+  # attempted when the caller actually has face data to begin with
   #
   F_next = None
   if F_sphere is not None:
     F_next = []
     for f in F_sphere:
-      F_next.extend(_clip_face(f, V_sphere, edge_to_new_vertex, axis, cutoff))
+      F_next.extend(_clip_face(f, V_sphere, _register_crossing, axis, cutoff))
 
   #
   # re-number nodes, getting ride of unused ones

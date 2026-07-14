@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from pydome.api import build_dome, validate_geometry_params, validate_output_combo
+from pydome.api import build_dome, validate_geometry_params
 
 
 def test_class_one_golden_counts():
@@ -73,8 +73,16 @@ def test_elongation_scales_x_and_y_independently():
     assert wide.elongation_factors == (2.0, 0.5, 1.0)
 
 
-def test_z_only_truncation_now_preserves_clipped_face_data():
-    dome = build_dome(frequency=4, truncation_z=0.499999)
+@pytest.mark.parametrize("kwargs", [
+    dict(truncation_z=0.499999),
+    dict(truncation_x=0.499999),
+    dict(truncation_y=0.499999),
+    dict(truncation_x=0.499999, truncation_y=0.499999),
+    dict(truncation_x=0.499999, truncation_z=0.499999),
+    dict(truncation_y=0.499999, truncation_z=0.499999),
+])
+def test_truncation_on_any_axis_or_combination_preserves_clipped_face_data(kwargs):
+    dome = build_dome(frequency=4, **kwargs)
     assert dome.truncated is True
     assert dome.F_sphere is not None
     assert len(dome.F_sphere) > 0
@@ -98,20 +106,13 @@ def test_truncate_horizontal_chord_error_propagates_unmodified():
         build_dome(frequency=4, truncation_z=0.5)
 
 
-def test_truncation_on_x_or_y_also_sets_truncated_and_clears_faces():
-    for kwargs in (dict(truncation_x=0.499999), dict(truncation_y=0.499999)):
-        dome = build_dome(frequency=4, **kwargs)
-        assert dome.truncated is True
-        assert dome.F_sphere is None
-
-
 def test_truncation_on_multiple_axes_is_applied_sequentially_x_then_y_then_z():
-    dome = build_dome(frequency=4, truncation_x=0.5, truncation_y=0.5, truncation_z=0.499999)
+    dome = build_dome(frequency=4, truncation_x=0.499999, truncation_y=0.499999, truncation_z=0.499999)
     assert dome.truncated is True
-    assert dome.F_sphere is None
+    assert dome.F_sphere is not None
     assert len(dome.V) > 0
-    assert dome.truncation_x == 0.5
-    assert dome.truncation_y == 0.5
+    assert dome.truncation_x == 0.499999
+    assert dome.truncation_y == 0.499999
     assert dome.truncation_z == 0.499999
 
 
@@ -139,43 +140,3 @@ def test_validate_geometry_params_rejects_bad_values(kwargs, expected_substring)
         validate_geometry_params(**params)
 
 
-def test_validate_output_combo_rejects_face_formats_with_x_or_y_truncation():
-    for truncation_kwargs in (dict(truncation_x=0.5, truncation_y=None, truncation_z=None),
-                               dict(truncation_x=None, truncation_y=0.5, truncation_z=None)):
-        for kwargs in (dict(face_output=True), dict(stl_output=True), dict(obj_output=True)):
-            with pytest.raises(ValueError, match="does not work"):
-                validate_output_combo(**truncation_kwargs, **kwargs)
-
-
-def test_validate_output_combo_allows_face_formats_without_truncation():
-    validate_output_combo(None, None, None, face_output=True, stl_output=True, obj_output=True)
-
-
-def test_validate_output_combo_allows_face_formats_with_z_only_truncation():
-    # Z-only truncation clips faces correctly now, so this combination
-    # is no longer rejected the way X/Y truncation still is
-    validate_output_combo(None, None, 0.499999, face_output=True, stl_output=True, obj_output=True)
-
-
-def test_validate_output_combo_allows_truncation_without_face_formats():
-    validate_output_combo(0.5, 0.5, 0.5)
-
-
-def test_validate_output_combo_rejects_face_templates_with_x_or_y_truncation():
-    with pytest.raises(ValueError, match="does not work"):
-        validate_output_combo(0.5, None, None, face_template_output=True)
-
-
-def test_validate_output_combo_allows_face_templates_with_z_only_truncation():
-    validate_output_combo(None, None, 0.499999, face_template_output=True)
-
-
-def test_validate_output_combo_rejects_area_cost_or_panel_density_with_x_or_y_truncation():
-    for kwargs in (dict(cost_per_unit_area=2.0), dict(panel_areal_density=0.5)):
-        with pytest.raises(ValueError, match="does not work"):
-            validate_output_combo(None, 0.5, None, **kwargs)
-
-
-def test_validate_output_combo_allows_panel_options_without_truncation():
-    validate_output_combo(None, None, None, face_template_output=True, cost_per_unit_area=2.0,
-                           panel_areal_density=0.5)
