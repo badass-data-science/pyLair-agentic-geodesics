@@ -136,7 +136,7 @@ def build_dome(radius=1.0, frequency=4, polyhedron: Union[str, Polyhedron] = 'ic
   # is threaded through every active axis: truncate()'s clipping is
   # axis-generic and composes correctly across repeated calls (each
   # pass's crossing points are computed fresh from whatever V/C/F it's
-  # handed, including any face-only diagonal seams a previous pass
+  # handed, including any quad-split diagonal chord a previous pass
   # introduced -- see truncation.py's _register_crossing).
   truncated = any(t is not None for t in (truncation_x, truncation_y, truncation_z))
   if truncated:
