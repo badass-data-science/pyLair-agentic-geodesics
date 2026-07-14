@@ -48,7 +48,11 @@ Options:
 
 \t-v, --vthreshold\tDistance required to consider two vertices equal. Default 0.0000001. Must be floating point.
 
-\t-t, --truncation\tDistance (ratio) from the bottom to truncate. Default 0.499999. I advise using only the default or 0.333333. Must be floating point.
+\t-t, --truncation\tDistance (ratio, 0-1) from the minimum Z (vertical) extent to truncate -- keeps the portion above this fraction, discards the rest. Passing this enables Z-axis truncation; if omitted the dome is left whole along Z (see -x/-y for the other two axes). I advise using only 0.499999 or 0.333333. Must be floating point.
+
+\t-x, --truncation-x\tSame truncation rule as -t, but along X instead of Z: keeps the portion of the dome above this fraction (0-1) of its X extent, discards the rest. Off by default. Combine with -t/-y to clip more than one axis; each axis's cutoff is computed against that axis's range *after* any earlier axis has already been trimmed (truncation is applied in X, then Y, then Z order). Must be floating point.
+
+\t-y, --truncation-y\tSame truncation rule as -t, but along Y instead of Z. Off by default. See -x for how combining axes works. Must be floating point.
 
 \t-b, --bom-rounding\tThe number of decimal places to round chord length output in the generated Bill of Materials. Also controls how aggressively near-identical strut lengths are merged into one entry: a lower value merges more, which is useful for treating fabrication-irrelevant differences as the same length, but can merge genuinely distinct lengths together at high dome frequencies. Default 9, which is fine enough to keep all distinct lengths separate at any practical frequency. Must be an integer.
 
@@ -76,7 +80,7 @@ Options:
 
 \t-w, --panel-density\tAreal density (mass per unit area, e.g. kg per square meter) of panel material. If given, adds an estimated total panel weight to the Bill of Materials. Must be a positive floating point number.
 
-\t-e, --elongation\tStretches the dome along its vertical (Z) axis by this factor before truncation, turning the sphere into an axis-aligned ellipsoid -- values > 1 raise the ceiling height, values < 1 flatten it for a wider footprint. All angle-based output (Bill of Materials angles, hub connector templates) correctly accounts for the resulting ellipsoid's true surface normal, not just the sphere approximation. Must be a positive floating point number. Default 1.0 (no elongation).
+\t-e, --elongation\tStretches the dome along all three axes by independent factors "fx,fy,fz", applied before truncation, turning the sphere into a general axis-aligned ellipsoid -- values > 1 stretch that axis, values < 1 squash it (e.g. "1.0,1.0,1.8" raises the ceiling height without touching the footprint; "1.3,1.0,1.0" widens the footprint along X only). All angle-based output (Bill of Materials angles, hub connector templates) correctly accounts for the resulting ellipsoid's true surface normal, not just the sphere approximation. All three factors must be positive floating point numbers. Default "1.0,1.0,1.0" (no elongation).
 """
   print(help_text)
 
@@ -90,8 +94,9 @@ def main():
   dome_class = 1
   polyhedral = Icosahedron()
   vertex_equal_threshold = 0.0000001
-  truncation_amount = 0.499999
-  run_truncate = False
+  truncation_x = None
+  truncation_y = None
+  truncation_z = None
   bom_rounding_precision = 9
   face_output = False
   preview_output = False
@@ -102,7 +107,7 @@ def main():
   face_templates_output = False
   cost_per_unit_area = None
   panel_areal_density = None
-  elongation_factor = 1.0
+  elongation_factors = (1.0, 1.0, 1.0)
   output_path = None
   n_frequency = None
 
@@ -117,7 +122,7 @@ def main():
   # parse command line
   #
   try:
-    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:c:m:e:n:a:w:FPsOHTho:', ['truncation=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'class=', 'material-cost=', 'elongation=', 'n-frequency=', 'area-cost=', 'panel-density=', 'face', 'preview', 'stl', 'obj', 'hub-templates', 'face-templates', 'output='])
+    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:c:m:e:n:a:w:x:y:FPsOHTho:', ['truncation=', 'truncation-x=', 'truncation-y=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'class=', 'material-cost=', 'elongation=', 'n-frequency=', 'area-cost=', 'panel-density=', 'face', 'preview', 'stl', 'obj', 'hub-templates', 'face-templates', 'output='])
   except getopt.error as msg:
     print(str(msg) + ' (for help use --help)')
     sys.exit(-1)
@@ -173,10 +178,16 @@ def main():
         print('-w or --panel-density argument must be greater than zero. Exiting.')
         sys.exit(-1)
     if o in ('-e', '--elongation'):
+      parts = a.split(',')
+      if len(parts) != 3:
+        print('-e or --elongation argument must be three comma-separated floating point '
+              'numbers "fx,fy,fz". Exiting.')
+        sys.exit(-1)
       try:
-        elongation_factor = float(a)
+        elongation_factors = tuple(float(p) for p in parts)
       except ValueError:
-        print('-e or --elongation argument must be a floating point number. Exiting.')
+        print('-e or --elongation argument must be three comma-separated floating point '
+              'numbers "fx,fy,fz". Exiting.')
         sys.exit(-1)
     if o in ('-h', '--help'):
       display_help()
@@ -215,11 +226,21 @@ def main():
         sys.exit(-1)
     if o in ('-t', '--truncation'):
       try:
-        a = float(a)
-        truncation_amount = np.float64(a)
-        run_truncate = True
+        truncation_z = np.float64(float(a))
       except ValueError:
         print('-t or --truncation argument must be a floating point number. Exiting.')
+        sys.exit(-1)
+    if o in ('-x', '--truncation-x'):
+      try:
+        truncation_x = np.float64(float(a))
+      except ValueError:
+        print('-x or --truncation-x argument must be a floating point number. Exiting.')
+        sys.exit(-1)
+    if o in ('-y', '--truncation-y'):
+      try:
+        truncation_y = np.float64(float(a))
+      except ValueError:
+        print('-y or --truncation-y argument must be a floating point number. Exiting.')
         sys.exit(-1)
 
   #
@@ -235,13 +256,14 @@ def main():
   # inside build_dome -- shared with pydome/mcp_server.py)
   #
   try:
+    run_truncate = any(t is not None for t in (truncation_x, truncation_y, truncation_z))
     validate_output_combo(run_truncate, face_output, stl_output, obj_output,
                            face_templates_output, cost_per_unit_area, panel_areal_density)
     dome = build_dome(radius=radius, frequency=frequency, polyhedron=polyhedral,
                        dome_class=dome_class, n_frequency=n_frequency,
                        vertex_equal_threshold=vertex_equal_threshold,
-                       elongation_factor=elongation_factor,
-                       truncation_amount=(truncation_amount if run_truncate else None))
+                       elongation_factors=elongation_factors,
+                       truncation_x=truncation_x, truncation_y=truncation_y, truncation_z=truncation_z)
   except ValueError as e:
     print(str(e))
     sys.exit(-1)
@@ -275,7 +297,7 @@ def main():
   #
   hub_template_output_path = output_path if hub_templates_output else None
   face_template_output_path = output_path if face_templates_output else None
-  get_bill_of_materials(V, C, bom_rounding_precision, cost_per_unit_length, hub_template_output_path, elongation_factor,
+  get_bill_of_materials(V, C, bom_rounding_precision, cost_per_unit_length, hub_template_output_path, elongation_factors,
                          faces=F_sphere, cost_per_unit_area=cost_per_unit_area,
                          panel_areal_density=panel_areal_density,
                          face_template_output_path=face_template_output_path)

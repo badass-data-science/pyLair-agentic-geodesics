@@ -24,22 +24,23 @@ import json
 from .output import OutputHubConnectorTemplateDXF, OutputFaceTemplateDXF
 
 
-def _ellipsoid_normal(vertex, elongation_factor):
-  # The outward surface normal of an axis-aligned ellipsoid (semi-axes
-  # a, a, a*elongation_factor, Z being the elongated axis -- see
-  # pydome.elongation) at a point on its surface, from the gradient of
-  # its implicit equation x^2/a^2 + y^2/a^2 + z^2/(a*elongation_factor)^2
-  # = 1: proportional to (x, y, z/elongation_factor^2). The absolute
-  # scale `a` cancels out in the normalization below, so only the
-  # elongation factor matters. Reduces exactly to the ordinary sphere
-  # normal (the normalized position vector) when elongation_factor == 1
-  # -- a sphere's surface normal is always radial, but an ellipsoid's
-  # generally is not, except at the poles/equator.
-  direction = np.array([vertex[0], vertex[1], vertex[2] / (elongation_factor ** 2)])
+def _ellipsoid_normal(vertex, elongation_factors):
+  # The outward surface normal of a general axis-aligned ellipsoid
+  # (semi-axes a*fx, a*fy, a*fz -- see pydome.elongation) at a point on
+  # its surface, from the gradient of its implicit equation
+  # x^2/(a*fx)^2 + y^2/(a*fy)^2 + z^2/(a*fz)^2 = 1: proportional to
+  # (x/fx^2, y/fy^2, z/fz^2). The absolute scale `a` cancels out in the
+  # normalization below, so only the per-axis factors matter. Reduces
+  # exactly to the ordinary sphere normal (the normalized position
+  # vector) when all three factors are 1 -- a sphere's surface normal
+  # is always radial, but an ellipsoid's generally is not, except where
+  # it crosses its own axes.
+  fx, fy, fz = elongation_factors
+  direction = np.array([vertex[0] / (fx ** 2), vertex[1] / (fy ** 2), vertex[2] / (fz ** 2)])
   return direction / np.linalg.norm(direction)
 
 
-def compute_hub_data(vertices, chords, elongation_factor=1.0):
+def compute_hub_data(vertices, chords, elongation_factors=(1.0, 1.0, 1.0)):
   # For every hub (vertex where 1+ chords meet): the vertex position,
   # each connected vertex, the tangential-plane deflection angle of
   # that chord, and the point where that chord (projected radially
@@ -61,7 +62,7 @@ def compute_hub_data(vertices, chords, elongation_factor=1.0):
   #
   for h in hubs.keys():
     vertex = hubs[h]['vertex']
-    normal = _ellipsoid_normal(vertex, elongation_factor)
+    normal = _ellipsoid_normal(vertex, elongation_factors)
     for c in hubs[h]['connected_vertices']:
       A = normal
       B = vertex - hubs[h]['connected_vertices'][c]['vertex']
@@ -73,7 +74,7 @@ def compute_hub_data(vertices, chords, elongation_factor=1.0):
   # find where each outbound chord crosses the hub's own tangent plane
   #
   for hub in hubs.keys():
-    normal_vector = _ellipsoid_normal(hubs[hub]['vertex'], elongation_factor)
+    normal_vector = _ellipsoid_normal(hubs[hub]['vertex'], elongation_factors)
     point_on_plane = hubs[hub]['vertex']
     line_origin = np.array([0., 0., 0.])
     for spoke in hubs[hub]['connected_vertices']:
@@ -339,7 +340,7 @@ def compute_dihedral_angles(face_data, chords):
   return results
 
 
-def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_length=None, hub_template_output_path=None, elongation_factor=1.0, print_report=True, faces=None, cost_per_unit_area=None, panel_areal_density=None, face_template_output_path=None):
+def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_length=None, hub_template_output_path=None, elongation_factors=(1.0, 1.0, 1.0), print_report=True, faces=None, cost_per_unit_area=None, panel_areal_density=None, face_template_output_path=None):
 
   report = {'pyDome report' : {}}
   
@@ -410,7 +411,7 @@ def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_le
   #
   # data structure to store hub information
   #
-  hubs = compute_hub_data(vertices, chords, elongation_factor)
+  hubs = compute_hub_data(vertices, chords, elongation_factors)
 
   #
   # hub connector templates: one DXF cutting template per unique hub

@@ -16,15 +16,13 @@
 
 import numpy as np
 
-# Scale the Z axis only, matching the codebase's existing convention
-# (Truncation.py already treats v[2] as "up"). This stretches the
-# sphere into an axis-aligned ellipsoid with semi-axes (r, r, r*factor)
-# for ceiling-height/footprint tradeoffs -- chord/face connectivity is
-# unaffected, since this is a pure per-vertex scale.
-_SCALE_AXIS = 2
+# Independent per-axis scale factors (fx, fy, fz). This stretches the
+# sphere into a general axis-aligned ellipsoid with semi-axes
+# (r*fx, r*fy, r*fz) for ceiling-height/footprint tradeoffs on any
+# combination of axes -- chord/face connectivity is unaffected, since
+# this is a pure per-vertex scale.
 
 
-def elongate(vertices, factor):
-  scale = np.array([1., 1., 1.])
-  scale[_SCALE_AXIS] = factor
+def elongate(vertices, factors):
+  scale = np.array(factors, dtype=float)
   return [v * scale for v in vertices]

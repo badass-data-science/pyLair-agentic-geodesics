@@ -47,13 +47,16 @@ class DomeResult:
   dome_class: int
   n_frequency: Optional[int]
   polyhedron: str                # "icosahedron" or "octahedron"
-  elongation_factor: float       # needed by bill_of_materials' ellipsoid-
-                                  # normal calc; not recoverable from V/C alone
-  truncation_amount: Optional[float]
+  elongation_factors: tuple      # (fx, fy, fz); needed by bill_of_materials'
+                                  # ellipsoid-normal calc; not recoverable
+                                  # from V/C alone
+  truncation_x: Optional[float]
+  truncation_y: Optional[float]
+  truncation_z: Optional[float]
   vertex_equal_threshold: float
 
 
-def validate_geometry_params(radius, frequency, dome_class, n_frequency, elongation_factor):
+def validate_geometry_params(radius, frequency, dome_class, n_frequency, elongation_factors):
   # The same domain rules cli.py has always enforced (message text kept
   # verbatim from the CLI so tests/test_cli.py's stdout substring checks
   # -- e.g. "n-frequency", "differ", "even", "1, 2, or 3" -- keep matching
@@ -67,8 +70,8 @@ def validate_geometry_params(radius, frequency, dome_class, n_frequency, elongat
     raise ValueError('-c or --class argument must be 1, 2, or 3. Exiting.')
   if n_frequency is not None and n_frequency < 1:
     raise ValueError('-n or --n-frequency argument must be a positive integer. Exiting.')
-  if elongation_factor <= 0:
-    raise ValueError('-e or --elongation argument must be greater than zero. Exiting.')
+  if any(f <= 0 for f in elongation_factors):
+    raise ValueError('-e or --elongation arguments must each be greater than zero. Exiting.')
   if dome_class == 2 and frequency % 2 != 0:
     raise ValueError('-c 2 (Class II / Triacon) requires an even --frequency. Exiting.')
   if dome_class == 3:
@@ -95,12 +98,13 @@ def validate_output_combo(run_truncate, face_output=False, stl_output=False, obj
 
 def build_dome(radius=1.0, frequency=4, polyhedron: Union[str, Polyhedron] = 'icosahedron',
                 dome_class=1, n_frequency=None, vertex_equal_threshold=1e-7,
-                elongation_factor=1.0, truncation_amount=None) -> DomeResult:
+                elongation_factors=(1.0, 1.0, 1.0), truncation_x=None, truncation_y=None,
+                truncation_z=None) -> DomeResult:
   # `polyhedron` accepts either a name string ("icosahedron"/"octahedron",
   # for MCP callers) or an already-built Icosahedron()/Octahedron()
   # instance (so cli.py, which already constructs one from -p, needs no
   # translation code at its call site).
-  validate_geometry_params(radius, frequency, dome_class, n_frequency, elongation_factor)
+  validate_geometry_params(radius, frequency, dome_class, n_frequency, elongation_factors)
 
   if isinstance(polyhedron, str):
     polyhedral = Octahedron() if polyhedron == 'octahedron' else Icosahedron()
@@ -131,18 +135,30 @@ def build_dome(radius=1.0, frequency=4, polyhedron: Union[str, Polyhedron] = 'ic
   V_sphere = sphere.sphere_vertices
 
   # elongate before truncation, so a truncation ratio describes the
-  # dome's final, possibly-elongated height range
-  if elongation_factor != 1.0:
-    V_sphere = elongate(V_sphere, elongation_factor)
+  # dome's final, possibly-elongated extent along that axis
+  if any(f != 1.0 for f in elongation_factors):
+    V_sphere = elongate(V_sphere, elongation_factors)
 
-  truncated = truncation_amount is not None
+  # each axis is truncated independently and sequentially (X, then Y,
+  # then Z) when its cutoff is given, so a later axis's cutoff ratio is
+  # computed against that axis's range in the already-trimmed vertex
+  # set, not the original sphere/ellipsoid's -- the same "describes the
+  # final extent" convention elongation already follows above.
+  truncated = any(t is not None for t in (truncation_x, truncation_y, truncation_z))
   if truncated:
-    V, C = truncate(V_sphere, C_sphere, truncation_amount)
+    V, C = V_sphere, C_sphere
+    if truncation_x is not None:
+      V, C = truncate(V, C, truncation_x, axis=0)
+    if truncation_y is not None:
+      V, C = truncate(V, C, truncation_y, axis=1)
+    if truncation_z is not None:
+      V, C = truncate(V, C, truncation_z, axis=2)
     F_out = None
   else:
     V, C, F_out = V_sphere, C_sphere, F_sphere
 
   return DomeResult(V=V, C=C, F_sphere=F_out, truncated=truncated, radius=radius,
                      frequency=frequency, dome_class=dome_class, n_frequency=n_frequency,
-                     polyhedron=polyhedron_name, elongation_factor=elongation_factor,
-                     truncation_amount=truncation_amount, vertex_equal_threshold=vertex_equal_threshold)
+                     polyhedron=polyhedron_name, elongation_factors=tuple(elongation_factors),
+                     truncation_x=truncation_x, truncation_y=truncation_y, truncation_z=truncation_z,
+                     vertex_equal_threshold=vertex_equal_threshold)

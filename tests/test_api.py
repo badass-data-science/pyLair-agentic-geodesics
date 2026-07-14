@@ -43,8 +43,8 @@ def test_polyhedron_accepts_octahedron_name():
 
 
 def test_elongation_changes_z_extent_only():
-    normal = build_dome(frequency=2, elongation_factor=1.0)
-    tall = build_dome(frequency=2, elongation_factor=1.8)
+    normal = build_dome(frequency=2, elongation_factors=(1.0, 1.0, 1.0))
+    tall = build_dome(frequency=2, elongation_factors=(1.0, 1.0, 1.8))
 
     normal_z = [v[2] for v in normal.V]
     tall_z = [v[2] for v in tall.V]
@@ -53,11 +53,28 @@ def test_elongation_changes_z_extent_only():
 
     assert (max(tall_z) - min(tall_z)) > (max(normal_z) - min(normal_z))
     assert (max(tall_x) - min(tall_x)) == pytest.approx(max(normal_x) - min(normal_x))
-    assert tall.elongation_factor == 1.8
+    assert tall.elongation_factors == (1.0, 1.0, 1.8)
+
+
+def test_elongation_scales_x_and_y_independently():
+    normal = build_dome(frequency=2, elongation_factors=(1.0, 1.0, 1.0))
+    wide = build_dome(frequency=2, elongation_factors=(2.0, 0.5, 1.0))
+
+    normal_x = [v[0] for v in normal.V]
+    wide_x = [v[0] for v in wide.V]
+    normal_y = [v[1] for v in normal.V]
+    wide_y = [v[1] for v in wide.V]
+    normal_z = [v[2] for v in normal.V]
+    wide_z = [v[2] for v in wide.V]
+
+    assert (max(wide_x) - min(wide_x)) == pytest.approx(2.0 * (max(normal_x) - min(normal_x)))
+    assert (max(wide_y) - min(wide_y)) == pytest.approx(0.5 * (max(normal_y) - min(normal_y)))
+    assert (max(wide_z) - min(wide_z)) == pytest.approx(max(normal_z) - min(normal_z))
+    assert wide.elongation_factors == (2.0, 0.5, 1.0)
 
 
 def test_truncation_leaves_face_data_none_and_sets_truncated_flag():
-    dome = build_dome(frequency=4, truncation_amount=0.499999)
+    dome = build_dome(frequency=4, truncation_z=0.499999)
     assert dome.truncated is True
     assert dome.F_sphere is None
 
@@ -69,11 +86,28 @@ def test_no_truncation_leaves_face_data_populated():
 
 
 def test_truncate_horizontal_chord_error_propagates_unmodified():
-    # a cutoff that lands exactly on a vertex ring produces a horizontal
-    # chord at the cutoff plane -- truncate() itself raises this, and
+    # a cutoff that lands exactly on a vertex ring produces a chord flat
+    # against the cutoff plane -- truncate() itself raises this, and
     # build_dome must not swallow or reword it
-    with pytest.raises(ValueError, match="horizontal chord"):
-        build_dome(frequency=4, truncation_amount=0.5)
+    with pytest.raises(ValueError, match="flat along the cutoff axis"):
+        build_dome(frequency=4, truncation_z=0.5)
+
+
+def test_truncation_on_x_or_y_also_sets_truncated_and_clears_faces():
+    for kwargs in (dict(truncation_x=0.499999), dict(truncation_y=0.499999)):
+        dome = build_dome(frequency=4, **kwargs)
+        assert dome.truncated is True
+        assert dome.F_sphere is None
+
+
+def test_truncation_on_multiple_axes_is_applied_sequentially_x_then_y_then_z():
+    dome = build_dome(frequency=4, truncation_x=0.5, truncation_y=0.5, truncation_z=0.499999)
+    assert dome.truncated is True
+    assert dome.F_sphere is None
+    assert len(dome.V) > 0
+    assert dome.truncation_x == 0.5
+    assert dome.truncation_y == 0.5
+    assert dome.truncation_z == 0.499999
 
 
 @pytest.mark.parametrize(
@@ -84,14 +118,17 @@ def test_truncate_horizontal_chord_error_propagates_unmodified():
         (dict(frequency=0), "positive integer"),
         (dict(dome_class=4), "1, 2, or 3"),
         (dict(n_frequency=0), "positive integer"),
-        (dict(elongation_factor=0), "greater than zero"),
+        (dict(elongation_factors=(0, 1.0, 1.0)), "greater than zero"),
+        (dict(elongation_factors=(1.0, -1.0, 1.0)), "greater than zero"),
+        (dict(elongation_factors=(1.0, 1.0, 0)), "greater than zero"),
         (dict(dome_class=2, frequency=3), "even"),
         (dict(dome_class=3, frequency=3, n_frequency=None), "n-frequency"),
         (dict(dome_class=3, frequency=3, n_frequency=3), "differ"),
     ],
 )
 def test_validate_geometry_params_rejects_bad_values(kwargs, expected_substring):
-    params = dict(radius=1.0, frequency=4, dome_class=1, n_frequency=None, elongation_factor=1.0)
+    params = dict(radius=1.0, frequency=4, dome_class=1, n_frequency=None,
+                  elongation_factors=(1.0, 1.0, 1.0))
     params.update(kwargs)
     with pytest.raises(ValueError, match=expected_substring):
         validate_geometry_params(**params)

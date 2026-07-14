@@ -28,10 +28,32 @@ def test_design_dome_returns_summary_stats():
 
 
 def test_design_dome_truncated_has_no_face_count():
-    result = design_dome(frequency=4, truncation_amount=0.499999)
+    result = design_dome(frequency=4, truncation_z=0.499999)
 
     assert result["truncated"] is True
     assert result["face_count"] is None
+
+
+def test_design_dome_truncated_on_x_or_y_has_no_face_count():
+    for kwargs in (dict(truncation_x=0.499999), dict(truncation_y=0.499999)):
+        result = design_dome(frequency=4, **kwargs)
+        assert result["truncated"] is True
+        assert result["face_count"] is None
+
+
+def test_design_dome_elongation_x_y_z_are_independent():
+    result = design_dome(frequency=2, elongation_x=2.0, elongation_y=0.5, elongation_z=1.0)
+
+    resolved = result["resolved_parameters"]["elongation_factors"]
+    assert resolved == {"x": 2.0, "y": 0.5, "z": 1.0}
+
+    bbox = result["bounding_box"]
+    normal = design_dome(frequency=2)
+    normal_bbox = normal["bounding_box"]
+    assert (bbox["x"][1] - bbox["x"][0]) == pytest.approx(
+        2.0 * (normal_bbox["x"][1] - normal_bbox["x"][0]))
+    assert (bbox["y"][1] - bbox["y"][0]) == pytest.approx(
+        0.5 * (normal_bbox["y"][1] - normal_bbox["y"][0]))
 
 
 def test_design_dome_rejects_bad_class_frequency_combo():
@@ -90,13 +112,13 @@ def test_export_dome_with_face_templates_writes_facetype_files(tmp_path):
 def test_export_dome_face_templates_incompatible_with_truncation(tmp_path):
     out = str(tmp_path / "dome")
     with pytest.raises(ValueError, match="does not work"):
-        export_dome(out, frequency=4, face_templates=True, truncation_amount=0.5)
+        export_dome(out, frequency=4, face_templates=True, truncation_z=0.5)
 
 
 def test_export_dome_face_output_incompatible_with_truncation(tmp_path):
     out = str(tmp_path / "dome")
     with pytest.raises(ValueError, match="does not work"):
-        export_dome(out, frequency=4, face_output=True, truncation_amount=0.5)
+        export_dome(out, frequency=4, face_output=True, truncation_z=0.5)
 
 
 def test_export_dome_with_preview_and_hub_templates(tmp_path):

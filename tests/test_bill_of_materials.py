@@ -233,14 +233,14 @@ def test_get_bill_of_materials_print_report_false_suppresses_stdout(capsys):
 
 
 def test_ellipsoid_normal_matches_hand_computed_value():
-    # a=1 (x/y semi-axis), c=2 (z semi-axis, elongation_factor=2), point
+    # a=1 (x/y semi-axis), c=2 (z semi-axis, elongation factor 2), point
     # at theta=45 degrees on the x-z ellipse (y=0): x=cos(45)=0.7071,
     # z=2*sin(45)=1.4142. True normal (gradient of x^2/a^2+z^2/c^2=1) is
     # proportional to (x/a^2, z/c^2) = (0.7071, 0.3536), normalized to
     # (0.8944, 0.4472) -- the exact opposite ratio of the naive,
     # position-vector-normalized (wrong) answer.
     vertex = np.array([np.cos(np.pi / 4), 0., 2 * np.sin(np.pi / 4)])
-    normal = _ellipsoid_normal(vertex, elongation_factor=2.0)
+    normal = _ellipsoid_normal(vertex, elongation_factors=(1.0, 1.0, 2.0))
 
     assert normal == pytest.approx(np.array([0.8944271909999159, 0., 0.4472135954999579]))
 
@@ -248,9 +248,57 @@ def test_ellipsoid_normal_matches_hand_computed_value():
     assert not np.allclose(normal, naive_wrong_normal)
 
 
-def test_ellipsoid_normal_reduces_to_sphere_normal_when_factor_is_one():
+def test_ellipsoid_normal_matches_hand_computed_value_for_x_axis_elongation():
+    # same construction as the Z-axis case above, but rotated onto the
+    # x-y ellipse instead (b=1 y semi-axis, elongation factor 2 on X) --
+    # exercises the same formula on a different axis than the one it was
+    # originally derived and verified against, per this project's "vary
+    # the case's proportions, not just its identity" verification rule.
+    vertex = np.array([2 * np.sin(np.pi / 4), np.cos(np.pi / 4), 0.])
+    normal = _ellipsoid_normal(vertex, elongation_factors=(2.0, 1.0, 1.0))
+
+    assert normal == pytest.approx(np.array([0.4472135954999579, 0.8944271909999159, 0.]))
+
+
+def test_ellipsoid_normal_matches_finite_difference_gradient_for_a_triaxial_ellipsoid():
+    # independent numerical check for the fully general (fx != fy != fz)
+    # case, which no single-axis hand-computed case above exercises:
+    # numerically approximate the gradient of F(x,y,z) = x^2/fx^2 +
+    # y^2/fy^2 + z^2/fz^2 - 1 by central differences at a point on that
+    # ellipsoid's surface, and compare its normalized direction against
+    # _ellipsoid_normal's analytic answer -- a genuinely different
+    # method for the same quantity, not a restatement of the formula.
+    fx, fy, fz = 2.0, 3.0, 0.5
+    factors = np.array([fx, fy, fz])
+
+    # a point on the surface: pick spherical angles, scale by factors
+    theta, phi = 0.7, 1.1
+    unit = np.array([
+        np.sin(theta) * np.cos(phi),
+        np.sin(theta) * np.sin(phi),
+        np.cos(theta),
+    ])
+    vertex = unit * factors
+
+    def implicit_surface(v):
+        return np.sum((v / factors) ** 2) - 1.
+
+    h = 1e-6
+    numerical_gradient = np.array([
+        (implicit_surface(vertex + h * np.eye(3)[i]) -
+         implicit_surface(vertex - h * np.eye(3)[i])) / (2 * h)
+        for i in range(3)
+    ])
+    numerical_normal = numerical_gradient / np.linalg.norm(numerical_gradient)
+
+    normal = _ellipsoid_normal(vertex, elongation_factors=tuple(factors))
+
+    assert normal == pytest.approx(numerical_normal, abs=1e-5)
+
+
+def test_ellipsoid_normal_reduces_to_sphere_normal_when_factors_are_one():
     vertex = np.array([0.5, 0.5, 1. / np.sqrt(2)])
-    normal = _ellipsoid_normal(vertex, elongation_factor=1.0)
+    normal = _ellipsoid_normal(vertex, elongation_factors=(1.0, 1.0, 1.0))
     sphere_normal = vertex / np.linalg.norm(vertex)
 
     assert normal == pytest.approx(sphere_normal)
@@ -264,10 +312,10 @@ def test_ellipsoid_normal_is_axis_aligned_at_the_pole_and_equator_regardless_of_
     # they're still useful as a basic sanity check
     for factor in [0.5, 1.0, 3.0]:
         pole = np.array([0., 0., factor])
-        assert _ellipsoid_normal(pole, factor) == pytest.approx(np.array([0., 0., 1.]))
+        assert _ellipsoid_normal(pole, (1.0, 1.0, factor)) == pytest.approx(np.array([0., 0., 1.]))
 
         equator = np.array([1., 0., 0.])
-        assert _ellipsoid_normal(equator, factor) == pytest.approx(np.array([1., 0., 0.]))
+        assert _ellipsoid_normal(equator, (1.0, 1.0, factor)) == pytest.approx(np.array([1., 0., 0.]))
 
 
 def test_compute_face_data_normals_point_outward():
@@ -380,9 +428,9 @@ def test_bill_of_materials_with_elongation_still_produces_valid_report(capsys):
     # generation, and chord-length/count totals must still be internally
     # consistent regardless of the (non-uniform) vertex scaling
     V, C = build_sphere(frequency=3)
-    V = elongate(V, 1.8)
+    V = elongate(V, (1.0, 1.0, 1.8))
 
-    get_bill_of_materials(V, C, 5, elongation_factor=1.8)
+    get_bill_of_materials(V, C, 5, elongation_factors=(1.0, 1.0, 1.8))
 
     captured = capsys.readouterr()
     report = json.loads(captured.out)["pyDome report"]

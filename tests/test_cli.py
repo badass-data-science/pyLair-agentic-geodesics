@@ -271,7 +271,7 @@ def test_default_elongation_produces_identical_output_to_explicit_one(tmp_path):
     out2 = tmp_path / "explicit"
 
     result1 = run_cli(["-o", str(out1), "-f", "4"])
-    result2 = run_cli(["-o", str(out2), "-f", "4", "-e", "1.0"])
+    result2 = run_cli(["-o", str(out2), "-f", "4", "-e", "1.0,1.0,1.0"])
 
     assert result1.returncode == 0
     assert result2.returncode == 0
@@ -284,7 +284,7 @@ def test_elongation_flag_produces_a_taller_dome(tmp_path):
     out_tall = tmp_path / "tall"
 
     run_cli(["-o", str(out_normal), "-f", "4", "-P"])
-    run_cli(["-o", str(out_tall), "-f", "4", "-e", "1.8", "-P"])
+    run_cli(["-o", str(out_tall), "-f", "4", "-e", "1.0,1.0,1.8", "-P"])
 
     normal_png = out_normal.with_suffix(".png").read_bytes()
     tall_png = out_tall.with_suffix(".png").read_bytes()
@@ -295,7 +295,7 @@ def test_elongation_flag_produces_a_taller_dome(tmp_path):
 
 def test_elongated_and_truncated_dome_generates_valid_hub_templates(tmp_path):
     out = tmp_path / "dome"
-    result = run_cli(["-o", str(out), "-f", "4", "-e", "1.8", "-t", "0.499999", "-H"])
+    result = run_cli(["-o", str(out), "-f", "4", "-e", "1.0,1.0,1.8", "-t", "0.499999", "-H"])
 
     assert result.returncode == 0
     report = json.loads(result.stdout)["pyDome report"]
@@ -305,12 +305,71 @@ def test_elongated_and_truncated_dome_generates_valid_hub_templates(tmp_path):
         assert Path(row["template_file"]).exists()
 
 
+def test_elongation_flag_stretches_x_and_y_independently(tmp_path):
+    out_normal = tmp_path / "normal"
+    out_wide = tmp_path / "wide"
+
+    result_normal = run_cli(["-o", str(out_normal), "-f", "4"])
+    result_wide = run_cli(["-o", str(out_wide), "-f", "4", "-e", "2.0,0.5,1.0"])
+
+    assert result_normal.returncode == 0
+    assert result_wide.returncode == 0
+    # bevel/hub angle math should still succeed (doesn't crash) for a
+    # non-Z elongation, which is the case the ellipsoid-normal formula
+    # generalization needs to handle correctly
+    assert "Bill of materials" in json.loads(result_wide.stdout)["pyDome report"]
+
+
+def test_truncation_x_and_y_flags_enable_truncation(tmp_path):
+    out_x = tmp_path / "trunc_x"
+    out_y = tmp_path / "trunc_y"
+
+    result_x = run_cli(["-o", str(out_x), "-f", "4", "-x", "0.499999"])
+    result_y = run_cli(["-o", str(out_y), "-f", "4", "-y", "0.499999"])
+
+    assert result_x.returncode == 0
+    assert result_y.returncode == 0
+    # truncation clears face data, so face-based output (-T etc.) would
+    # now be rejected exactly like -t already is
+    result_rejected = run_cli(["-o", str(out_x), "-f", "4", "-x", "0.499999", "-T"])
+    assert result_rejected.returncode != 0
+    assert "does not work" in result_rejected.stdout.lower()
+
+
+def test_combined_x_y_z_truncation_produces_a_valid_smaller_dome(tmp_path):
+    out_full = tmp_path / "full"
+    out_clipped = tmp_path / "clipped"
+
+    result_full = run_cli(["-o", str(out_full), "-f", "4"])
+    result_clipped = run_cli([
+        "-o", str(out_clipped), "-f", "4",
+        "-x", "0.5", "-y", "0.5", "-t", "0.499999",
+    ])
+
+    assert result_full.returncode == 0
+    assert result_clipped.returncode == 0
+
+    full_dxf = out_full.with_suffix(".dxf").read_text()
+    clipped_dxf = out_clipped.with_suffix(".dxf").read_text()
+    assert full_dxf != clipped_dxf
+    assert (out_clipped.with_suffix(".dxf")).exists()
+
+
 def test_nonpositive_elongation_reports_clear_error(tmp_path):
     out = tmp_path / "dome"
-    for factor in ["0", "-2"]:
-        result = run_cli(["-o", str(out), "-f", "1", "-e", factor])
+    for factors in ["0,1.0,1.0", "1.0,-2,1.0", "1.0,1.0,0"]:
+        result = run_cli(["-o", str(out), "-f", "1", "-e", factors])
         assert result.returncode != 0
         assert "greater than zero" in result.stdout.lower()
+        assert "Traceback" not in result.stderr
+
+
+def test_elongation_with_wrong_number_of_values_reports_clear_error(tmp_path):
+    out = tmp_path / "dome"
+    for factors in ["1.8", "1.0,1.0", "1.0,1.0,1.0,1.0"]:
+        result = run_cli(["-o", str(out), "-f", "1", "-e", factors])
+        assert result.returncode != 0
+        assert "fx,fy,fz" in result.stdout
         assert "Traceback" not in result.stderr
 
 

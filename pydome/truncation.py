@@ -23,16 +23,17 @@ import numpy as np
 # instead of failing loudly.
 HORIZONTAL_CHORD_EPSILON = 1e-12
 
-def truncate(V_sphere, C_sphere, cutoff_from_bottom):
+def truncate(V_sphere, C_sphere, cutoff_from_bottom, axis=2):
 
   #
-  # figure out the range between top and bottom of the sphere
+  # figure out the range between top and bottom of the sphere along
+  # the requested axis (0=X, 1=Y, 2=Z)
   #
   min_vy = 1.
   max_vy = -1.
   for idx, v in enumerate(V_sphere):
-      if v[2] > max_vy:  max_vy = v[2]
-      if v[2] < min_vy:  min_vy = v[2]
+      if v[axis] > max_vy:  max_vy = v[axis]
+      if v[axis] < min_vy:  min_vy = v[axis]
   v_range = abs(max_vy - min_vy)
   cutoff = min_vy + cutoff_from_bottom * v_range
 
@@ -49,36 +50,36 @@ def truncate(V_sphere, C_sphere, cutoff_from_bottom):
     v2 = V_sphere[v2_idx]
 
     # both vertices below cutoff
-    if v1[2] < cutoff and v2[2] < cutoff:
+    if v1[axis] < cutoff and v2[axis] < cutoff:
       chords_to_remove.append(c_idx)
 
     # vertex 1 below cutoff
-    if v1[2] < cutoff and v2[2] >= cutoff:
+    if v1[axis] < cutoff and v2[axis] >= cutoff:
       chords_to_remove.append(c_idx)
       norm = np.linalg.norm(v1 - v2)
       norm_vec = (v1 - v2) / norm
-      if abs(norm_vec[2]) < HORIZONTAL_CHORD_EPSILON:
+      if abs(norm_vec[axis]) < HORIZONTAL_CHORD_EPSILON:
         raise ValueError(
-          'Truncation cutoff plane lies exactly on a horizontal chord '
-          '(vertices %s and %s). Choose a slightly different --truncation '
-          'value to avoid this degenerate case.' % (c[0], c[1])
+          'Truncation cutoff plane lies exactly on a chord that is flat '
+          'along the cutoff axis (vertices %s and %s). Choose a slightly '
+          'different truncation value to avoid this degenerate case.' % (c[0], c[1])
         )
-      scalar = (cutoff - v2[2]) / norm_vec[2]
+      scalar = (cutoff - v2[axis]) / norm_vec[axis]
       V_new.append(v2 + scalar * norm_vec)
       chords_to_add.append([c[1], len(V_new) - 1])
 
     # vertex 2 below cutoff
-    if v2[2] < cutoff and v1[2] >= cutoff:
+    if v2[axis] < cutoff and v1[axis] >= cutoff:
       chords_to_remove.append(c_idx)
       norm = np.linalg.norm(v2 - v1)
       norm_vec = (v2 - v1) / norm
-      if abs(norm_vec[2]) < HORIZONTAL_CHORD_EPSILON:
+      if abs(norm_vec[axis]) < HORIZONTAL_CHORD_EPSILON:
         raise ValueError(
-          'Truncation cutoff plane lies exactly on a horizontal chord '
-          '(vertices %s and %s). Choose a slightly different --truncation '
-          'value to avoid this degenerate case.' % (c[0], c[1])
+          'Truncation cutoff plane lies exactly on a chord that is flat '
+          'along the cutoff axis (vertices %s and %s). Choose a slightly '
+          'different truncation value to avoid this degenerate case.' % (c[0], c[1])
         )
-      scalar = (cutoff - v1[2]) / norm_vec[2]
+      scalar = (cutoff - v1[axis]) / norm_vec[axis]
       V_new.append(v1 + scalar * norm_vec)
       chords_to_add.append([c[0], len(V_new) - 1])
 

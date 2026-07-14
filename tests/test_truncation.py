@@ -67,3 +67,41 @@ def test_truncate_raises_clearly_on_horizontal_chord_at_cutoff():
 
     with pytest.raises(ValueError):
         truncate(V, C, 1.0)  # cutoff_from_bottom=1.0 -> cutoff = max z = 0.5
+
+
+@pytest.mark.parametrize("axis", [0, 1, 2])
+def test_truncate_removes_vertices_below_cutoff_on_any_axis(axis):
+    V, C = build_sphere()
+    V_new, C_new = truncate(V, C, 0.499999, axis=axis)
+
+    min_v = min(v[axis] for v in V)
+    max_v = max(v[axis] for v in V)
+    cutoff = min_v + 0.499999 * abs(max_v - min_v)
+
+    tolerance = 1e-9
+    for v in V_new:
+        assert v[axis] >= cutoff - tolerance
+
+    assert len(V_new) < len(V)
+    assert len(C_new) > 0
+
+
+def test_truncate_on_x_leaves_full_z_range_untouched_elsewhere():
+    # truncating on X shouldn't have anything special to say about Z --
+    # this just confirms the axis parameter actually redirects the cut,
+    # not that it silently still cuts on Z under the hood.
+    V, C = build_sphere()
+    V_new, _ = truncate(V, C, 0.499999, axis=0)
+
+    min_x = min(v[0] for v in V)
+    max_x = max(v[0] for v in V)
+    cutoff_x = min_x + 0.499999 * abs(max_x - min_x)
+    tolerance = 1e-9
+
+    for v in V_new:
+        assert v[0] >= cutoff_x - tolerance
+
+    # both hemispheres along Z should still be represented, since Z was
+    # never truncated
+    zs = [v[2] for v in V_new]
+    assert min(zs) < 0 < max(zs)

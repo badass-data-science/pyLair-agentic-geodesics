@@ -38,7 +38,8 @@ DomeClass = Literal[1, 2, 3]
 
 # Shared geometry parameters across all four tools:
 #   radius, frequency, polyhedron, dome_class, n_frequency,
-#   truncation_amount (None = no truncation), elongation_factor,
+#   truncation_x/truncation_y/truncation_z (None = that axis is not
+#   truncated), elongation_x/elongation_y/elongation_z,
 #   vertex_equal_threshold
 # See pydome/api.py:validate_geometry_params for the domain rules (e.g.
 # class 2 needs an even frequency); a bad combination raises ValueError,
@@ -48,14 +49,17 @@ DomeClass = Literal[1, 2, 3]
 @mcp.tool()
 def design_dome(radius: float = 1.0, frequency: int = 4, polyhedron: Polyhedron = "icosahedron",
                  dome_class: DomeClass = 1, n_frequency: Optional[int] = None,
-                 truncation_amount: Optional[float] = None, elongation_factor: float = 1.0,
+                 truncation_x: Optional[float] = None, truncation_y: Optional[float] = None,
+                 truncation_z: Optional[float] = None, elongation_x: float = 1.0,
+                 elongation_y: float = 1.0, elongation_z: float = 1.0,
                  vertex_equal_threshold: float = 1e-7) -> dict:
   """Compute a dome's geometry (no files written) and return summary stats
   -- vertex/edge/face counts, bounding box, height, footprint, total strut
   length -- so an agent can cheaply try configurations before exporting."""
   dome = build_dome(radius=radius, frequency=frequency, polyhedron=polyhedron,
                      dome_class=dome_class, n_frequency=n_frequency,
-                     truncation_amount=truncation_amount, elongation_factor=elongation_factor,
+                     truncation_x=truncation_x, truncation_y=truncation_y, truncation_z=truncation_z,
+                     elongation_factors=(elongation_x, elongation_y, elongation_z),
                      vertex_equal_threshold=vertex_equal_threshold)
   return _design_summary(dome)
 
@@ -63,14 +67,17 @@ def design_dome(radius: float = 1.0, frequency: int = 4, polyhedron: Polyhedron 
 @mcp.tool()
 def preview_dome(radius: float = 1.0, frequency: int = 4, polyhedron: Polyhedron = "icosahedron",
                   dome_class: DomeClass = 1, n_frequency: Optional[int] = None,
-                  truncation_amount: Optional[float] = None, elongation_factor: float = 1.0,
+                  truncation_x: Optional[float] = None, truncation_y: Optional[float] = None,
+                  truncation_z: Optional[float] = None, elongation_x: float = 1.0,
+                  elongation_y: float = 1.0, elongation_z: float = 1.0,
                   vertex_equal_threshold: float = 1e-7) -> List:
   """Render a quick 3D wireframe preview of the dome and return it inline
   as an image, so the dome can be seen in-conversation before committing
   to any file export."""
   dome = build_dome(radius=radius, frequency=frequency, polyhedron=polyhedron,
                      dome_class=dome_class, n_frequency=n_frequency,
-                     truncation_amount=truncation_amount, elongation_factor=elongation_factor,
+                     truncation_x=truncation_x, truncation_y=truncation_y, truncation_z=truncation_z,
+                     elongation_factors=(elongation_x, elongation_y, elongation_z),
                      vertex_equal_threshold=vertex_equal_threshold)
   png_bytes = render_preview_png_bytes(dome.V, dome.C)
   summary = "%d vertices, %d struts%s" % (
@@ -81,7 +88,9 @@ def preview_dome(radius: float = 1.0, frequency: int = 4, polyhedron: Polyhedron
 @mcp.tool()
 def get_bill_of_materials(radius: float = 1.0, frequency: int = 4, polyhedron: Polyhedron = "icosahedron",
                            dome_class: DomeClass = 1, n_frequency: Optional[int] = None,
-                           truncation_amount: Optional[float] = None, elongation_factor: float = 1.0,
+                           truncation_x: Optional[float] = None, truncation_y: Optional[float] = None,
+                           truncation_z: Optional[float] = None, elongation_x: float = 1.0,
+                           elongation_y: float = 1.0, elongation_z: float = 1.0,
                            vertex_equal_threshold: float = 1e-7,
                            bom_rounding_precision: int = 9,
                            cost_per_unit_length: Optional[float] = None,
@@ -94,10 +103,11 @@ def get_bill_of_materials(radius: float = 1.0, frequency: int = 4, polyhedron: P
   adjacent panels) as structured data, without writing any files."""
   dome = build_dome(radius=radius, frequency=frequency, polyhedron=polyhedron,
                      dome_class=dome_class, n_frequency=n_frequency,
-                     truncation_amount=truncation_amount, elongation_factor=elongation_factor,
+                     truncation_x=truncation_x, truncation_y=truncation_y, truncation_z=truncation_z,
+                     elongation_factors=(elongation_x, elongation_y, elongation_z),
                      vertex_equal_threshold=vertex_equal_threshold)
   return compute_bom(dome.V, dome.C, bom_rounding_precision, cost_per_unit_length,
-                      hub_template_output_path=None, elongation_factor=dome.elongation_factor,
+                      hub_template_output_path=None, elongation_factors=dome.elongation_factors,
                       print_report=False, faces=dome.F_sphere, cost_per_unit_area=cost_per_unit_area,
                       panel_areal_density=panel_areal_density)
 
@@ -105,8 +115,10 @@ def get_bill_of_materials(radius: float = 1.0, frequency: int = 4, polyhedron: P
 @mcp.tool()
 def export_dome(output_path: str, radius: float = 1.0, frequency: int = 4,
                  polyhedron: Polyhedron = "icosahedron", dome_class: DomeClass = 1,
-                 n_frequency: Optional[int] = None, truncation_amount: Optional[float] = None,
-                 elongation_factor: float = 1.0, vertex_equal_threshold: float = 1e-7,
+                 n_frequency: Optional[int] = None, truncation_x: Optional[float] = None,
+                 truncation_y: Optional[float] = None, truncation_z: Optional[float] = None,
+                 elongation_x: float = 1.0, elongation_y: float = 1.0, elongation_z: float = 1.0,
+                 vertex_equal_threshold: float = 1e-7,
                  face_output: bool = False, preview: bool = False, stl: bool = False,
                  obj: bool = False, hub_templates: bool = False, face_templates: bool = False,
                  bom_rounding_precision: int = 9, cost_per_unit_length: Optional[float] = None,
@@ -115,17 +127,19 @@ def export_dome(output_path: str, radius: float = 1.0, frequency: int = 4,
   """Compute the dome and write output files to disk (mirrors the `pydome`
   CLI): DXF+VRML by default, or face-only VRML with face_output=True
   (required for stl/obj/hub_templates/face_templates/cost_per_unit_area/
-  panel_areal_density, and mutually exclusive with truncation_amount,
+  panel_areal_density, and mutually exclusive with truncation_x/y/z,
   matching the CLI's own rule). face_templates=True writes one DXF
   cutting template per unique panel shape. Returns the list of files
   written and the Bill of Materials (including panel shapes/counts,
   chirality flags, panel area/cost/weight, and bevel angles, when face
   data is available)."""
-  validate_output_combo(truncation_amount is not None, face_output, stl, obj,
+  run_truncate = any(t is not None for t in (truncation_x, truncation_y, truncation_z))
+  validate_output_combo(run_truncate, face_output, stl, obj,
                          face_templates, cost_per_unit_area, panel_areal_density)
   dome = build_dome(radius=radius, frequency=frequency, polyhedron=polyhedron,
                      dome_class=dome_class, n_frequency=n_frequency,
-                     truncation_amount=truncation_amount, elongation_factor=elongation_factor,
+                     truncation_x=truncation_x, truncation_y=truncation_y, truncation_z=truncation_z,
+                     elongation_factors=(elongation_x, elongation_y, elongation_z),
                      vertex_equal_threshold=vertex_equal_threshold)
 
   files = []
@@ -151,7 +165,7 @@ def export_dome(output_path: str, radius: float = 1.0, frequency: int = 4,
   hub_path = output_path if hub_templates else None
   face_template_path = output_path if face_templates else None
   report = compute_bom(dome.V, dome.C, bom_rounding_precision, cost_per_unit_length,
-                        hub_template_output_path=hub_path, elongation_factor=dome.elongation_factor,
+                        hub_template_output_path=hub_path, elongation_factors=dome.elongation_factors,
                         print_report=False, faces=dome.F_sphere, cost_per_unit_area=cost_per_unit_area,
                         panel_areal_density=panel_areal_density,
                         face_template_output_path=face_template_path)
@@ -186,8 +200,9 @@ def _design_summary(dome) -> dict:
           "polyhedron": dome.polyhedron,
           "dome_class": dome.dome_class,
           "n_frequency": dome.n_frequency,
-          "elongation_factor": dome.elongation_factor,
-          "truncation_amount": dome.truncation_amount,
+          "elongation_factors": {"x": dome.elongation_factors[0], "y": dome.elongation_factors[1],
+                                  "z": dome.elongation_factors[2]},
+          "truncation": {"x": dome.truncation_x, "y": dome.truncation_y, "z": dome.truncation_z},
       },
   }
 
