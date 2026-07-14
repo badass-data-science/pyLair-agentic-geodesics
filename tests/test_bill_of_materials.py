@@ -19,6 +19,7 @@ from pydome.bill_of_materials import (
     compute_dihedral_angles,
 )
 from pydome.elongation import elongate
+from pydome.api import build_dome
 
 
 def build_sphere(frequency=1, radius=1.0, polyhedron=None):
@@ -442,3 +443,80 @@ def test_bill_of_materials_with_elongation_still_produces_valid_report(capsys):
     assert len(angle_rows) > 0
     for row in angle_rows:
         assert -90. <= row["angle (degrees)"] <= 90.
+
+
+def test_get_bill_of_materials_flags_truncation_artifact_chords_and_panels():
+    # a normal-scale triangle (edges ~1) plus a deliberately tiny
+    # sliver triangle (edges ~1e-7, six orders of magnitude smaller) --
+    # standing in for what a truncation cutoff landing extremely close
+    # to a vertex ring produces
+    V = [
+        np.array([5., 5., 5.]),
+        np.array([6., 5., 5.]),
+        np.array([5., 6., 5.]),
+        np.array([10., 10., 0.]),
+        np.array([10. + 1e-7, 10., 0.]),
+        np.array([10., 10. + 1e-7, 0.]),
+    ]
+    C = [[0, 1], [1, 2], [2, 0], [3, 4], [4, 5], [5, 3]]
+    F = [[0, 1, 2], [3, 4, 5]]
+
+    report = get_bill_of_materials(V, C, 9, print_report=False, faces=F)
+    r = report['pyDome report']
+
+    flagged_chords = r['Bill of materials']['Possible truncation-artifact chords']
+    assert len(flagged_chords) > 0
+    assert all(row['length'] < 1e-3 for row in flagged_chords)
+    # the normal-scale triangle's edges must NOT be flagged
+    assert all(row['length'] > 0.5 for row in r['Bill of materials']['Chord Lengths and Counts']
+               if row not in flagged_chords)
+
+    flagged_panels = r['Panel shapes and counts']['Possible truncation-artifact panels']
+    assert len(flagged_panels) == 1
+    assert flagged_panels[0]['count'] == 1
+
+
+def test_get_bill_of_materials_flags_nothing_for_a_normal_untruncated_dome():
+    V, C, F = build_sphere_with_faces(frequency=4)
+    report = get_bill_of_materials(V, C, 9, print_report=False, faces=F)
+    r = report['pyDome report']
+
+    assert r['Bill of materials']['Possible truncation-artifact chords'] == []
+    assert r['Panel shapes and counts']['Possible truncation-artifact panels'] == []
+
+
+def test_near_equatorial_truncation_flags_the_resulting_slivers():
+    # reproduces the exact scenario raised in design discussion: a
+    # cutoff of 0.4999999 (a hair below the true equator) leaves behind
+    # struts and panels many orders of magnitude smaller than the
+    # dome's normal scale -- these should show up in the new "Possible
+    # truncation-artifact ..." fields rather than silently blending in
+    # with the legitimate strut/panel classes
+    degenerate = build_dome(frequency=6, truncation_z=0.4999999)
+    report = get_bill_of_materials(degenerate.V, degenerate.C, 9, print_report=False,
+                                    faces=degenerate.F_sphere)
+    r = report['pyDome report']
+
+    flagged_chords = r['Bill of materials']['Possible truncation-artifact chords']
+    assert len(flagged_chords) > 0
+    assert all(row['length'] < 1e-3 for row in flagged_chords)
+
+    flagged_panels = r['Panel shapes and counts']['Possible truncation-artifact panels']
+    assert len(flagged_panels) > 0
+    assert all(min(g['edge_lengths']) < 1e-3 for g in flagged_panels)
+
+    # a cutoff further from any vertex ring (0.333333, the other
+    # documented recommendation) shouldn't flag anything at this
+    # frequency -- note 0.499999 itself still triggers a handful of
+    # much-smaller-but-not-degenerate flagged entries here (~2.3e-6 vs.
+    # the dome's ~0.22 longest strut): the "recommended" ratios reduce
+    # how often a cutoff lands close to a vertex ring, they don't
+    # guarantee avoiding it at every frequency, which is exactly why
+    # this flagging feature exists rather than relying on doc advice
+    # alone
+    clean = build_dome(frequency=6, truncation_z=0.333333)
+    clean_report = get_bill_of_materials(clean.V, clean.C, 9, print_report=False,
+                                          faces=clean.F_sphere)
+    cr = clean_report['pyDome report']
+    assert cr['Bill of materials']['Possible truncation-artifact chords'] == []
+    assert cr['Panel shapes and counts']['Possible truncation-artifact panels'] == []

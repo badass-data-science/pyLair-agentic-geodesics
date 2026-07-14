@@ -23,6 +23,18 @@ import json
 
 from .output import OutputHubConnectorTemplateDXF, OutputFaceTemplateDXF
 
+# Below this fraction of the dome's largest strut length, a chord (or a
+# panel with an edge that short) is flagged as a likely truncation-
+# boundary artifact rather than a genuine distinct class. Real geodesic
+# subdivisions essentially never produce legitimate strut-length classes
+# differing by more than roughly one order of magnitude from each other
+# (e.g. a frequency-6 Class I icosahedron's longest and shortest struts
+# differ by well under 2x) -- so a strut three orders of magnitude
+# below the dome's largest is overwhelmingly more likely to be a sliver
+# left over from a truncation cutoff landing extremely close to (but
+# not exactly on) a vertex ring, as observed for e.g. -t 0.4999999.
+SMALL_CHORD_ARTIFACT_RATIO = 1e-3
+
 
 def _ellipsoid_normal(vertex, elongation_factors):
   # The outward surface normal of a general axis-aligned ellipsoid
@@ -365,8 +377,8 @@ def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_le
   raw_lengths = [np.linalg.norm(vertices[c[0]] - vertices[c[1]]) for c in chords]
 
   list_bom = []
+  scale = max(raw_lengths) if raw_lengths else 0.
   if raw_lengths:
-    scale = max(raw_lengths)
     cluster_tolerance = max(scale * 1e-9, 0.5 * 10 ** (-rounding_precision))
 
     order = sorted(range(len(raw_lengths)), key=lambda i: raw_lengths[i])
@@ -384,11 +396,22 @@ def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_le
       })
   df_bom = pd.DataFrame(list_bom).sort_values(by = ['length'], ascending = False).reset_index(drop = True)
 
+  # a chord under SMALL_CHORD_ARTIFACT_RATIO of the dome's largest strut
+  # is almost certainly a truncation-boundary sliver (e.g. from a cutoff
+  # landing extremely close to, but not exactly on, a vertex ring) --
+  # see module docstring for why this ratio was chosen
+  chord_lengths_and_counts = df_bom.to_dict(orient = 'records')
+  artifact_length_threshold = scale * SMALL_CHORD_ARTIFACT_RATIO
+  artifact_chords = [row for row in chord_lengths_and_counts if row['length'] < artifact_length_threshold]
+
   dict_bom = {
-    'Chord Lengths and Counts' : df_bom.to_dict(orient = 'records'),
-    'Warning' : 'Small length chords could be artifacts, so check them with a DXF viewer before you build anything!',
+    'Chord Lengths and Counts' : chord_lengths_and_counts,
+    'Warning' : 'Small length chords could be real but unusually short struts, or truncation-'
+                'boundary artifacts -- see "Possible truncation-artifact chords" below, and '
+                'check any of them with a DXF viewer before you build anything!',
+    'Possible truncation-artifact chords' : artifact_chords,
     }
-  
+
   #
   # display Bill of Materials
   #
@@ -507,11 +530,17 @@ def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_le
       }
       for g in face_groups
     ]
+    # a panel with an edge under SMALL_CHORD_ARTIFACT_RATIO of the
+    # dome's largest strut is the panel-side symptom of the same
+    # truncation-boundary sliver flagged above for chords -- a
+    # near-zero-length edge means a near-zero-area (degenerate) panel
+    artifact_panels = [g for g in list_face_types if min(g['edge_lengths']) < artifact_length_threshold]
     report['pyDome report']['Panel shapes and counts'] = {
       'Panel Types and Counts': list_face_types,
       'Warning': 'Panels sharing the same edge lengths can still be mirror images of each '
                  'other (see "chiral") -- check "orientations" before cutting from a '
                  'directional material such as wood grain or printed film.',
+      'Possible truncation-artifact panels': artifact_panels,
     }
 
     total_area = sum(fd['area'] for fd in face_data)
