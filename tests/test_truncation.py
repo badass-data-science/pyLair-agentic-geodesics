@@ -43,11 +43,15 @@ def test_truncate_chords_reference_valid_vertex_indices():
 
 @pytest.mark.parametrize("truncation_amount", [0.2, 0.333333, 0.499999, 0.75])
 def test_truncate_never_adds_chords(truncation_amount):
-    # truncation only removes chords entirely below the cutoff or replaces
-    # a crossing chord 1:1 with a shortened one, so the chord count can
-    # only shrink. Vertex count is not monotonic: a chord that crosses the
-    # cutoff contributes a new interpolated vertex, and a shallow cutoff
-    # near the pole can cross more chords than it removes vertices for.
+    # with no face data (as here), truncation only removes chords entirely
+    # below the cutoff or replaces a crossing chord 1:1 with a shortened
+    # one, so the chord count can only shrink -- this stops being true once
+    # F_sphere is passed and a quad-split face contributes a new diagonal
+    # chord (see test_clip_face_two_vertices_above_cutoff_adds_diagonal_as_
+    # a_real_chord). Vertex count is not monotonic: a chord that crosses
+    # the cutoff contributes a new interpolated vertex, and a shallow
+    # cutoff near the pole can cross more chords than it removes vertices
+    # for.
     V, C = build_sphere()
     V_new, C_new, _ = truncate(V, C, truncation_amount)
     assert len(C_new) <= len(C)
@@ -253,11 +257,13 @@ def test_clip_face_reuses_the_same_crossing_point_as_the_bordering_chord():
 def test_sequential_multi_axis_clip_reuses_diagonal_edge_without_keyerror():
     # A (below Z=1) is discarded; B and C (both z=2) are kept, producing
     # exactly the 2-above-1-below quad-split whose diagonal edge (from
-    # the new Z-crossing point to C) is NOT a real chord. A second
-    # truncation pass on a *different* axis (X here), chosen so that
-    # diagonal itself straddles the new cutoff, is exactly the scenario
-    # that used to raise a KeyError before crossing points could be
-    # computed on demand for any edge -- chord-backed or not.
+    # the new Z-crossing point to C) is now a real chord (see
+    # test_clip_face_two_vertices_above_cutoff_adds_diagonal_as_a_real_chord
+    # below), reusing the shared crossing-point cache the same as any
+    # other edge. A second truncation pass on a *different* axis (X
+    # here), chosen so that diagonal itself straddles the new cutoff, is
+    # exactly the scenario that used to raise a KeyError before crossing
+    # points could be computed on demand for any edge.
     A = np.array([0., 0., 0.])
     B = np.array([4., 0., 2.])
     C = np.array([0., 4., 2.])
@@ -280,3 +286,36 @@ def test_sequential_multi_axis_clip_reuses_diagonal_edge_without_keyerror():
             assert 0 <= idx < len(V2)
     for v in V2:
         assert v[0] >= 1.0 - 1e-9
+
+
+def test_clip_face_two_vertices_above_cutoff_adds_diagonal_as_a_real_chord():
+    # same quad-split shape as test_clip_face_two_vertices_above_cutoff_
+    # produces_a_quad_split_into_two_triangles above, but checking that
+    # the split's diagonal is now reported back as a genuine chord
+    # (rather than a strut-less data-format seam), with the correct
+    # hand-computable length and connecting the two sub-triangles.
+    A = np.array([0., 0., 0.])
+    B = np.array([4., 0., 2.])
+    C = np.array([0., 4., 2.])
+    V = [A, B, C]
+    edges = [[0, 1], [1, 2], [2, 0]]
+
+    V_new, C_new, F_new = truncate(V, edges, 0.5, axis=2, F_sphere=[[0, 1, 2]])
+
+    # BC is kept as-is, AB and CA are each replaced 1:1 by a shortened
+    # chord, and the diagonal is one genuinely new chord on top of that
+    assert len(C_new) == len(edges) + 1
+
+    # both new triangles share exactly one edge -- that's the diagonal
+    shared = set(F_new[0]) & set(F_new[1])
+    assert len(shared) == 2
+
+    diagonal_chords = [c for c in C_new if set(c) == shared]
+    assert len(diagonal_chords) == 1
+
+    # hand-computed: edge A-B crosses z=1 at (2, 0, 1); the diagonal
+    # runs from there to C = (0, 4, 2)
+    Pa = np.array([2., 0., 1.])
+    expected_length = np.linalg.norm(Pa - C)
+    v1, v2 = (V_new[i] for i in diagonal_chords[0])
+    assert np.linalg.norm(np.asarray(v1) - np.asarray(v2)) == pytest.approx(expected_length)
