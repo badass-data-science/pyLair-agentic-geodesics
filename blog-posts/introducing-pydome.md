@@ -1,4 +1,4 @@
-# Introducing pyDome (or, How Our Heroine Designed a Geodesic Secret Lair)
+# Introducing pyDome (or, How Our Heroine Designed Her Geodesic Secret Lair)
 
 Our heroine's secret laboratory is quickly becoming too big to fit inside her studio apartment, and that issue's now throwing a real grenade into the wheels of her Ultimate Cunning Master Plan&trade;.  She needs more room to house her bold experiments, and, being rather stylish, she wants that additional space to look cool. Our heroine also wants the structure to handle pressure gradients well, because one should deploy a secret laboratory either deep under the ocean's surface or in circumpolar orbit; certainly not within an unassuming San Diego neighborhood!
 
@@ -13,9 +13,9 @@ But she definitely doesn't want to do the math herself. And its far more fun to 
 So our heroine built pyDome.
 # What It Does
 
-Essentially, pyDome computes the vertices and chords (and, for an untruncated structure, the triangular panels) of a geodesic dome (or sphere) and writes them out as both DXF and VRML files (for CAD software and for impressing friends with cool 3D graphics, respectively). Optionally it produces STL and OBJ files to facilitate 3D printing of scale models.
+Essentially, pyDome computes the vertices, chords, and panels of a geodesic dome (or sphere) and writes them out as both DXF and VRML files (for CAD software and for impressing friends with cool 3D graphics, respectively). Optionally it produces STL and OBJ files to facilitate 3D printing of scale models.
 
-Additionally, pyDome delivers a full **bill of materials** for the user's geodesic project: every strut length and how many struts of each the user needs, the exact angles at which each strut meets at the hubs, an optional overall cost estimate for the strut material, and — for an untruncated dome — a parallel accounting of the panel shapes needed to skin the structure, complete with cutting templates, mirror-image warnings, and material cost/weight estimates.
+Additionally, pyDome delivers a full **bill of materials** for the user's geodesic project: every strut length and how many struts of each the user needs, the exact angles at which each strut meets at the hubs, an optional overall cost estimate for the strut material. Additionally, the software provides a parallel accounting of the panel shapes needed to skin the structure, complete with cutting templates, mirror-image warnings, and material cost/weight estimates.
 
 Users tell pyDome how big they want their geodesic dome/sphere to be by setting the radius. They also specify the "frequency" of the structure, i.e., how finely to divide the source polyhedron's faces (see below) into the sub-triangles which later get projected onto the sphere (again, see below). Users select between three different polyhedral face subdivision patterns, specify whether and how much they want to truncate the sphere into a dome along any of its three axes, and whether they want the structure stretched or squashed along any of those same three axes, independently of each other. pyDome then returns all the strut, angle, and panel information required to actually produce a physical structure.
 # How It Works
@@ -42,7 +42,7 @@ Class III, the "Skew" method, lays its grid down at an angle instead of running 
 
 ![The subdivided grid projected onto a sphere](edited_4_projected1.png)
 
-**Step four: optional elliptical stretching.** Not everyone wants a perfect sphere. pyDome can stretch or squish the whole structure along any of its three axes independently, each by its own factor, turning the sphere into a general axis-aligned ellipsoid — raise the ceiling without touching the footprint, widen the footprint in one direction only, or combine all three however you like. Every downstream angle calculation, from the hub deflection angles below to the panel bevel angles further down, correctly accounts for the true surface normal of whichever ellipsoid results, rather than the sphere's simpler radial one — a formula our heroine (working through Claude Code) double-checked against an independent numerical approximation of the same gradient before trusting it on more than one axis at a time.
+**Step four: optional elliptical stretching.** Not everyone wants a perfect sphere. pyDome can stretch or squish the whole structure along any of its three axes independently, each by its own factor, turning the sphere into a general axis-aligned ellipsoid — raise the ceiling without touching the footprint, widen the footprint in one direction only, or combine all three however you like. Every downstream angle calculation, from the hub deflection angles described below to the panel bevel angles described even further down, correctly accounts for the true surface normal of whichever ellipsoid results, rather than the sphere's simpler radial one — a formula our heroine double-checked against an independent numerical approximation of the same gradient before trusting it on more than one axis at a time.
 
 ![elliptical stretching](ellipsoid.png)
 
@@ -68,31 +68,28 @@ Taken together, these two angle types define, for every single joint in the enti
 
 pyDome also produces a list of strut lengths and how many struts of each length are required to build the structure, as well as a summation of the total length of strut material required. If the user provides a price per unit length, then a cost estimate of total strut material required is reported as well.
 
-An exposed lattice of hubs and struts is appropriately villainous for a secret lair, but not exactly draft-proof, so the bill of materials extends the same treatment to the dome's actual *skin*. Every triangular panel gets grouped by its three edge lengths, the same way strut lengths are grouped, and pyDome reports how many of each shape are needed — flagging, along the way, something our heroine hadn't originally considered: two panels with identical edge lengths can still be mirror images of each other rather than true duplicates, which matters if the panel material itself has a direction to it (wood grain, a printed pattern, a one-sided finish). The report also totals the panel area, with optional per-unit-area cost and areal-density weight estimates matching the strut side's own cost arithmetic, and lists a bevel angle for every strut in the structure — the angle each bordering panel's edge needs to be cut at so two flat panels actually meet flush along that strut instead of leaving a gap or an overlap.
+While an exposed lattice of hubs and struts might look appropriately stylish for a secret lair, it is not exactly draft-proof. Therefore the bill of materials extends similar treatment to the dome's actual *skin*. Every triangular panel gets grouped by its three edge lengths, the same way strut lengths are grouped, and pyDome reports how many of each shape are needed. It flags, along the way, cases where two panels with identical edge lengths are *mirror images* of each other rather than true duplicates, which matters in cases where the panel material itself is directional (e.g., due to wood grain, a printed pattern, a one-sided finish, or solar panels--or even spikes--on the outside).
 
-This used to disappear entirely the moment a dome was truncated: slicing a sphere into a dome only ever recomputed struts, throwing the panel list away rather than figuring out which panels survived the cut and what shape it left them. Panels now get sliced right along with the struts, on any axis or combination of axes. Each triangle straddling the cutoff plane is classified by how many of its 3 corners survive, then clipped into either a smaller triangle (one corner kept) or a quadrilateral split into two triangles (two corners kept) — reusing the exact same cut point already computed for the bordering strut, so a clipped panel's new corner and its strut land on the identical point rather than two independently-rounded near duplicates. The one wrinkle: that quad-splitting diagonal isn't a real strut, just a data-format seam with no bevel angle and no chord of its own — which mattered more than expected once truncation started combining multiple axes. A triangle already split by one axis's cut can get split again by a second axis, and that second cut sometimes needs a crossing point on the first cut's artificial diagonal — something nothing had ever computed, because it isn't a real chord. Our heroine (working through Claude Code) caught this by deliberately chaining two truncation passes together in a test before trusting the general, any-combination-of-axes version; the fix computes a crossing point for any edge on demand, not just ones already known to be struts. (If you truncate two or more axes through the same original triangle, that diagonal seam is worth knowing about: it shows up in the panel report as two ordinary triangles rather than one physical quad, and pyDome won't add a support strut there for you.)
+The report also totals the panel area, with optional per-unit-area cost and areal-density weight estimates; calculations qualitatively similar to the those provided for the total strut length. The report also lists a bevel angle for every strut in the structure (the angle each bordering panel's edge needs to be cut at) so that when two flat panels meet they join flush along that strut instead of leaving a gap or an overlap.
 
-Since a wrong dihedral-angle formula — or a wrong clipping algorithm — would mean panels that quietly don't fit, none of this was trusted on the algebra alone. The bevel-angle formula matches the textbook dihedral angles of a plain icosahedron and octahedron to six decimal places, and the panel-clipping itself was checked against `trimesh`'s own independent mesh-slicing routine: matching total panel area and panel count across both polyhedra, several frequencies, and every combination of truncated axes, plus a structural check confirming the clipped panel set stays watertight everywhere except the open boundary the cut itself leaves behind.
+Occasionally, a truncation cutoff lands so close to an existing vertex that a few of the resulting struts and panels prove mathematically valid but practically useless, e.g., a strut appears that is a millionth the length of its neighbors or a panel is specified whose edges round down to zero. Nothing crashes in this situation; the geometry is mathematically fine, just absurdly small. The bill of materials flags these situations (anything under 0.1% of the dome's largest strut length, a ratio chosen because legitimate strut classes in a real geodesic subdivision essentially never differ by more than about an order of magnitude from each other). These outcomes do not get silently dropped; they are surfaced so a builder doesn't have to eyeball a hundred-row JSON report looking for the one entry that's secretly a rounding artifact.
 
-One loose end from all this precision clipping: what happens when a truncation cutoff lands so close to an existing vertex ring that the resulting struts and panels are technically valid but practically useless — a strut a millionth the length of its neighbors, a panel whose edges round down to zero? Nothing crashes; the geometry is mathematically fine, just absurdly small. But it's a real trap: `-t 0.4999999` looks like a rounding-precision difference from the documented `-t 0.499999`, yet at high frequency it can shift the cutoff from safely clear of the equator's vertex ring to practically sitting on it, producing struts six orders of magnitude shorter than normal and a panel that reports as a `(0.0, 0.0, 0.0)` triangle. Worse, the documented "safe" cutoffs turned out not to be universally safe either — `0.499999` itself still produced a handful of much-smaller-but-not-quite-zero slivers at one tested frequency, so the doc advice only reduces the odds of this happening, it doesn't eliminate them. The bill of materials now flags anything under 0.1% of the dome's largest strut length — a ratio chosen because legitimate strut classes in a real geodesic subdivision essentially never differ by more than about an order of magnitude from each other — in new `Possible truncation-artifact chords`/`panels` lists, right alongside the full data. Nothing gets silently dropped; it's surfaced so a builder doesn't have to eyeball a hundred-row JSON report looking for the one entry that's secretly a rounding artifact.
-
-**Step eight: hub and panel cutting templates.** A geodesic project will likely require multiple (but repeated) distinct hub angle configurations, and, once the dome has a skin, a similarly repeated handful of distinct panel shapes. To assist designers, pyDome optionally creates a 2D DXF cutting template for each genuinely distinct hub shape and, symmetrically, for each genuinely distinct panel shape — correctly recognizing that two hubs (or two panels) which are actually the same shape, just rotated (or, for panels, mirrored) relative to each other, only require one template between them. A single panel template covers both a shape and its mirror image, since a physical cutting template can always be flipped over on the material.
+**Step eight: hub and panel cutting templates.** A geodesic project will likely require multiple (but repeated) distinct hub angle configurations, and, once the dome has a skin, a similarly repeated handful of distinct panel shapes. To assist designers, pyDome optionally creates a 2D DXF cutting template for each genuinely distinct hub shape and, symmetrically, for each genuinely distinct panel shape--correctly recognizing that two hubs (or two panels) which are actually the same shape, just rotated (or, for panels, mirrored) relative to each other, only require one template between them. A single panel template covers both a shape and its mirror image, since a physical cutting template can always be flipped over on the material.
 # pyDome's Agentic AI Interface
 
 Mojitos, as it turns out, do not mix well with typing command line incantations like `pydome -o output/secret-lair -f 6 -c 3 -n 4 -t 0.4`, squinting at a JSON wall of hub angles, then opening a CAD program just to check whether frequency 6 actually looks like anything sensible before committing to it. Our heroine wanted to describe the dome she wanted in plain language and have something else handle the fiddly bits, so she added to pyDome an [MCP](https://modelcontextprotocol.io) (Model Context Protocol) agentic AI interface. (The pre-existing command line interface still remains for those who prefer the traditional method of interaction with the software).
 
-Running `pydome-mcp` starts a small server that hands an AI assistant four tools instead of one command:
+The bundled MCP server hands an AI assistant four tools instead of one command:
 
 * **`design_dome`**, for cheaply asking "what does frequency 6 Class III with n=4 give me?" without writing a single file, just vertex/edge/face counts, a bounding box, and a total strut length to sanity-check against a budget.
-* **`preview_dome`**, which is the one pyDome could never do from the command line: it renders the wireframe and hands the picture straight back into the conversation. No CAD viewer, no opening a PNG in a separate window, just "here's your dome" right where you asked for it.
+* **`preview_dome`**, for rendering a wireframe of the generated structure, handing the picture straight back into the conversation. No CAD viewer, no opening a PNG in a separate window, just "here's what your dome looks like" right where the user asked for it.
 * **`get_bill_of_materials`**, for interrogating strut counts and connector angles before deciding a design is worth building.
 * **`export_dome`**, for when the design is actually settled and it's time to write the DXF, VRML, STL, OBJ, and hub-connector-template files to disk for real.
 
-The idea is to let an assistant iterate the way our heroine would iterate herself: try a shape, look at it, check what it costs in struts, adjust, and only export once it's actually right — rather than round-tripping through the command line and a separate viewer for every guess. All four tools enforce the exact same validation rules as the CLI (an odd frequency is still not a valid Class II dome, no matter which door you walked in through), because underneath both interfaces now share one geometry engine instead of two copies of the same logic quietly drifting apart.
+The idea is to let an AI assistant iterate the way our heroine would iterate: try a shape, look at it, check what it costs, adjust, and only export once it's actually right, as opposed to making round trips between the command line and a separate viewer with every iteration. All four of these agentic tools enforce the exact same validation rules as the command line interface because a single geometry engine underlies both interface methods.
 # Next Steps
 
-* Done, actually: the nesting/bin-packing question above got its own answer. [Sheet-Nesting](https://github.com/badass-data-science/Engineering/tree/main/Sheet-Nesting) is a standalone tool, deliberately not part of pyDome, that takes pyDome's panel cutting templates (or any other 2D shapes) and works out how to lay them onto real sheet stock with minimal waste.
-* Right now a risky truncation cutoff only gets flagged *after* the fact, buried in the bill of materials' new artifact lists. A more proactive version would catch it before export — warn (or refuse) the moment a chosen `-t`/`-x`/`-y` value lands suspiciously close to an existing vertex ring, rather than making the builder notice the warning in a JSON report after already generating files.
+* At the moment a risky truncation cutoff that produces absurdly small struts/panels only gets flagged *after* the fact, the warning buried in the bill of materials' artifact lists. A more proactive version would catch such cases before export, then warn (or refuse) the moment a chosen `-t`/`-x`/`-y` value lands suspiciously close to an existing vertex. Therefore the builder would not have to squint to notice warnings in the design report after generating the files.
 * The "unstrutted diagonal" from clipping two or more axes through the same original triangle is currently just... there, silently splitting one physical quad panel into two unconnected triangles in the report. Worth revisiting: either let a panel genuinely be a quadrilateral (a bigger change — the rest of the bill of materials, from SSS panel-type grouping to the DXF templates, currently assumes every panel is a triangle) or offer to add a real diagonal support strut across that seam when the builder wants one, instead of leaving it to their judgment.
 * Truncation currently always leaves the cut boundary open (no floor, no wall) — the right choice for a dome that just sits on the ground, but not for every use case. An optional cap, triangulating the boundary ring into real panels instead of leaving a hole, would suit anyone building a fully enclosed structure rather than an open-bottomed one.
 * Our heroine will likely experiment with AI-based interaction with pyDome's source code, such as asking Claude Code to review the existing code and then design a DXF file modification that creates a door-frame design. Our heroine is not sure if this will work, but thinks it worth a try. (Doorways are hell for any geodesic building design; if AI can improve this situation that would be awesome!).
@@ -113,9 +110,9 @@ The actual construction of the forthcoming geodesic secret laboratory will (of c
 pyDome is available [here](https://github.com/badass-data-science/Engineering/tree/main/Geodesic-Dome-Design/pyDome).
 # AI Use Statement
 
-Our heroine wrote this article about 99% manually, with a small amount of outline assistance from Claude Code.
+Our heroine wrote this article about 95% manually, with a small amount of outline assistance from Claude Code.
 
-She wrote the original pyDome implementation from scratch in Python, and then had Claude code refactor it a bit to make it PyPI-ready. She also collaborated with Claude Code to add features missing from her original implementation (Class II and III polyhedra face subdivision methods, sphere elongation functionality, and STL/OBJ/PNG output), then to design and build the MCP server described above, then to add the panel-focused bill of materials and cutting templates now woven throughout the walkthrough above rather than kept in a section of their own, then to generalize both elongation and truncation so each works independently along all three axes instead of just the vertical one, then to make truncation panel-aware — clipping the dome's skin correctly along with its struts, on any axis or combination of axes, instead of simply discarding panel data the moment a dome is truncated — and most recently, after she noticed by hand that a near-equatorial cutoff was leaving unusably tiny struts and panels behind, to have the bill of materials flag those truncation-boundary slivers automatically instead of leaving them to blend in with the real data.
+She wrote the original pyDome implementation from scratch in Python, and then had Claude code refactor it a bit to make it PyPI-ready. She then collaborated with Claude Code to quickly add features missing from her original implementation (Class II and III polyhedra face subdivision methods, sphere elongation functionality, STL/OBJ/PNG output, face truncation, multi-axis ellipsoid projection, multi-axis truncation, and face-aware truncation).
 # Tags
 
 geodesic
@@ -123,21 +120,14 @@ geodesic math
 geodesic dome
 pyDome
 Python
-PyPI
 engineering
-structural engineering
-mechanical engineering
 CAD
 DXF
 STL
 OBJ
 VRML
 3D printing
-triacon
-symmetry triangle
 polyhedron
-icosahedron
-octahedron
 geometry
 analytic geometry
 NumPy
@@ -145,9 +135,6 @@ Claude Code
 agentic AI
 MCP
 Model Context Protocol
-bill of materials
-laser cutting
-CNC
 chirality
 Ultimate Cunning Master Plan
 
