@@ -127,14 +127,13 @@ def export_dome(output_path: str, radius: float = 1.0, frequency: int = 4,
   """Compute the dome and write output files to disk (mirrors the `pydome`
   CLI): DXF+VRML by default, or face-only VRML with face_output=True
   (required for stl/obj/hub_templates/face_templates/cost_per_unit_area/
-  panel_areal_density, and mutually exclusive with truncation_x/y/z,
-  matching the CLI's own rule). face_templates=True writes one DXF
-  cutting template per unique panel shape. Returns the list of files
-  written and the Bill of Materials (including panel shapes/counts,
-  chirality flags, panel area/cost/weight, and bevel angles, when face
-  data is available)."""
-  run_truncate = any(t is not None for t in (truncation_x, truncation_y, truncation_z))
-  validate_output_combo(run_truncate, face_output, stl, obj,
+  panel_areal_density; incompatible with truncation_x/truncation_y, but
+  Z-only truncation now supports face-based output, matching the CLI's
+  own rule). face_templates=True writes one DXF cutting template per
+  unique panel shape. Returns the list of files written and the Bill of
+  Materials (including panel shapes/counts, chirality flags, panel
+  area/cost/weight, and bevel angles, when face data is available)."""
+  validate_output_combo(truncation_x, truncation_y, truncation_z, face_output, stl, obj,
                          face_templates, cost_per_unit_area, panel_areal_density)
   dome = build_dome(radius=radius, frequency=frequency, polyhedron=polyhedron,
                      dome_class=dome_class, n_frequency=n_frequency,

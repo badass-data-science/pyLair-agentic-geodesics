@@ -37,10 +37,15 @@ from .truncation import truncate
 class DomeResult:
   V: list                       # final vertices (post elongation/truncation)
   C: list                       # final chords
-  F_sphere: Optional[list]      # face-node list; None when truncated, since
-                                 # truncate() doesn't recompute faces (stale
-                                 # w.r.t. the truncated V/C otherwise -- this
-                                 # is why cli.py forbids -F/-s/-O with -t)
+  F_sphere: Optional[list]      # face-node list; None whenever truncation
+                                 # doesn't fully preserve face data. Z-only
+                                 # truncation (truncation_x and
+                                 # truncation_y both None) clips faces
+                                 # correctly and keeps this populated;
+                                 # truncating on X or Y still discards it
+                                 # entirely (not yet supported -- this is
+                                 # why cli.py still forbids -F/-s/-O/-T
+                                 # with -x/-y, but now allows them with -t)
   truncated: bool
   radius: float
   frequency: int
@@ -81,19 +86,22 @@ def validate_geometry_params(radius, frequency, dome_class, n_frequency, elongat
       raise ValueError('-c 3 (Class III / Skew) requires --n-frequency to differ from --frequency (equal values are Class II -- use -c 2 instead). Exiting.')
 
 
-def validate_output_combo(run_truncate, face_output=False, stl_output=False, obj_output=False,
-                           face_template_output=False, cost_per_unit_area=None,
-                           panel_areal_density=None):
-  # -F, -s, -O, and -T all require face data, which truncate() does not
-  # recompute, so none of them can be combined with truncation without
-  # producing stale/incorrect geometry. -a/-w (panel cost/weight) also
-  # require face data to have anything to report.
+def validate_output_combo(truncation_x, truncation_y, truncation_z, face_output=False,
+                           stl_output=False, obj_output=False, face_template_output=False,
+                           cost_per_unit_area=None, panel_areal_density=None):
+  # -F, -s, -O, and -T all require face data. Z-only truncation now
+  # clips faces correctly (build_dome threads them through), so it's
+  # allowed alongside these; truncating on X or Y still discards face
+  # data entirely (sequential multi-axis face clipping isn't tested
+  # yet), so that combination is still rejected. -a/-w (panel cost/
+  # weight) also require face data to have anything to report.
   needs_face_data = (face_output or stl_output or obj_output or face_template_output
                       or cost_per_unit_area is not None or panel_areal_density is not None)
-  if run_truncate and needs_face_data:
-    raise ValueError('Truncation does not work with face-based output (-F/-s/-O/-T) or panel '
-                      'area/cost/weight options (-a/-w) at this time. Use either -t or one of '
-                      'those, but not both.')
+  truncated_on_unsupported_axis = truncation_x is not None or truncation_y is not None
+  if truncated_on_unsupported_axis and needs_face_data:
+    raise ValueError('Truncation along X or Y does not work with face-based output (-F/-s/-O/-T) '
+                      'or panel area/cost/weight options (-a/-w) at this time. Z-only truncation '
+                      '(-t) does support these; combine -t with one of those, or drop -x/-y.')
 
 
 def build_dome(radius=1.0, frequency=4, polyhedron: Union[str, Polyhedron] = 'icosahedron',
@@ -147,13 +155,19 @@ def build_dome(radius=1.0, frequency=4, polyhedron: Union[str, Polyhedron] = 'ic
   truncated = any(t is not None for t in (truncation_x, truncation_y, truncation_z))
   if truncated:
     V, C = V_sphere, C_sphere
+    # face-aware clipping only runs when Z is the *only* axis being
+    # truncated -- truncate()'s clipping itself is already axis-generic,
+    # but sequential multi-axis face clipping (a face split by one
+    # axis's cut getting split again by another) hasn't been tested yet,
+    # so X/Y truncation still discards face data entirely for now.
+    F = F_sphere if (truncation_x is None and truncation_y is None) else None
     if truncation_x is not None:
-      V, C = truncate(V, C, truncation_x, axis=0)
+      V, C, F = truncate(V, C, truncation_x, axis=0, F_sphere=F)
     if truncation_y is not None:
-      V, C = truncate(V, C, truncation_y, axis=1)
+      V, C, F = truncate(V, C, truncation_y, axis=1, F_sphere=F)
     if truncation_z is not None:
-      V, C = truncate(V, C, truncation_z, axis=2)
-    F_out = None
+      V, C, F = truncate(V, C, truncation_z, axis=2, F_sphere=F)
+    F_out = F
   else:
     V, C, F_out = V_sphere, C_sphere, F_sphere
 

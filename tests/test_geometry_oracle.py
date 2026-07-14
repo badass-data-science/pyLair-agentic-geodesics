@@ -6,6 +6,7 @@ from pydome.symmetry_triangle import ClassOneMethodOneSymmetryTriangle
 from pydome.geodesic_sphere import GeodesicSphere
 from pydome.bill_of_materials import compute_face_data, compute_dihedral_angles
 from pydome.output import OutputOBJ, OutputFaceTemplateDXF
+from pydome.api import build_dome
 
 
 # Independent, dev-time-only cross-checks of the face-geometry math added
@@ -101,3 +102,69 @@ def test_face_template_dxf_geometry_matches_ezdxf_parse(tmp_path):
         for i in range(3) for j in range(i + 1, 3)
     )
     assert recovered_lengths == pytest.approx(sorted(edge_lengths), abs=1e-6)
+
+
+# Z-only face-aware truncation (truncate() clipping F_sphere against the
+# cutoff plane): independent ground truth via trimesh's own mesh-slicing
+# routine, run against the *untruncated* dome's OBJ export and cut at the
+# exact same plane pyDome computes internally, rather than comparing our
+# clipping code to itself.
+
+@pytest.mark.parametrize("polyhedron,frequency,cutoff", [
+    ("icosahedron", 3, 0.499999),
+    ("icosahedron", 4, 0.333333),
+    ("octahedron", 3, 0.499999),
+    ("octahedron", 4, 0.6),
+])
+def test_z_truncated_faces_match_trimesh_slice_mesh_plane_oracle(tmp_path, polyhedron, frequency, cutoff):
+    trimesh = pytest.importorskip("trimesh")
+
+    truncated = build_dome(frequency=frequency, polyhedron=polyhedron, truncation_z=cutoff)
+    assert truncated.F_sphere is not None
+
+    full = build_dome(frequency=frequency, polyhedron=polyhedron)
+    obj_path = tmp_path / "full.obj"
+    OutputOBJ(full.V, full.F_sphere, str(obj_path))
+    mesh = trimesh.load(str(obj_path), process=False)
+
+    # replicate pyDome's own cutoff-plane computation (see truncation.py)
+    # so trimesh is asked to cut at exactly the same plane, not an
+    # independently-guessed one
+    zs = [v[2] for v in full.V]
+    min_z, max_z = min(zs), max(zs)
+    plane_z = min_z + cutoff * (max_z - min_z)
+
+    sliced = trimesh.intersections.slice_mesh_plane(
+        mesh, plane_normal=[0., 0., 1.], plane_origin=[0., 0., plane_z])
+
+    our_area = sum(fd['area'] for fd in compute_face_data(truncated.V, truncated.F_sphere))
+    assert our_area == pytest.approx(sliced.area, rel=1e-6)
+
+    # every original triangle contributes 0, 1, or 2 output triangles
+    # under a planar cut regardless of which of the two possible
+    # diagonals a quad gets split along, so face counts should match
+    # exactly even though trimesh's triangulation choice for the
+    # straddling case need not match ours vertex-for-vertex
+    assert len(truncated.F_sphere) == len(sliced.faces)
+
+
+@pytest.mark.parametrize("frequency,cutoff", [(3, 0.499999), (4, 0.333333)])
+def test_z_truncated_faces_are_watertight_except_at_the_open_cut_boundary(frequency, cutoff):
+    # a structural invariant checked independently of any oracle library:
+    # every edge of the clipped face set must be shared by exactly 2
+    # faces (an interior edge) or exactly 1 (the open boundary ring left
+    # by not capping the cut) -- never 0 (a gap/hole) or 3+ (an
+    # overlapping/self-intersecting clip).
+    dome = build_dome(frequency=frequency, truncation_z=cutoff)
+    assert dome.F_sphere is not None
+
+    edge_face_count = {}
+    for f in dome.F_sphere:
+        a, b, c = f
+        for u, v in ((a, b), (b, c), (c, a)):
+            key = frozenset((u, v))
+            edge_face_count[key] = edge_face_count.get(key, 0) + 1
+
+    assert set(edge_face_count.values()) <= {1, 2}
+    assert 1 in edge_face_count.values()  # the open boundary ring exists
+    assert 2 in edge_face_count.values()  # and interior edges exist too

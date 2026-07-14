@@ -27,11 +27,12 @@ def test_design_dome_returns_summary_stats():
     assert result["resolved_parameters"]["frequency"] == 4
 
 
-def test_design_dome_truncated_has_no_face_count():
+def test_design_dome_truncated_on_z_only_still_has_a_face_count():
     result = design_dome(frequency=4, truncation_z=0.499999)
 
     assert result["truncated"] is True
-    assert result["face_count"] is None
+    assert result["face_count"] is not None
+    assert result["face_count"] > 0
 
 
 def test_design_dome_truncated_on_x_or_y_has_no_face_count():
@@ -109,16 +110,24 @@ def test_export_dome_with_face_templates_writes_facetype_files(tmp_path):
     assert "Panel Cutting Templates" in result["bill_of_materials"]["pyDome report"]
 
 
-def test_export_dome_face_templates_incompatible_with_truncation(tmp_path):
+def test_export_dome_face_templates_incompatible_with_x_or_y_truncation(tmp_path):
     out = str(tmp_path / "dome")
     with pytest.raises(ValueError, match="does not work"):
-        export_dome(out, frequency=4, face_templates=True, truncation_z=0.5)
+        export_dome(out, frequency=4, face_templates=True, truncation_x=0.5)
 
 
-def test_export_dome_face_output_incompatible_with_truncation(tmp_path):
+def test_export_dome_face_output_incompatible_with_x_or_y_truncation(tmp_path):
     out = str(tmp_path / "dome")
     with pytest.raises(ValueError, match="does not work"):
-        export_dome(out, frequency=4, face_output=True, truncation_z=0.5)
+        export_dome(out, frequency=4, face_output=True, truncation_y=0.5)
+
+
+def test_export_dome_face_templates_now_works_with_z_only_truncation(tmp_path):
+    out = str(tmp_path / "dome")
+    result = export_dome(out, frequency=4, face_templates=True, truncation_z=0.499999)
+
+    assert any(f.endswith(".dxf") and "_facetype" in f for f in result["files_written"])
+    assert "Panel Cutting Templates" in result["bill_of_materials"]["pyDome report"]
 
 
 def test_export_dome_with_preview_and_hub_templates(tmp_path):

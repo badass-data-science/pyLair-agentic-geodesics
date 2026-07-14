@@ -59,10 +59,12 @@ def test_nonpositive_radius_reports_clear_error(tmp_path):
         assert "Traceback" not in result.stderr
 
 
-def test_face_based_output_and_truncation_are_mutually_exclusive(tmp_path):
+def test_face_based_output_and_x_or_y_truncation_are_mutually_exclusive(tmp_path):
+    # Z-only truncation (-t) now supports face-based output -- only -x/-y
+    # still don't (see test_z_only_truncation_combines_with_face_output)
     out = tmp_path / "dome"
     for flag in ["-F", "-s", "-O"]:
-        result = run_cli(["-o", str(out), flag, "-t", "0.5"])
+        result = run_cli(["-o", str(out), flag, "-x", "0.5"])
         assert result.returncode != 0
         assert "cannot be used with truncation" in result.stdout.lower() or "does not work" in result.stdout.lower()
 
@@ -448,15 +450,45 @@ def test_no_face_templates_flag_means_no_template_files_or_section(tmp_path):
     assert list(tmp_path.glob("dome_facetype*.dxf")) == []
 
 
-def test_face_templates_and_truncation_are_mutually_exclusive(tmp_path):
+def test_face_templates_and_x_or_y_truncation_are_mutually_exclusive(tmp_path):
     out = tmp_path / "dome"
-    result = run_cli(["-o", str(out), "-T", "-t", "0.5"])
+    result = run_cli(["-o", str(out), "-T", "-y", "0.5"])
     assert result.returncode != 0
     assert "does not work" in result.stdout.lower()
 
 
-def test_area_cost_and_truncation_are_mutually_exclusive(tmp_path):
+def test_area_cost_and_x_or_y_truncation_are_mutually_exclusive(tmp_path):
     out = tmp_path / "dome"
-    result = run_cli(["-o", str(out), "-a", "2.0", "-t", "0.5"])
+    result = run_cli(["-o", str(out), "-a", "2.0", "-x", "0.5"])
     assert result.returncode != 0
     assert "does not work" in result.stdout.lower()
+
+
+def test_z_only_truncation_combines_with_face_output(tmp_path):
+    # the whole point of this feature: Z-only truncation clips faces
+    # correctly, so -t no longer needs to be mutually exclusive with
+    # face-based output the way -x/-y still are
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-T", "-t", "0.499999"])
+    assert result.returncode == 0
+    report = json.loads(result.stdout)["pyDome report"]
+    assert "Panel Cutting Templates" in report
+    assert len(report["Panel Cutting Templates"]) > 0
+
+
+def test_z_only_truncation_combines_with_stl_obj_and_face_wrl_output(tmp_path):
+    for flag, suffix in (("-F", ".wrl"), ("-s", ".stl"), ("-O", ".obj")):
+        out = tmp_path / ("dome" + suffix.strip("."))
+        result = run_cli(["-o", str(out), flag, "-t", "0.499999"])
+        assert result.returncode == 0
+        assert out.with_suffix(suffix).exists()
+        assert out.with_suffix(suffix).stat().st_size > 0
+
+
+def test_z_only_truncation_combines_with_area_cost_and_panel_density(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-t", "0.499999", "-a", "2.0", "-w", "1.5"])
+    assert result.returncode == 0
+    report = json.loads(result.stdout)["pyDome report"]
+    assert "Total estimated panel material cost" in report["Total panel material"]
+    assert "Total estimated panel weight" in report["Total panel material"]

@@ -489,8 +489,10 @@ def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_le
   report['pyDome report']['Spoke angles'] = dict_spoke_angles
 
   #
-  # panel (face) sections: only meaningful for an untruncated dome,
-  # since truncate() never recomputes face data
+  # panel (face) sections: only present when the caller has face data --
+  # an untruncated dome, or one truncated only along Z (truncate()
+  # clips faces correctly for that case; X/Y truncation still discards
+  # them entirely, see truncation.py)
   #
   if faces is not None:
     face_data = compute_face_data(vertices, faces)

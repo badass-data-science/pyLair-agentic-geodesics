@@ -18,12 +18,74 @@
 import numpy as np
 
 # below this, a chord is considered exactly coincident with the cutoff
-# plane: dividing by its near-zero z-extent would silently produce an
-# inf/nan vertex (numpy division by zero warns rather than raising)
-# instead of failing loudly.
+# plane: dividing by its near-zero extent along the cutoff axis would
+# silently produce an inf/nan vertex (numpy division by zero warns rather
+# than raising) instead of failing loudly.
 HORIZONTAL_CHORD_EPSILON = 1e-12
 
-def truncate(V_sphere, C_sphere, cutoff_from_bottom, axis=2):
+
+def _edge_crossing(v_below, v_above, axis, cutoff):
+  # the point on segment (v_below, v_above) where it crosses `cutoff`
+  # along `axis`. Shared by both the chord-splitting and face-clipping
+  # logic below, so a chord and every face touching it agree on exactly
+  # the same cut point rather than two independently-rounded near
+  # duplicates.
+  norm = np.linalg.norm(v_below - v_above)
+  norm_vec = (v_below - v_above) / norm
+  if abs(norm_vec[axis]) < HORIZONTAL_CHORD_EPSILON:
+    raise ValueError(
+      'Truncation cutoff plane lies exactly on a chord that is flat '
+      'along the cutoff axis. Choose a slightly different truncation '
+      'value to avoid this degenerate case.'
+    )
+  scalar = (cutoff - v_above[axis]) / norm_vec[axis]
+  return v_above + scalar * norm_vec
+
+
+def _clip_face(face, V_sphere, edge_to_new_vertex, axis, cutoff):
+  # Clip a single triangular face against the same cutoff plane used for
+  # chords, reusing the exact intersection points already computed for
+  # that face's own edges (every triangle edge is also a chord, so each
+  # crossing point already exists in edge_to_new_vertex by the time this
+  # runs). Returns 0, 1, or 2 triangles (as [a, b, c] index triples,
+  # still indexing into the not-yet-renumbered vertex list), depending on
+  # how many of the face's 3 vertices survive the cut. Winding order is
+  # preserved in every case: a kept triangle's corner(s) are simply
+  # pulled inward along the edges leading to a discarded vertex, which
+  # never reverses the cyclic order the original face was given in.
+  verts = list(face)
+  above = [V_sphere[v][axis] >= cutoff for v in verts]
+  n_above = sum(above)
+
+  if n_above == 3:
+    return [verts]
+  if n_above == 0:
+    return []
+
+  def crossing(i, j):
+    return edge_to_new_vertex[frozenset((verts[i], verts[j]))]
+
+  if n_above == 1:
+    i = above.index(True)
+    j, k = (i + 1) % 3, (i + 2) % 3
+    return [[verts[i], crossing(i, j), crossing(k, i)]]
+
+  # n_above == 2: cutting off the single discarded corner leaves a
+  # (necessarily convex, since a straight line can only cut a triangle
+  # into a triangle and a convex quadrilateral) quadrilateral, split
+  # here into 2 triangles along a diagonal from one of the new crossing
+  # points.
+  disc = above.index(False)
+  kept1, kept2 = (disc + 1) % 3, (disc + 2) % 3
+  Pa = crossing(disc, kept1)
+  Pb = crossing(kept2, disc)
+  return [
+    [Pa, verts[kept1], verts[kept2]],
+    [Pa, verts[kept2], Pb],
+  ]
+
+
+def truncate(V_sphere, C_sphere, cutoff_from_bottom, axis=2, F_sphere=None):
 
   #
   # figure out the range between top and bottom of the sphere along
@@ -43,6 +105,7 @@ def truncate(V_sphere, C_sphere, cutoff_from_bottom, axis=2):
   V_new = list(V_sphere)
   chords_to_remove = []
   chords_to_add = []
+  edge_to_new_vertex = {}
   for c_idx, c in enumerate(C_sphere):
     v1_idx = c[0]
     v2_idx = c[1]
@@ -56,32 +119,16 @@ def truncate(V_sphere, C_sphere, cutoff_from_bottom, axis=2):
     # vertex 1 below cutoff
     if v1[axis] < cutoff and v2[axis] >= cutoff:
       chords_to_remove.append(c_idx)
-      norm = np.linalg.norm(v1 - v2)
-      norm_vec = (v1 - v2) / norm
-      if abs(norm_vec[axis]) < HORIZONTAL_CHORD_EPSILON:
-        raise ValueError(
-          'Truncation cutoff plane lies exactly on a chord that is flat '
-          'along the cutoff axis (vertices %s and %s). Choose a slightly '
-          'different truncation value to avoid this degenerate case.' % (c[0], c[1])
-        )
-      scalar = (cutoff - v2[axis]) / norm_vec[axis]
-      V_new.append(v2 + scalar * norm_vec)
+      V_new.append(_edge_crossing(v1, v2, axis, cutoff))
       chords_to_add.append([c[1], len(V_new) - 1])
+      edge_to_new_vertex[frozenset((v1_idx, v2_idx))] = len(V_new) - 1
 
     # vertex 2 below cutoff
     if v2[axis] < cutoff and v1[axis] >= cutoff:
       chords_to_remove.append(c_idx)
-      norm = np.linalg.norm(v2 - v1)
-      norm_vec = (v2 - v1) / norm
-      if abs(norm_vec[axis]) < HORIZONTAL_CHORD_EPSILON:
-        raise ValueError(
-          'Truncation cutoff plane lies exactly on a chord that is flat '
-          'along the cutoff axis (vertices %s and %s). Choose a slightly '
-          'different truncation value to avoid this degenerate case.' % (c[0], c[1])
-        )
-      scalar = (cutoff - v1[axis]) / norm_vec[axis]
-      V_new.append(v1 + scalar * norm_vec)
+      V_new.append(_edge_crossing(v2, v1, axis, cutoff))
       chords_to_add.append([c[0], len(V_new) - 1])
+      edge_to_new_vertex[frozenset((v1_idx, v2_idx))] = len(V_new) - 1
 
   #
   # consolidate chords
@@ -94,26 +141,38 @@ def truncate(V_sphere, C_sphere, cutoff_from_bottom, axis=2):
     C_next.append(c)
 
   #
+  # clip faces against the same cutoff plane, reusing the chord
+  # crossing points computed above (see _clip_face) -- only attempted
+  # when the caller actually has face data to begin with
+  #
+  F_next = None
+  if F_sphere is not None:
+    F_next = []
+    for f in F_sphere:
+      F_next.extend(_clip_face(f, V_sphere, edge_to_new_vertex, axis, cutoff))
+
+  #
   # re-number nodes, getting ride of unused ones
   #
   old_vidx_2_new_v = {}
   V_final = []
-  for c_idx, c in enumerate(C_next):
-    vertex_1_idx = c[0]
-    vertex_2_idx = c[1]
 
-    if not vertex_1_idx in old_vidx_2_new_v:
-      V_final.append(V_new[vertex_1_idx])
-      old_vidx_2_new_v[vertex_1_idx] = len(V_final) - 1
+  def _remap(vertex_1_idx, vertex_2_idx=None):
+    for vidx in (vertex_1_idx,) if vertex_2_idx is None else (vertex_1_idx, vertex_2_idx):
+      if vidx not in old_vidx_2_new_v:
+        V_final.append(V_new[vidx])
+        old_vidx_2_new_v[vidx] = len(V_final) - 1
 
-    if not vertex_2_idx in old_vidx_2_new_v:
-      V_final.append(V_new[vertex_2_idx])
-      old_vidx_2_new_v[vertex_2_idx] = len(V_final) - 1
+  for c in C_next:
+    _remap(c[0], c[1])
+  if F_next is not None:
+    for f in F_next:
+      for v in f:
+        _remap(v)
 
-  C_final = []
-  for c_idx, c in enumerate(C_next):
-    vertex_1_idx = c[0]
-    vertex_2_idx = c[1]
-    C_final.append([old_vidx_2_new_v[vertex_1_idx], old_vidx_2_new_v[vertex_2_idx]])
+  C_final = [[old_vidx_2_new_v[c[0]], old_vidx_2_new_v[c[1]]] for c in C_next]
+  F_final = None
+  if F_next is not None:
+    F_final = [[old_vidx_2_new_v[v] for v in f] for f in F_next]
 
-  return V_final, C_final
+  return V_final, C_final, F_final
