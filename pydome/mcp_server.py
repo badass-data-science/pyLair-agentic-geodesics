@@ -97,10 +97,16 @@ def get_bill_of_materials(radius: float = 1.0, frequency: int = 4, polyhedron: P
                            cost_per_unit_area: Optional[float] = None,
                            panel_areal_density: Optional[float] = None) -> dict:
   """Compute the dome and return its Bill of Materials (strut lengths and
-  counts, hub angles, total strut length/cost, and -- when the dome isn't
-  truncated -- panel shapes and counts (with a chirality flag for mirror-
-  image panels), total panel area/cost/weight, and bevel angles between
-  adjacent panels) as structured data, without writing any files."""
+  counts, hub angles, total strut length/cost, panel shapes and counts
+  -- with a chirality flag for mirror-image panels -- total panel
+  area/cost/weight, and bevel angles between adjacent panels) as
+  structured data, without writing any files. Panel data is included
+  regardless of truncation, since truncate() clips faces correctly on
+  any combination of axes. Both the chord and panel sections also
+  include a "Possible truncation-artifact ..." list flagging entries
+  whose length/edges are under 0.1% of the dome's largest strut --
+  slivers from a truncation cutoff landing extremely close to (but not
+  on) an existing vertex ring, not genuine strut/panel classes."""
   dome = build_dome(radius=radius, frequency=frequency, polyhedron=polyhedron,
                      dome_class=dome_class, n_frequency=n_frequency,
                      truncation_x=truncation_x, truncation_y=truncation_y, truncation_z=truncation_z,
@@ -132,7 +138,11 @@ def export_dome(output_path: str, radius: float = 1.0, frequency: int = 4,
   truncation_x/truncation_y/truncation_z. face_templates=True writes one
   DXF cutting template per unique panel shape. Returns the list of files
   written and the Bill of Materials (including panel shapes/counts,
-  chirality flags, panel area/cost/weight, and bevel angles)."""
+  chirality flags, panel area/cost/weight, bevel angles, and "Possible
+  truncation-artifact chords/panels" lists flagging any struts/panels
+  under 0.1% of the dome's largest strut -- likely slivers from a
+  truncation cutoff landing extremely close to an existing vertex
+  ring, not genuine strut/panel classes)."""
   dome = build_dome(radius=radius, frequency=frequency, polyhedron=polyhedron,
                      dome_class=dome_class, n_frequency=n_frequency,
                      truncation_x=truncation_x, truncation_y=truncation_y, truncation_z=truncation_z,
