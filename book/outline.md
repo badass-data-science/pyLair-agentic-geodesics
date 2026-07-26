@@ -48,7 +48,10 @@ A third, smaller example — **The Under-the-Ocean Prototype** — appears where
 a chapter specifically needs a second, contrasting shape (a squashed
 ellipsoid built for pressure symmetry rather than headroom, name and framing
 lifted directly from the blog post's own opening joke about where a secret
-laboratory really belongs).
+laboratory really belongs), and gets a full dedicated tour alongside four
+new siblings — an orbital station, a volcano lair, an arctic cache, and one
+deliberately un-hidden mountain spire — in Chapter 11, once Part III has
+given readers every shaping tool those examples actually use.
 
 ---
 
@@ -175,7 +178,7 @@ console command; the chapter ends with a real smoke test calling
   command didn't error."
 - Know which extra to reach for later: `[test]` for the test suite,
   `[verify]` for the independent geometry oracle used in Part II and Part
-  IV (and, as this book's own real history proves in Chapter 20, worth
+  IV (and, as this book's own real history proves in Chapter 21, worth
   double-checking on whatever Python version you're actually running).
 
 **The villainous example:** **The Proof-of-Concept Yurt** — `pylair -o
@@ -579,7 +582,7 @@ data rather than as a contrived example.
   new chord, so it now flows through the same strut/BOM/bevel-angle
   machinery as any other edge — and this book's own outline process is
   what caught a stale blog post still describing the *old*, pre-fix
-  behavior as an open problem (see Chapter 19), which is as good a
+  behavior as an open problem (see Chapter 20), which is as good a
   real-world argument for keeping documentation and code in sync as this
   project has.
 - Sequential multi-axis truncation composes correctly across this exact
@@ -596,9 +599,138 @@ data rather than as a contrived example.
 
 ---
 
+### Chapter 11: Location, Location, Location — Designing for Hostile (and Ridiculous) Environments
+
+**Concept(s) taught:** A practicum, not a new pyLair feature — this chapter
+teaches nothing Chapters 3–10 didn't already introduce, and instead asks
+readers to *apply* polyhedron choice, subdivision class, elongation, and
+truncation together, deliberately, against a real environmental design
+goal, the way an actual commission would arrive (not "build a Class III
+dome" but "build a dome that survives down there / up there / in there").
+Equally central: the hard boundary between what pyLair's geometry engine
+actually validates (does the shape close correctly, are its own angles and
+lengths internally consistent) and what it flatly does not (whether any of
+this survives contact with real water pressure, vacuum, magma, or a
+building inspector).
+
+**pyLair interfaces used:** `design_dome` and `preview_dome` for rapid
+comparison-shopping across configurations; `-p/--polyhedron`, `-c/--class`,
+`-e/--elongation`, `-t/-x/-y` truncation, and `-w/--panel-density`/
+`-a/--area-cost` for the material-budget side of each environment's
+tradeoffs — no new flags, only new *combinations* of Chapters 3–10's own.
+
+**Learning objectives:**
+- Translate a stated environmental constraint into a concrete, specific
+  choice of polyhedron, subdivision class, elongation ratios, and
+  truncation axes — and articulate *why* that combination serves the stated
+  goal, not just that it does.
+- Use `design_dome`'s cheap summary stats (footprint, height, total strut
+  length) to comparison-shop between several environment-driven
+  configurations before committing to a full bill of materials for any of
+  them.
+- State plainly which of a design's environmental claims pyLair's geometry
+  engine actually checked (internal consistency) versus which remain
+  entirely the reader's own engineering research (material rating under
+  the real load in question) — and explain why conflating the two is the
+  single most dangerous mistake this book warns against.
+
+**The villainous examples:** This chapter is structured as a tour, each
+stop reusing the same design lens on a different environment:
+
+- **The Under-the-Ocean Prototype** (returning from Chapters 3 and 8) —
+  revisited here as the complete case: base polyhedron chosen for its
+  already-flatter near-equatorial vertex ring (Chapter 3), elongation kept
+  close to `1.0,1.0,1.0` for pressure symmetry (Chapter 8), no truncation
+  at all if the whole point is a pressure-resistant closed shell, versus a
+  small, carefully-flat-avoiding cutoff (Chapter 9) if a real airlock
+  needs a flat mounting face.
+- **The Orbital Panopticon** — a space-station lair with no floor to speak
+  of (zero gravity makes "which way is down" a design choice, not a
+  constraint), so truncation becomes optional rather than default, and the
+  driving cost isn't material price but launch mass: this stop uses
+  `-w/--panel-density` and total strut length, compared across several
+  elongation ratios that all produce the same footprint diameter, to find
+  the cheapest-to-launch silhouette rather than the prettiest one.
+- **The Magma Redoubt** — a volcano lair built into (or just under) a
+  caldera rim, where the interesting design decision is a large Z
+  truncation cutoff that keeps most of the structure below the rim line
+  with only a small dome cap exposed to the heat — and where this chapter
+  is explicit that pyLair's flat, axis-aligned cutoff plane is a starting
+  silhouette, not a terrain-conforming survey.
+- **The Permafrost Cache** — a glacial/arctic lair using the same
+  "mostly submerged, small cap exposed" logic as the Magma Redoubt but for
+  the opposite reason (staying hidden under snow rather than clear of
+  heat), paired with a heavier `-w` figure for insulated panel material and
+  a discussion of even structural load distribution under snow weight —
+  the same "geodesic domes distribute stress evenly" pitch the blog post
+  opens with, applied to a specific real load direction instead of stated
+  in the abstract.
+- **The Ostentatious Mesa Spire** — the deliberate opposite design
+  philosophy: a supervillain who *wants* to be seen, using aggressive
+  vertical elongation (tall, narrow silhouette) rather than the flattened,
+  low-profile shapes every other stop in this chapter reaches for — included
+  specifically so readers see that "what does this environment demand"
+  and "what does this villain want" are two different, sometimes opposed,
+  real inputs to the same design tool.
+- **A callback to the studio apartment** — a one-paragraph coda revisiting
+  the blog post's own opening problem (a lair too small for the Ultimate
+  Cunning Master Plan&trade;) at true-to-life scale, side by side with the
+  five ambitious stops above, purely for the joke, and to underline that
+  every one of pyLair's parameters — frequency, class, elongation,
+  truncation — is exactly as usable for a modest home addition as for a
+  volcano lair.
+
+**Gotchas & rationale:**
+- **pyLair's truncation is always an axis-aligned plane, never a
+  terrain-conforming surface.** The Magma Redoubt's caldera rim, in
+  reality, is not a flat plane at a fixed Z — it's an irregular, surveyed
+  rock edge. `truncate()` gives a flat cut at a chosen fraction of an axis,
+  full stop; reconciling that flat cut against an actual site survey is
+  entirely outside pyLair's scope and stays the reader's own problem, the
+  same honest boundary Chapter 1 draws around "pyLair reports geometry, not
+  a validated build."
+- **Elongation is one uniform `(fx, fy, fz)` triple applied to the whole
+  dome — pyLair has no notion of regional or local deformation.** A design
+  that wants, say, a bulging equatorial ring for a spin-gravity station (the
+  Orbital Panopticon's more ambitious version) can only get pyLair's
+  general-ellipsoid approximation as a starting silhouette; anything more
+  locally shaped than a single ellipsoid is beyond what `elongate()` computes,
+  full stop, not a missing flag waiting to be discovered.
+- **`-w/--panel-density` and `-a/--area-cost` are one plain number each,
+  supplied by the reader — pyLair has no per-environment materials
+  database.** Figuring out what areal density and unit cost actually apply
+  to an underwater-rated composite versus an orbital-rated alloy versus
+  volcanic-heat-rated ceramic is real research the tool has no opinion on;
+  it will multiply whatever number it's given with complete indifference to
+  whether that number was researched or guessed.
+- **The chapter's central, load-bearing caveat, stated as plainly as the
+  rest of the book states its others:** every check this book has taught so
+  far — Euler's formula, the antitile/trimesh/ezdxf oracles, the flat-chord
+  `ValueError`, the truncation-artifact sliver flags — validates that
+  pyLair's own geometry is *internally* correct. None of them, individually
+  or together, validate that a design survives real water pressure, orbital
+  debris, magma heat, or snow load. A `preview_dome` image that looks
+  plausible is a sanity check on the shape, not engineering sign-off on the
+  environment — and a reader who conflates the two is the one mistake this
+  entire chapter exists to head off.
+
+**Sample prompts:**
+- "Compare a frequency-4 and a frequency-8 Class I icosahedral dome for The
+  Under-the-Ocean Prototype. Which one produces fewer distinct panel
+  types, and why might that matter for a pressure-rated build?"
+- "For the Orbital Panopticon, hold the footprint diameter fixed and try
+  three different elongation ratios. Which one minimizes total strut
+  length — and therefore launch mass?"
+- "Design a dome meant to sit mostly below a caldera rim, using a single Z
+  truncation. What has pyLair actually checked for you here, and what
+  hasn't it checked at all before I try to fit this into an actual
+  volcano?"
+
+---
+
 ## Part IV — The Bill of Materials
 
-### Chapter 11: Hub Angles — Tangent Deflection and Spoke Angles
+### Chapter 12: Hub Angles — Tangent Deflection and Spoke Angles
 
 **Concept(s) taught:** The two angle types pyLair reports for every hub —
 tangent-plane deflection (how far a connector bends inward to receive a
@@ -629,7 +761,7 @@ angles reflect the true ellipsoid normal, not the simpler sphere case.
   physical shape can report different raw spoke-angle numbers depending
   purely on which connecting strut pyLair happened to pick as the
   reference, which matters when comparing hubs by eye rather than by the
-  hub-template clustering in Chapter 14.
+  hub-template clustering in Chapter 15.
 
 **Sample prompts:**
 - "For one hub on this dome, report both the tangent-plane deflection
@@ -639,7 +771,7 @@ angles reflect the true ellipsoid normal, not the simpler sphere case.
 
 ---
 
-### Chapter 12: Counting Struts — Clustering, Rounding, and the Merge Tradeoff
+### Chapter 13: Counting Struts — Clustering, Rounding, and the Merge Tradeoff
 
 **Concept(s) taught:** Why chords are grouped into bill-of-materials rows
 by *clustering* their lengths rather than independently rounding each one;
@@ -683,7 +815,7 @@ lowered `-b` to show real strut lengths merging that shouldn't have.
 
 ---
 
-### Chapter 13: Skinning the Dome — Panel Shapes and the Chirality Trap
+### Chapter 14: Skinning the Dome — Panel Shapes and the Chirality Trap
 
 **Concept(s) taught:** Grouping triangular panels by their 3 edge lengths
 (SSS) the same way struts are grouped by length; the specific ambiguity
@@ -728,7 +860,7 @@ without this check."
 
 ---
 
-### Chapter 14: Cutting Templates — Hubs, Panels, and a Clustering-Tolerance Gotcha
+### Chapter 15: Cutting Templates — Hubs, Panels, and a Clustering-Tolerance Gotcha
 
 **Concept(s) taught:** Rotation-invariant shape clustering for hub
 connectors (`-H`) and panels (`-T`) — grouping by a genuine geometric
@@ -776,7 +908,7 @@ geometry work.
 
 ---
 
-### Chapter 15: Spotting the Slivers — Truncation-Artifact Chords and Panels
+### Chapter 16: Spotting the Slivers — Truncation-Artifact Chords and Panels
 
 **Concept(s) taught:** Why a truncation cutoff landing extremely close to
 (but not exactly on) an existing vertex ring produces mathematically valid
@@ -825,7 +957,7 @@ comparison.
 
 ## Part V — Output, Interfaces, and Agentic Use
 
-### Chapter 16: Getting It Out the Door — DXF, VRML, STL, OBJ
+### Chapter 17: Getting It Out the Door — DXF, VRML, STL, OBJ
 
 **Concept(s) taught:** pyLair's export formats and what each is actually
 for — DXF for CAD import, VRML for 3D display, STL/OBJ for 3D printing —
@@ -868,7 +1000,7 @@ payoff of Parts II–IV, written out in every format at once.
 
 ---
 
-### Chapter 17: Talking to pyLair — The Four MCP Tools in Practice
+### Chapter 18: Talking to pyLair — The Four MCP Tools in Practice
 
 **Concept(s) taught:** `design_dome`, `preview_dome`, `get_bill_of_materials`,
 and `export_dome` as four genuinely different questions about the same
@@ -894,7 +1026,7 @@ geometry parameter schema described in `README.md`.
 commit design session, narrated end to end: several `design_dome` calls
 trying different frequency/truncation combinations, one `preview_dome`
 check, one `get_bill_of_materials` cost interrogation, and finally one
-`export_dome` call — the same shape Chapter 16 exported, but shown here as
+`export_dome` call — the same shape Chapter 17 exported, but shown here as
 a *process*, not a single command.
 
 **Gotchas & rationale:**
@@ -916,7 +1048,7 @@ a *process*, not a single command.
 
 ---
 
-### Chapter 18: Prompting pyLair Like You Mean It
+### Chapter 19: Prompting pyLair Like You Mean It
 
 **Concept(s) taught:** Practical prompt craft for pyLair's four-tool
 agentic interface: being specific about which tool's answer you actually
@@ -965,7 +1097,7 @@ already built rather than introducing a new one.
   enough to build?"* maps onto at least three different real questions —
   a **`design_dome`** sanity check (do the counts and strut total fit a
   budget), a **`get_bill_of_materials`** audit (does the flagged-artifact
-  list contain anything real, per Chapter 15), or a **`preview_dome`**
+  list contain anything real, per Chapter 16), or a **`preview_dome`**
   visual check (does it look like what was intended) — each answered by a
   different tool, and a plausible-sounding answer to the wrong one of the
   three is worse than an agent that asks which was meant.
@@ -979,7 +1111,7 @@ already built rather than introducing a new one.
 
 ## Part VI — Keeping the Lair's Paperwork Honest
 
-### Chapter 19: When the Docs Lie — Catching Documentation Drift with a Knowledge Graph
+### Chapter 20: When the Docs Lie — Catching Documentation Drift with a Knowledge Graph
 
 **Concept(s) taught:** README, blog post, and method-walkthrough
 documentation as independent artifacts that can silently drift out of sync
@@ -1032,7 +1164,7 @@ documents flatly disagreed.
 
 ---
 
-### Chapter 20: Letting the Agent Write Your CI (Carefully)
+### Chapter 21: Letting the Agent Write Your CI (Carefully)
 
 **Concept(s) taught:** An agent authoring a GitHub Actions pipeline as a
 genuine test of the pipeline's own honesty — not "does the YAML parse,"
@@ -1088,7 +1220,7 @@ project's CI run caught on its very first execution.
 
 ---
 
-### Chapter 21: When to Trust the Agent, and When Not To
+### Chapter 22: When to Trust the Agent, and When Not To
 
 **Concept(s) taught:** A retrospective, cross-cutting look at every
 deliberately rule-based or independently-verified decision point this book
@@ -1135,7 +1267,7 @@ holds after any operation.
 
 ---
 
-### Chapter 22: Conclusion
+### Chapter 23: Conclusion
 
 **Concept(s) taught:** A wrap-up, not a new concept — consolidates the
 book's arc from "pick a polyhedron" through "should you even trust this
@@ -1159,7 +1291,7 @@ number" in light of everything the reader now knows.
   fully enclosed structures, door-frame design assistance) rather than
   invented future features — noting, honestly, that the diagonal-seam item
   once on that same list is now done (Chapter 10), which is exactly the
-  kind of status update Chapter 19 exists to keep honest.
+  kind of status update Chapter 20 exists to keep honest.
 
 **Sample prompts:**
 - "Summarize everything you now know about the Actual Secret Lair's design
