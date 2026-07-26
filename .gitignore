@@ -2,3 +2,6 @@ __pycache__/
 test.dxf
 test.wrl
 *.egg-info/
+graphify-out/cache/
+graphify-out/manifest.json
+graphify-out/cost.json
