@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from pydome.preview import equal_axis_limits, render_preview_png_bytes, save_preview
+from pylair.preview import equal_axis_limits, render_preview_png_bytes, save_preview
 
 
 def test_equal_axis_limits_gives_every_axis_the_same_span():

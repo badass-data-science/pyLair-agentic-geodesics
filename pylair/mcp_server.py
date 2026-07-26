@@ -1,4 +1,4 @@
-#    pyDome:  A geodesic dome calculator
+#    pyLair:  A geodesic dome calculator
 #    Copyright (C) 2013  Emily Williams
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -15,12 +15,12 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #
-# MCP server exposing pyDome as tools for an agentic assistant to design a
+# MCP server exposing pyLair as tools for an agentic assistant to design a
 # dome interactively: try frequency/class/truncation/elongation
 # combinations, see a rendered preview inline, check the bill-of-materials
-# cost/complexity tradeoffs -- all without shelling out to the `pydome`
+# cost/complexity tradeoffs -- all without shelling out to the `pylair`
 # CLI and parsing stdout. Requires the optional `mcp` dependency
-# (`pip install -e ".[mcp]"`); console script `pydome-mcp`.
+# (`pip install -e ".[mcp]"`); console script `pylair-mcp`.
 #
 from typing import List, Literal, Optional
 
@@ -31,7 +31,7 @@ from .bill_of_materials import get_bill_of_materials as compute_bom
 from .preview import render_preview_png_bytes, save_preview
 from .output import OutputDXF, OutputWireframeVRML, OutputFaceVRML, OutputSTL, OutputOBJ
 
-mcp = FastMCP("pydome")
+mcp = FastMCP("pylair")
 
 Polyhedron = Literal["icosahedron", "octahedron"]
 DomeClass = Literal[1, 2, 3]
@@ -41,7 +41,7 @@ DomeClass = Literal[1, 2, 3]
 #   truncation_x/truncation_y/truncation_z (None = that axis is not
 #   truncated), elongation_x/elongation_y/elongation_z,
 #   vertex_equal_threshold
-# See pydome/api.py:validate_geometry_params for the domain rules (e.g.
+# See pylair/api.py:validate_geometry_params for the domain rules (e.g.
 # class 2 needs an even frequency); a bad combination raises ValueError,
 # which FastMCP's dispatcher turns into an isError=True tool result.
 
@@ -130,7 +130,7 @@ def export_dome(output_path: str, radius: float = 1.0, frequency: int = 4,
                  bom_rounding_precision: int = 9, cost_per_unit_length: Optional[float] = None,
                  cost_per_unit_area: Optional[float] = None,
                  panel_areal_density: Optional[float] = None) -> dict:
-  """Compute the dome and write output files to disk (mirrors the `pydome`
+  """Compute the dome and write output files to disk (mirrors the `pylair`
   CLI): DXF+VRML by default, or face-only VRML with face_output=True
   (required for stl/obj/hub_templates/face_templates/cost_per_unit_area/
   panel_areal_density). Truncation on any combination of axes correctly
@@ -177,9 +177,9 @@ def export_dome(output_path: str, radius: float = 1.0, frequency: int = 4,
                         panel_areal_density=panel_areal_density,
                         face_template_output_path=face_template_path)
   if hub_templates:
-    files.extend(t['template_file'] for t in report['pyDome report'].get('Hub Connector Templates', []))
+    files.extend(t['template_file'] for t in report['pyLair report'].get('Hub Connector Templates', []))
   if face_templates:
-    files.extend(t['template_file'] for t in report['pyDome report'].get('Panel Cutting Templates', []))
+    files.extend(t['template_file'] for t in report['pyLair report'].get('Panel Cutting Templates', []))
 
   return {"files_written": files, "bill_of_materials": report}
 

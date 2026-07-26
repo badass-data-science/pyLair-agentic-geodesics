@@ -4,9 +4,9 @@ import numpy as np
 import pytest
 from scipy.spatial import cKDTree
 
-from pydome.polyhedral import Octahedron, Icosahedron, build_lcd_faces
-from pydome.symmetry_triangle import ClassTwoMethodOneSymmetryTriangle
-from pydome.geodesic_sphere import GeodesicSphere
+from pylair.polyhedral import Octahedron, Icosahedron, build_lcd_faces
+from pylair.symmetry_triangle import ClassTwoMethodOneSymmetryTriangle
+from pylair.geodesic_sphere import GeodesicSphere
 
 
 def build_class_two_sphere(polyhedron_cls, dome_frequency, radius=1.0, vpt=1e-7):

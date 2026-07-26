@@ -1,4 +1,4 @@
-#    pyDome:  A geodesic dome calculator
+#    pyLair:  A geodesic dome calculator
 #    Copyright (C) 2013  Emily Williams
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -38,7 +38,7 @@ SMALL_CHORD_ARTIFACT_RATIO = 1e-3
 
 def _ellipsoid_normal(vertex, elongation_factors):
   # The outward surface normal of a general axis-aligned ellipsoid
-  # (semi-axes a*fx, a*fy, a*fz -- see pydome.elongation) at a point on
+  # (semi-axes a*fx, a*fy, a*fz -- see pylair.elongation) at a point on
   # its surface, from the gradient of its implicit equation
   # x^2/(a*fx)^2 + y^2/(a*fy)^2 + z^2/(a*fz)^2 = 1: proportional to
   # (x/fx^2, y/fy^2, z/fz^2). The absolute scale `a` cancels out in the
@@ -354,7 +354,7 @@ def compute_dihedral_angles(face_data, chords):
 
 def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_length=None, hub_template_output_path=None, elongation_factors=(1.0, 1.0, 1.0), print_report=True, faces=None, cost_per_unit_area=None, panel_areal_density=None, face_template_output_path=None):
 
-  report = {'pyDome report' : {}}
+  report = {'pyLair report' : {}}
   
   #
   # compute Bill of Materials
@@ -415,7 +415,7 @@ def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_le
   #
   # display Bill of Materials
   #
-  report['pyDome report']['Bill of materials'] = dict_bom
+  report['pyLair report']['Bill of materials'] = dict_bom
 
   #
   # total material length/cost, summed from the raw (unclustered,
@@ -428,7 +428,7 @@ def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_le
     }
   if cost_per_unit_length is not None:
     dict_total_material['Total estimated material cost'] = round(total_length * cost_per_unit_length, 2)
-  report['pyDome report']['Total material'] = dict_total_material
+  report['pyLair report']['Total material'] = dict_total_material
 
 
   #
@@ -463,7 +463,7 @@ def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_le
         'struts_per_hub': group['valence'],
         'hub_count': group['count'],
         })
-    report['pyDome report']['Hub Connector Templates'] = list_hub_templates
+    report['pyLair report']['Hub Connector Templates'] = list_hub_templates
 
   #
   # display the tangential plane angles we just calculated
@@ -490,7 +490,7 @@ def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_le
 
   df_tangential_plane_angles = pd.DataFrame(list_tangential_plane_angles).sort_values(by = ['hub', 'connecting hub']).reset_index(drop = True)
   dict_tangential_plane_angles = df_tangential_plane_angles.to_dict(orient = 'records')
-  report['pyDome report']['Angles at hub between outbound cords and tangential plane'] = dict_tangential_plane_angles
+  report['pyLair report']['Angles at hub between outbound cords and tangential plane'] = dict_tangential_plane_angles
 
   #
   # display spoke angles
@@ -509,7 +509,7 @@ def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_le
 
   df_spoke_angles = pd.DataFrame(list_spoke_angles).sort_values(by = ['hub', 'connecting hub']).reset_index()
   dict_spoke_angles = df_spoke_angles.to_dict(orient = 'records')
-  report['pyDome report']['Spoke angles'] = dict_spoke_angles
+  report['pyLair report']['Spoke angles'] = dict_spoke_angles
 
   #
   # panel (face) sections: present whenever the caller has face data,
@@ -535,7 +535,7 @@ def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_le
     # truncation-boundary sliver flagged above for chords -- a
     # near-zero-length edge means a near-zero-area (degenerate) panel
     artifact_panels = [g for g in list_face_types if min(g['edge_lengths']) < artifact_length_threshold]
-    report['pyDome report']['Panel shapes and counts'] = {
+    report['pyLair report']['Panel shapes and counts'] = {
       'Panel Types and Counts': list_face_types,
       'Warning': 'Panels sharing the same edge lengths can still be mirror images of each '
                  'other (see "chiral") -- check "orientations" before cutting from a '
@@ -551,9 +551,9 @@ def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_le
       dict_total_panel_material['Total estimated panel material cost'] = round(total_area * cost_per_unit_area, 2)
     if panel_areal_density is not None:
       dict_total_panel_material['Total estimated panel weight'] = round(total_area * panel_areal_density, 2)
-    report['pyDome report']['Total panel material'] = dict_total_panel_material
+    report['pyLair report']['Total panel material'] = dict_total_panel_material
 
-    report['pyDome report']['Bevel angles at panel edges'] = compute_dihedral_angles(face_data, chords)
+    report['pyLair report']['Bevel angles at panel edges'] = compute_dihedral_angles(face_data, chords)
 
     if face_template_output_path is not None:
       list_face_templates = []
@@ -566,7 +566,7 @@ def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_le
           'edge_lengths': group['edge_lengths'],
           'panel_count': group['count'],
         })
-      report['pyDome report']['Panel Cutting Templates'] = list_face_templates
+      report['pyLair report']['Panel Cutting Templates'] = list_face_templates
 
   if print_report:
     print(json.dumps(report, indent = 2))

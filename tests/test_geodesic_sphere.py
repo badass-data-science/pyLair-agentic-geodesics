@@ -2,9 +2,9 @@ import numpy as np
 import pytest
 from scipy.spatial import cKDTree
 
-from pydome.polyhedral import Octahedron, Icosahedron
-from pydome.symmetry_triangle import ClassOneMethodOneSymmetryTriangle
-from pydome.geodesic_sphere import GeodesicSphere
+from pylair.polyhedral import Octahedron, Icosahedron
+from pylair.symmetry_triangle import ClassOneMethodOneSymmetryTriangle
+from pylair.geodesic_sphere import GeodesicSphere
 
 
 def build_sphere(polyhedron_cls, frequency, radius=1.0, vpt=1e-7):

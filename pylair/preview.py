@@ -1,4 +1,4 @@
-#    pyDome:  A geodesic dome calculator
+#    pyLair:  A geodesic dome calculator
 #    Copyright (C) 2013  Emily Williams
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -56,7 +56,7 @@ def render_preview_png_bytes(V, C):
   ax.set_zlim(*zlim)
   ax.set_box_aspect((1, 1, 1))
 
-  ax.set_title('pyDome preview')
+  ax.set_title('pyLair preview')
   buf = io.BytesIO()
   fig.savefig(buf, format='png', dpi=130)
   plt.close(fig)
