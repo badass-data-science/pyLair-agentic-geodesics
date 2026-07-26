@@ -18,8 +18,10 @@ faces and exports DXF/VRML/STL/OBJ plus a JSON Bill of Materials. There's a CLI
 pip install -e ".[test]"
 ```
 
-Optional extras: `mcp` (MCP server deps), `verify` (`trimesh`/`ezdxf`, used only by
-the oracle test below).
+Optional extras: `mcp` (MCP server deps; no published release supports Python
+3.9), `verify` (`trimesh`/`shapely`/`ezdxf`, used only by the oracle test below
+— `shapely` is a transitive dependency `trimesh.intersections.slice_mesh_plane`
+needs but doesn't pull in on its own).
 
 ## Test
 
