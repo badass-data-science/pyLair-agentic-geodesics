@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      # test: pytest itself
+      # mcp: exercises the mcp_server tests (skipped via importorskip otherwise)
+      # verify: exercises the trimesh/ezdxf geometry oracle (skipped otherwise)
+      - name: Install pyLair with test, mcp, and verify extras
+        run: pip install -e ".[test,mcp,verify]"
+
+      - name: Run test suite
+        run: pytest -v
+
+  cli-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install pyLair
+        run: pip install -e .
+
+      - name: Build a Class III dome and export every output format
+        run: |
+          pylair -o /tmp/dome -f 4 -n 1 -c 3 -r 1.0 -F -P -s -O -H -T -a 12.5 -w 0.8 -m 3.25
+          test -f /tmp/dome.wrl
+          test -f /tmp/dome.png
+          test -f /tmp/dome.stl
+          test -f /tmp/dome.obj

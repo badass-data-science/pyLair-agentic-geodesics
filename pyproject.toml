@@ -22,7 +22,7 @@ dependencies = [
 [project.optional-dependencies]
 test = ["pytest"]
 mcp = ["mcp"]
-verify = ["trimesh", "ezdxf"]
+verify = ["trimesh", "shapely", "ezdxf"]
 
 [project.scripts]
 pylair = "pylair.cli:main"
