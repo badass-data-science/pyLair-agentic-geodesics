@@ -1,4 +1,4 @@
-pyLair
+pyLair - An Agentic Geodesic Structure Designer
 ======
 
 A geodesic dome calculator written in Python.
