@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from pydome.api import build_dome, validate_geometry_params
+from pylair.api import build_dome, validate_geometry_params
 
 
 def test_class_one_golden_counts():

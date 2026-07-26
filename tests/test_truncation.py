@@ -1,10 +1,10 @@
 import numpy as np
 import pytest
 
-from pydome.polyhedral import Icosahedron
-from pydome.symmetry_triangle import ClassOneMethodOneSymmetryTriangle
-from pydome.geodesic_sphere import GeodesicSphere
-from pydome.truncation import truncate
+from pylair.polyhedral import Icosahedron
+from pylair.symmetry_triangle import ClassOneMethodOneSymmetryTriangle
+from pylair.geodesic_sphere import GeodesicSphere
+from pylair.truncation import truncate
 
 
 def build_sphere(frequency=3, radius=1.0):

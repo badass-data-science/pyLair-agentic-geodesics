@@ -1,4 +1,4 @@
-#    pyDome:  A geodesic dome calculator
+#    pyLair:  A geodesic dome calculator
 #    Copyright (C) 2013  Emily Williams
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,7 @@ import getopt
 import sys
 
 #
-# load pyDome modules
+# load pyLair modules
 #
 from .polyhedral import Icosahedron, Octahedron
 from .output import OutputDXF, OutputWireframeVRML, OutputFaceVRML, OutputSTL, OutputOBJ
@@ -34,7 +34,7 @@ from .api import build_dome
 
 
 def display_help():
-  help_text = """pyDome:  A geodesic dome calculator. Copyright 2013 by Emily Williams
+  help_text = """pyLair:  A geodesic dome calculator. Copyright 2013 by Emily Williams
 
 Required Command-Line Input:
 
@@ -253,7 +253,7 @@ def main():
   #
   # build the geodesic sphere/dome (validation, symmetry-triangle
   # construction, projection, elongation, and truncation all happen
-  # inside build_dome -- shared with pydome/mcp_server.py)
+  # inside build_dome -- shared with pylair/mcp_server.py)
   #
   try:
     dome = build_dome(radius=radius, frequency=frequency, polyhedron=polyhedral,

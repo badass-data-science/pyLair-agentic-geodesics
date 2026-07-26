@@ -1,4 +1,4 @@
-#    pyDome:  A geodesic dome calculator
+#    pyLair:  A geodesic dome calculator
 #    Copyright (C) 2013  Emily Williams
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
 
 #
 # Programmatic entry point for building a geodesic dome/sphere, shared by
-# pydome/cli.py and pydome/mcp_server.py so validation and orchestration
+# pylair/cli.py and pylair/mcp_server.py so validation and orchestration
 # aren't duplicated between them.
 #
 from dataclasses import dataclass

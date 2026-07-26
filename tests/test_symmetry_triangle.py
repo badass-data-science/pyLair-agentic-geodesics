@@ -1,7 +1,7 @@
 import pytest
 
-from pydome.polyhedral import Icosahedron, build_lcd_faces
-from pydome.symmetry_triangle import ClassOneMethodOneSymmetryTriangle, ClassTwoMethodOneSymmetryTriangle
+from pylair.polyhedral import Icosahedron, build_lcd_faces
+from pylair.symmetry_triangle import ClassOneMethodOneSymmetryTriangle, ClassTwoMethodOneSymmetryTriangle
 
 
 @pytest.mark.parametrize("frequency", [1, 2, 3, 4, 6])

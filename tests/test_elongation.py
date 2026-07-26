@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from pydome.elongation import elongate
+from pylair.elongation import elongate
 
 
 def test_elongate_scales_only_the_z_axis():

@@ -1,6 +1,6 @@
 import numpy as np
 
-from pydome.output import (
+from pylair.output import (
     OutputDXF,
     OutputWireframeVRML,
     OutputFaceVRML,
@@ -61,8 +61,8 @@ def test_output_stl_writes_one_facet_per_face_with_correct_normal(tmp_path):
     OutputSTL(V, F, str(out_file))
 
     content = out_file.read_text()
-    assert content.startswith("solid pydome\n")
-    assert content.rstrip().endswith("endsolid pydome")
+    assert content.startswith("solid pylair\n")
+    assert content.rstrip().endswith("endsolid pylair")
     assert content.count("facet normal") == len(F)
     assert content.count("vertex") == 3 * len(F)
 

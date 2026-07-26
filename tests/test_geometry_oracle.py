@@ -1,17 +1,17 @@
 import numpy as np
 import pytest
 
-from pydome.polyhedral import Icosahedron, Octahedron
-from pydome.symmetry_triangle import ClassOneMethodOneSymmetryTriangle
-from pydome.geodesic_sphere import GeodesicSphere
-from pydome.bill_of_materials import compute_face_data, compute_dihedral_angles
-from pydome.output import OutputOBJ, OutputFaceTemplateDXF
-from pydome.api import build_dome
+from pylair.polyhedral import Icosahedron, Octahedron
+from pylair.symmetry_triangle import ClassOneMethodOneSymmetryTriangle
+from pylair.geodesic_sphere import GeodesicSphere
+from pylair.bill_of_materials import compute_face_data, compute_dihedral_angles
+from pylair.output import OutputOBJ, OutputFaceTemplateDXF
+from pylair.api import build_dome
 
 
 # Independent, dev-time-only cross-checks of the face-geometry math added
 # alongside the panel Bill of Materials -- these libraries are never a
-# pyDome runtime dependency (install with `pip install -e ".[verify]"`),
+# pyLair runtime dependency (install with `pip install -e ".[verify]"`),
 # same role antitile played for verifying Class III (see README).
 # pytest.importorskip means the rest of the suite stays green without
 # them installed.
@@ -32,7 +32,7 @@ def build_sphere_with_faces(frequency, polyhedron):
 ])
 def test_face_areas_and_dihedral_angles_match_trimesh_oracle(tmp_path, polyhedron_cls, frequency):
     # trimesh independently derives face areas and the angle between
-    # adjacent faces' normals straight from the OBJ mesh pyDome already
+    # adjacent faces' normals straight from the OBJ mesh pyLair already
     # exports -- a completely separate implementation from our own
     # compute_face_data/compute_dihedral_angles, run on the OBJ file
     # itself rather than our in-memory arrays, so this exercises the
@@ -107,7 +107,7 @@ def test_face_template_dxf_geometry_matches_ezdxf_parse(tmp_path):
 # Z-only face-aware truncation (truncate() clipping F_sphere against the
 # cutoff plane): independent ground truth via trimesh's own mesh-slicing
 # routine, run against the *untruncated* dome's OBJ export and cut at the
-# exact same plane pyDome computes internally, rather than comparing our
+# exact same plane pyLair computes internally, rather than comparing our
 # clipping code to itself.
 
 @pytest.mark.parametrize("polyhedron,frequency,cutoff", [
@@ -127,7 +127,7 @@ def test_z_truncated_faces_match_trimesh_slice_mesh_plane_oracle(tmp_path, polyh
     OutputOBJ(full.V, full.F_sphere, str(obj_path))
     mesh = trimesh.load(str(obj_path), process=False)
 
-    # replicate pyDome's own cutoff-plane computation (see truncation.py)
+    # replicate pyLair's own cutoff-plane computation (see truncation.py)
     # so trimesh is asked to cut at exactly the same plane, not an
     # independently-guessed one
     zs = [v[2] for v in full.V]
@@ -160,7 +160,7 @@ def test_multi_axis_truncated_faces_match_trimesh_sequential_slice_oracle(
     # ground truth for the compounded case (the whole reason X/Y needed
     # a separate fix from Z-only): slice the same untruncated mesh with
     # trimesh, one plane per active axis, in the same X-then-Y-then-Z
-    # order build_dome uses, and compare against pyDome's own
+    # order build_dome uses, and compare against pyLair's own
     # sequential truncate() calls on the same dome.
     trimesh = pytest.importorskip("trimesh")
 

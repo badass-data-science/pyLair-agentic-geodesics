@@ -8,7 +8,7 @@ import pytest
 
 def run_cli(args, cwd=None):
     return subprocess.run(
-        [sys.executable, "-m", "pydome", *args],
+        [sys.executable, "-m", "pylair", *args],
         capture_output=True,
         text=True,
         cwd=cwd,
@@ -77,7 +77,7 @@ def test_default_run_generates_dxf_and_wrl_with_valid_bom_report(tmp_path):
     assert (out.with_suffix(".wrl")).exists()
 
     report = json.loads(result.stdout)
-    assert "pyDome report" in report
+    assert "pyLair report" in report
 
 
 def test_face_output_generates_only_wrl(tmp_path):
@@ -121,8 +121,8 @@ def test_stl_flag_writes_a_valid_stl_alongside_the_usual_output(tmp_path):
     stl_file = out.with_suffix(".stl")
     assert stl_file.exists()
     content = stl_file.read_text()
-    assert content.startswith("solid pydome\n")
-    assert content.rstrip().endswith("endsolid pydome")
+    assert content.startswith("solid pylair\n")
+    assert content.rstrip().endswith("endsolid pylair")
 
 
 def test_obj_flag_writes_a_valid_obj_alongside_the_usual_output(tmp_path):
@@ -167,7 +167,7 @@ def test_class_two_generates_a_valid_dome(tmp_path):
     assert out.with_suffix(".wrl").exists()
 
     report = json.loads(result.stdout)
-    assert "pyDome report" in report
+    assert "pyLair report" in report
 
 
 def test_invalid_class_reports_clear_error(tmp_path):
@@ -206,7 +206,7 @@ def test_class_three_generates_a_valid_dome(tmp_path):
     assert out.with_suffix(".wrl").exists()
 
     report = json.loads(result.stdout)
-    assert "pyDome report" in report
+    assert "pyLair report" in report
 
 
 def test_default_run_reports_total_strut_length_without_cost(tmp_path):
@@ -214,7 +214,7 @@ def test_default_run_reports_total_strut_length_without_cost(tmp_path):
     result = run_cli(["-o", str(out), "-f", "1"])
 
     assert result.returncode == 0
-    report = json.loads(result.stdout)["pyDome report"]
+    report = json.loads(result.stdout)["pyLair report"]
     assert "Total strut length" in report["Total material"]
     assert "Total estimated material cost" not in report["Total material"]
 
@@ -224,7 +224,7 @@ def test_material_cost_flag_adds_estimated_cost(tmp_path):
     result = run_cli(["-o", str(out), "-f", "1", "-m", "2.5"])
 
     assert result.returncode == 0
-    report = json.loads(result.stdout)["pyDome report"]
+    report = json.loads(result.stdout)["pyLair report"]
     total_material = report["Total material"]
 
     assert total_material["Total estimated material cost"] == pytest.approx(
@@ -246,7 +246,7 @@ def test_hub_templates_flag_writes_dxf_files_and_report_section(tmp_path):
     result = run_cli(["-o", str(out), "-f", "4", "-H"])
 
     assert result.returncode == 0
-    report = json.loads(result.stdout)["pyDome report"]
+    report = json.loads(result.stdout)["pyLair report"]
     assert "Hub Connector Templates" in report
 
     rows = report["Hub Connector Templates"]
@@ -262,7 +262,7 @@ def test_no_hub_templates_flag_means_no_template_files_or_section(tmp_path):
     result = run_cli(["-o", str(out), "-f", "4"])
 
     assert result.returncode == 0
-    report = json.loads(result.stdout)["pyDome report"]
+    report = json.loads(result.stdout)["pyLair report"]
     assert "Hub Connector Templates" not in report
     assert list(tmp_path.glob("dome_hubtype*.dxf")) == []
 
@@ -299,7 +299,7 @@ def test_elongated_and_truncated_dome_generates_valid_hub_templates(tmp_path):
     result = run_cli(["-o", str(out), "-f", "4", "-e", "1.0,1.0,1.8", "-t", "0.499999", "-H"])
 
     assert result.returncode == 0
-    report = json.loads(result.stdout)["pyDome report"]
+    report = json.loads(result.stdout)["pyLair report"]
     rows = report["Hub Connector Templates"]
     assert len(rows) > 0
     for row in rows:
@@ -318,7 +318,7 @@ def test_elongation_flag_stretches_x_and_y_independently(tmp_path):
     # bevel/hub angle math should still succeed (doesn't crash) for a
     # non-Z elongation, which is the case the ellipsoid-normal formula
     # generalization needs to handle correctly
-    assert "Bill of materials" in json.loads(result_wide.stdout)["pyDome report"]
+    assert "Bill of materials" in json.loads(result_wide.stdout)["pyLair report"]
 
 
 def test_truncation_x_and_y_flags_enable_truncation(tmp_path):
@@ -378,7 +378,7 @@ def test_default_run_reports_panel_sections_without_cost_or_weight(tmp_path):
     result = run_cli(["-o", str(out), "-f", "3"])
 
     assert result.returncode == 0
-    report = json.loads(result.stdout)["pyDome report"]
+    report = json.loads(result.stdout)["pyLair report"]
     assert "Panel shapes and counts" in report
     assert "Total panel area" in report["Total panel material"]
     assert "Total estimated panel material cost" not in report["Total panel material"]
@@ -391,7 +391,7 @@ def test_area_cost_flag_adds_estimated_panel_cost(tmp_path):
     result = run_cli(["-o", str(out), "-f", "3", "-a", "2.5"])
 
     assert result.returncode == 0
-    report = json.loads(result.stdout)["pyDome report"]
+    report = json.loads(result.stdout)["pyLair report"]
     total_panel_material = report["Total panel material"]
 
     assert total_panel_material["Total estimated panel material cost"] == pytest.approx(
@@ -404,7 +404,7 @@ def test_panel_density_flag_adds_estimated_panel_weight(tmp_path):
     result = run_cli(["-o", str(out), "-f", "3", "-w", "0.5"])
 
     assert result.returncode == 0
-    report = json.loads(result.stdout)["pyDome report"]
+    report = json.loads(result.stdout)["pyLair report"]
     total_panel_material = report["Total panel material"]
 
     assert total_panel_material["Total estimated panel weight"] == pytest.approx(
@@ -427,7 +427,7 @@ def test_face_templates_flag_writes_dxf_files_and_report_section(tmp_path):
     result = run_cli(["-o", str(out), "-f", "4", "-T"])
 
     assert result.returncode == 0
-    report = json.loads(result.stdout)["pyDome report"]
+    report = json.loads(result.stdout)["pyLair report"]
     assert "Panel Cutting Templates" in report
 
     rows = report["Panel Cutting Templates"]
@@ -443,7 +443,7 @@ def test_no_face_templates_flag_means_no_template_files_or_section(tmp_path):
     result = run_cli(["-o", str(out), "-f", "4"])
 
     assert result.returncode == 0
-    report = json.loads(result.stdout)["pyDome report"]
+    report = json.loads(result.stdout)["pyLair report"]
     assert "Panel Cutting Templates" not in report
     assert list(tmp_path.glob("dome_facetype*.dxf")) == []
 
@@ -452,7 +452,7 @@ def test_face_templates_now_work_with_x_or_y_truncation(tmp_path):
     out = tmp_path / "dome"
     result = run_cli(["-o", str(out), "-T", "-y", "0.499999"])
     assert result.returncode == 0
-    report = json.loads(result.stdout)["pyDome report"]
+    report = json.loads(result.stdout)["pyLair report"]
     assert "Panel Cutting Templates" in report
     assert len(report["Panel Cutting Templates"]) > 0
 
@@ -461,7 +461,7 @@ def test_area_cost_now_works_with_x_or_y_truncation(tmp_path):
     out = tmp_path / "dome"
     result = run_cli(["-o", str(out), "-a", "2.0", "-x", "0.499999"])
     assert result.returncode == 0
-    report = json.loads(result.stdout)["pyDome report"]
+    report = json.loads(result.stdout)["pyLair report"]
     assert "Total estimated panel material cost" in report["Total panel material"]
 
 
@@ -470,7 +470,7 @@ def test_truncation_combines_with_face_output_on_any_single_axis(tmp_path):
         out = tmp_path / "dome"
         result = run_cli(["-o", str(out), "-T", flag, "0.499999"])
         assert result.returncode == 0
-        report = json.loads(result.stdout)["pyDome report"]
+        report = json.loads(result.stdout)["pyLair report"]
         assert "Panel Cutting Templates" in report
         assert len(report["Panel Cutting Templates"]) > 0
 
@@ -488,7 +488,7 @@ def test_truncation_combines_with_area_cost_and_panel_density(tmp_path):
     out = tmp_path / "dome"
     result = run_cli(["-o", str(out), "-t", "0.499999", "-a", "2.0", "-w", "1.5"])
     assert result.returncode == 0
-    report = json.loads(result.stdout)["pyDome report"]
+    report = json.loads(result.stdout)["pyLair report"]
     assert "Total estimated panel material cost" in report["Total panel material"]
     assert "Total estimated panel weight" in report["Total panel material"]
 
@@ -500,6 +500,6 @@ def test_combined_x_y_z_truncation_still_produces_valid_face_output(tmp_path):
     result = run_cli(["-o", str(out), "-T", "-a", "2.0",
                        "-x", "0.499999", "-y", "0.499999", "-t", "0.499999"])
     assert result.returncode == 0
-    report = json.loads(result.stdout)["pyDome report"]
+    report = json.loads(result.stdout)["pyLair report"]
     assert "Panel Cutting Templates" in report
     assert len(report["Panel Cutting Templates"]) > 0

@@ -8,7 +8,7 @@ pytest.importorskip("mcp")
 
 from mcp.shared.memory import create_connected_server_and_client_session
 
-from pydome.mcp_server import mcp, design_dome, preview_dome, get_bill_of_materials, export_dome
+from pylair.mcp_server import mcp, design_dome, preview_dome, get_bill_of_materials, export_dome
 
 
 #
@@ -75,7 +75,7 @@ def test_get_bill_of_materials_tool_returns_dict_without_printing(capsys):
 
     captured = capsys.readouterr()
     assert captured.out == ""  # must not corrupt the stdio JSON-RPC stream
-    assert "Bill of materials" in report["pyDome report"]
+    assert "Bill of materials" in report["pyLair report"]
 
 
 def test_export_dome_writes_dxf_and_wrl(tmp_path):
@@ -85,13 +85,13 @@ def test_export_dome_writes_dxf_and_wrl(tmp_path):
     assert set(result["files_written"]) == {out + ".dxf", out + ".wrl"}
     for f in result["files_written"]:
         assert Path(f).exists()
-    assert "Bill of materials" in result["bill_of_materials"]["pyDome report"]
+    assert "Bill of materials" in result["bill_of_materials"]["pyLair report"]
 
 
 def test_get_bill_of_materials_tool_reports_panel_sections_when_untruncated():
     report = get_bill_of_materials(frequency=3, cost_per_unit_area=2.0)
 
-    sections = report["pyDome report"]
+    sections = report["pyLair report"]
     assert "Panel shapes and counts" in sections
     assert "Total panel material" in sections
     assert "Total estimated panel material cost" in sections["Total panel material"]
@@ -106,7 +106,7 @@ def test_export_dome_with_face_templates_writes_facetype_files(tmp_path):
     assert any(f.endswith(".dxf") and "_facetype" in f for f in files)
     for f in files:
         assert Path(f).exists()
-    assert "Panel Cutting Templates" in result["bill_of_materials"]["pyDome report"]
+    assert "Panel Cutting Templates" in result["bill_of_materials"]["pyLair report"]
 
 
 def test_export_dome_face_templates_work_with_x_or_y_truncation(tmp_path):
@@ -114,7 +114,7 @@ def test_export_dome_face_templates_work_with_x_or_y_truncation(tmp_path):
     result = export_dome(out, frequency=4, face_templates=True, truncation_x=0.499999)
 
     assert any(f.endswith(".dxf") and "_facetype" in f for f in result["files_written"])
-    assert "Panel Cutting Templates" in result["bill_of_materials"]["pyDome report"]
+    assert "Panel Cutting Templates" in result["bill_of_materials"]["pyLair report"]
 
 
 def test_export_dome_face_output_works_with_x_or_y_truncation(tmp_path):
@@ -129,7 +129,7 @@ def test_export_dome_face_templates_work_with_z_only_truncation(tmp_path):
     result = export_dome(out, frequency=4, face_templates=True, truncation_z=0.499999)
 
     assert any(f.endswith(".dxf") and "_facetype" in f for f in result["files_written"])
-    assert "Panel Cutting Templates" in result["bill_of_materials"]["pyDome report"]
+    assert "Panel Cutting Templates" in result["bill_of_materials"]["pyLair report"]
 
 
 def test_export_dome_face_templates_work_with_combined_x_y_z_truncation(tmp_path):
@@ -138,7 +138,7 @@ def test_export_dome_face_templates_work_with_combined_x_y_z_truncation(tmp_path
                           truncation_x=0.499999, truncation_y=0.499999, truncation_z=0.499999)
 
     assert any(f.endswith(".dxf") and "_facetype" in f for f in result["files_written"])
-    assert "Panel Cutting Templates" in result["bill_of_materials"]["pyDome report"]
+    assert "Panel Cutting Templates" in result["bill_of_materials"]["pyLair report"]
 
 
 def test_export_dome_with_preview_and_hub_templates(tmp_path):

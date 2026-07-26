@@ -4,10 +4,10 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from pydome.polyhedral import Icosahedron, Octahedron
-from pydome.symmetry_triangle import ClassOneMethodOneSymmetryTriangle
-from pydome.geodesic_sphere import GeodesicSphere
-from pydome.bill_of_materials import (
+from pylair.polyhedral import Icosahedron, Octahedron
+from pylair.symmetry_triangle import ClassOneMethodOneSymmetryTriangle
+from pylair.geodesic_sphere import GeodesicSphere
+from pylair.bill_of_materials import (
     get_bill_of_materials,
     compute_hub_data,
     compute_spoke_angles,
@@ -18,8 +18,8 @@ from pydome.bill_of_materials import (
     group_face_types,
     compute_dihedral_angles,
 )
-from pydome.elongation import elongate
-from pydome.api import build_dome
+from pylair.elongation import elongate
+from pylair.api import build_dome
 
 
 def build_sphere(frequency=1, radius=1.0, polyhedron=None):
@@ -41,7 +41,7 @@ def test_bill_of_materials_reports_expected_sections(capsys):
     get_bill_of_materials(V, C, 5)
 
     captured = capsys.readouterr()
-    report = json.loads(captured.out)["pyDome report"]
+    report = json.loads(captured.out)["pyLair report"]
 
     assert "Bill of materials" in report
     assert "Angles at hub between outbound cords and tangential plane" in report
@@ -53,7 +53,7 @@ def test_bill_of_materials_chord_length_counts_sum_correctly(capsys):
     get_bill_of_materials(V, C, 5)
 
     captured = capsys.readouterr()
-    report = json.loads(captured.out)["pyDome report"]
+    report = json.loads(captured.out)["pyLair report"]
     rows = report["Bill of materials"]["Chord Lengths and Counts"]
 
     assert sum(row["count"] for row in rows) == len(C)
@@ -61,7 +61,7 @@ def test_bill_of_materials_chord_length_counts_sum_correctly(capsys):
 
 def test_bill_of_materials_does_not_merge_distinct_strut_lengths_at_fine_precision(capsys):
     # at frequency 20, some genuinely distinct strut-length classes differ
-    # by less than 1e-5 -- smaller than pyDome's old default rounding
+    # by less than 1e-5 -- smaller than pyLair's old default rounding
     # precision (5) used to distinguish. At a precision fine enough to
     # resolve them (9, the tool's current default), clustering should
     # separate every one by its true geometric gap rather than merging any.
@@ -78,7 +78,7 @@ def test_bill_of_materials_does_not_merge_distinct_strut_lengths_at_fine_precisi
     get_bill_of_materials(V, C, 9)
 
     captured = capsys.readouterr()
-    report = json.loads(captured.out)["pyDome report"]
+    report = json.loads(captured.out)["pyLair report"]
     rows = report["Bill of materials"]["Chord Lengths and Counts"]
 
     assert len(rows) == true_distinct_count
@@ -96,7 +96,7 @@ def test_bill_of_materials_coarse_precision_merges_near_identical_lengths(capsys
     get_bill_of_materials(V, C, 2)
 
     captured = capsys.readouterr()
-    report = json.loads(captured.out)["pyDome report"]
+    report = json.loads(captured.out)["pyLair report"]
     rows = report["Bill of materials"]["Chord Lengths and Counts"]
     displayed_lengths = [row["length"] for row in rows]
 
@@ -109,7 +109,7 @@ def test_bill_of_materials_reports_total_strut_length_by_default(capsys):
     get_bill_of_materials(V, C, 9)
 
     captured = capsys.readouterr()
-    report = json.loads(captured.out)["pyDome report"]
+    report = json.loads(captured.out)["pyLair report"]
 
     assert "Total material" in report
     expected_total = sum(np.linalg.norm(V[c[0]] - V[c[1]]) for c in C)
@@ -122,7 +122,7 @@ def test_bill_of_materials_reports_cost_when_given_a_unit_price(capsys):
     get_bill_of_materials(V, C, 9, cost_per_unit_length=2.5)
 
     captured = capsys.readouterr()
-    report = json.loads(captured.out)["pyDome report"]
+    report = json.loads(captured.out)["pyLair report"]
     total_material = report["Total material"]
 
     expected_total = sum(np.linalg.norm(V[c[0]] - V[c[1]]) for c in C)
@@ -183,7 +183,7 @@ def test_bill_of_materials_hub_templates_writes_one_dxf_per_type_and_covers_ever
     get_bill_of_materials(V, C, 5, hub_template_output_path=output_prefix)
 
     captured = capsys.readouterr()
-    report = json.loads(captured.out)["pyDome report"]
+    report = json.loads(captured.out)["pyLair report"]
     rows = report["Hub Connector Templates"]
 
     hubs = compute_hub_data(V, C)
@@ -206,7 +206,7 @@ def test_bill_of_materials_tangential_angles_are_small_for_a_smooth_sphere(capsy
     get_bill_of_materials(V, C, 5)
 
     captured = capsys.readouterr()
-    report = json.loads(captured.out)["pyDome report"]
+    report = json.loads(captured.out)["pyLair report"]
     rows = report["Angles at hub between outbound cords and tangential plane"]
 
     for row in rows:
@@ -219,7 +219,7 @@ def test_get_bill_of_materials_returns_the_report_dict(capsys):
 
     captured = capsys.readouterr()
     assert captured.out != ""  # default print_report=True, unchanged
-    assert "Bill of materials" in report["pyDome report"]
+    assert "Bill of materials" in report["pyLair report"]
 
 
 def test_get_bill_of_materials_print_report_false_suppresses_stdout(capsys):
@@ -230,7 +230,7 @@ def test_get_bill_of_materials_print_report_false_suppresses_stdout(capsys):
 
     captured = capsys.readouterr()
     assert captured.out == ""
-    assert "Bill of materials" in report["pyDome report"]
+    assert "Bill of materials" in report["pyLair report"]
 
 
 def test_ellipsoid_normal_matches_hand_computed_value():
@@ -377,7 +377,7 @@ def test_get_bill_of_materials_skips_face_sections_when_faces_is_none(capsys):
     assert captured.out != ""
     for key in ('Panel shapes and counts', 'Total panel material',
                 'Bevel angles at panel edges', 'Panel Cutting Templates'):
-        assert key not in report['pyDome report']
+        assert key not in report['pyLair report']
 
 
 def test_get_bill_of_materials_reports_total_panel_area_and_optional_cost_and_weight(capsys):
@@ -385,7 +385,7 @@ def test_get_bill_of_materials_reports_total_panel_area_and_optional_cost_and_we
     report = get_bill_of_materials(V, C, 5, faces=F, cost_per_unit_area=2.0, panel_areal_density=0.5)
 
     captured = capsys.readouterr()
-    report = json.loads(captured.out)['pyDome report']
+    report = json.loads(captured.out)['pyLair report']
 
     total_panel_material = report['Total panel material']
     expected_area = sum(fd['area'] for fd in compute_face_data(V, F))
@@ -407,7 +407,7 @@ def test_bill_of_materials_face_templates_writes_one_dxf_per_shape_and_covers_ev
     get_bill_of_materials(V, C, 5, faces=F, face_template_output_path=output_prefix)
 
     captured = capsys.readouterr()
-    report = json.loads(captured.out)['pyDome report']
+    report = json.loads(captured.out)['pyLair report']
     rows = report['Panel Cutting Templates']
 
     face_data = compute_face_data(V, F)
@@ -434,7 +434,7 @@ def test_bill_of_materials_with_elongation_still_produces_valid_report(capsys):
     get_bill_of_materials(V, C, 5, elongation_factors=(1.0, 1.0, 1.8))
 
     captured = capsys.readouterr()
-    report = json.loads(captured.out)["pyDome report"]
+    report = json.loads(captured.out)["pyLair report"]
 
     rows = report["Bill of materials"]["Chord Lengths and Counts"]
     assert sum(row["count"] for row in rows) == len(C)
@@ -462,7 +462,7 @@ def test_get_bill_of_materials_flags_truncation_artifact_chords_and_panels():
     F = [[0, 1, 2], [3, 4, 5]]
 
     report = get_bill_of_materials(V, C, 9, print_report=False, faces=F)
-    r = report['pyDome report']
+    r = report['pyLair report']
 
     flagged_chords = r['Bill of materials']['Possible truncation-artifact chords']
     assert len(flagged_chords) > 0
@@ -479,7 +479,7 @@ def test_get_bill_of_materials_flags_truncation_artifact_chords_and_panels():
 def test_get_bill_of_materials_flags_nothing_for_a_normal_untruncated_dome():
     V, C, F = build_sphere_with_faces(frequency=4)
     report = get_bill_of_materials(V, C, 9, print_report=False, faces=F)
-    r = report['pyDome report']
+    r = report['pyLair report']
 
     assert r['Bill of materials']['Possible truncation-artifact chords'] == []
     assert r['Panel shapes and counts']['Possible truncation-artifact panels'] == []
@@ -495,7 +495,7 @@ def test_near_equatorial_truncation_flags_the_resulting_slivers():
     degenerate = build_dome(frequency=6, truncation_z=0.4999999)
     report = get_bill_of_materials(degenerate.V, degenerate.C, 9, print_report=False,
                                     faces=degenerate.F_sphere)
-    r = report['pyDome report']
+    r = report['pyLair report']
 
     flagged_chords = r['Bill of materials']['Possible truncation-artifact chords']
     assert len(flagged_chords) > 0
@@ -517,6 +517,6 @@ def test_near_equatorial_truncation_flags_the_resulting_slivers():
     clean = build_dome(frequency=6, truncation_z=0.333333)
     clean_report = get_bill_of_materials(clean.V, clean.C, 9, print_report=False,
                                           faces=clean.F_sphere)
-    cr = clean_report['pyDome report']
+    cr = clean_report['pyLair report']
     assert cr['Bill of materials']['Possible truncation-artifact chords'] == []
     assert cr['Panel shapes and counts']['Possible truncation-artifact panels'] == []

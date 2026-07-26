@@ -1,4 +1,4 @@
-#    pyDome:  A geodesic dome calculator
+#    pyLair:  A geodesic dome calculator
 #    Copyright (C) 2013  Emily Williams
 #
 #    This program is free software: you can redistribute it and/or modify

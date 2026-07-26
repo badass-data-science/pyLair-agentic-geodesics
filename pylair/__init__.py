@@ -1,4 +1,4 @@
-#    pyDome:  A geodesic dome calculator
+#    pyLair:  A geodesic dome calculator
 #    Copyright (C) 2013  Emily Williams
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -13,16 +13,3 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-import numpy as np
-
-# Independent per-axis scale factors (fx, fy, fz). This stretches the
-# sphere into a general axis-aligned ellipsoid with semi-axes
-# (r*fx, r*fy, r*fz) for ceiling-height/footprint tradeoffs on any
-# combination of axes -- chord/face connectivity is unaffected, since
-# this is a pure per-vertex scale.
-
-
-def elongate(vertices, factors):
-  scale = np.array(factors, dtype=float)
-  return [v * scale for v in vertices]
