@@ -1,6 +1,8 @@
 pyLair - An Agentic Geodesic Structure Designer
 ======
 
+![dome-image](images/edited_truncated.png)
+
 A geodesic dome calculator written in Python.
 
 pyLair calculates vertices and chords of Class I ("Alternate"), Class II ("Triacon"), and Class III ("Skew"/chiral) geodesic domes of arbitrary size. Domes created by pyLair can be truncated to facilitate structure design. The program produces DXF for easy import into CAD programs, and VRML output for easy display, plus a Bill of Materials report (chord lengths/counts, hub angles, and total strut length/cost) for construction.
