@@ -19,8 +19,13 @@ pip install -e ".[test]"
 ```
 
 Optional extras: `mcp` (MCP server deps; no published release supports Python
-3.9), `verify` (`trimesh`/`shapely`/`ezdxf`, used only by the oracle test below
-— `shapely` is a transitive dependency `trimesh.intersections.slice_mesh_plane`
+3.9; pinned to `<2.0` because 2.0.0 removed `mcp.server.fastmcp` entirely —
+`pylair/mcp_server.py`'s `FastMCP`/`Image` imports and
+`tests/test_mcp_server.py`'s `mcp.shared.memory.create_connected_server_and_client_session`
+both 404 on 2.0.0's new module layout; migrating to whatever replaces
+`FastMCP` there is real, unstarted work, not a version bump), `verify`
+(`trimesh`/`shapely`/`ezdxf`, used only by the oracle test below —
+`shapely` is a transitive dependency `trimesh.intersections.slice_mesh_plane`
 needs but doesn't pull in on its own).
 
 ## Test

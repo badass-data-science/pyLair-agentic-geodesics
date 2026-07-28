@@ -21,7 +21,7 @@ dependencies = [
 
 [project.optional-dependencies]
 test = ["pytest"]
-mcp = ["mcp"]
+mcp = ["mcp<2.0"]
 verify = ["trimesh", "shapely", "ezdxf"]
 
 [project.scripts]
