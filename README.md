@@ -1,6 +1,10 @@
 pyLair - An Agentic Geodesic Structure Designer
 ======
 
+[![CI](https://github.com/badass-data-science/pyLair-agentic-geodesics/actions/workflows/ci.yml/badge.svg)](https://github.com/badass-data-science/pyLair-agentic-geodesics/actions/workflows/ci.yml)
+[![Python 3.9 | 3.10 | 3.11 | 3.12 | 3.13](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue)](pyproject.toml)
+[![License: GPLv3](https://img.shields.io/badge/license-GPLv3-green)](LICENSE)
+
 ![dome-image](images/edited_truncated.png)
 
 A geodesic dome calculator written in Python.
