@@ -83,10 +83,15 @@ limitations" and the corresponding "Development" paragraph — several of these
 (Class II's coordinate-basis bug, Class III's cross-face stitching, elongated
 surface-normal angles) were real historical bugs that passed a naive smoke test.
 
-Known live ambiguity: `truncate()`'s diagonal-seam handling for quad boundary
-panels is the current, correct behavior (see README caveat) —
+`truncate()`'s diagonal-seam handling for quad boundary panels is the current,
+correct behavior (see README caveat). The blog post used to carry a stale
+"Next Steps" bullet about this with a strikethrough + inline "Done." patched
+onto it, which read as self-contradictory and got flagged by `/graphify` as an
+AMBIGUOUS edge; that bullet was removed rather than reworded, since the item
+wasn't a next step anymore. If you find a similar discrepancy elsewhere,
 `blog-posts/introducing-pylair.md` and `blog-posts/METHOD.md` should agree with
-README, not the other way around, if you find a discrepancy while editing docs.
+README, not the other way around — and prefer removing/rewriting a resolved
+"Next Steps" item over strikethrough-patching it in place.
 
 ## Docs stay in sync
 

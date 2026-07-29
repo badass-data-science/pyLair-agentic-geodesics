@@ -68,6 +68,10 @@ lives under `[Unreleased]` against the `0.1.0` version in `pyproject.toml`.
 - Two stale README claims about panel data and the flat-chord error.
 - Stale `METHOD.md` links in `AGENTS.md` and `README.md` still pointing at
   the pre-move root path instead of `blog-posts/METHOD.md`.
+- Removed a stale, self-contradictory "Next Steps" bullet in
+  `blog-posts/introducing-pylair.md` about the diagonal-seam strut (it was
+  marked "Done." inline via strikethrough rather than being taken out once
+  the feature shipped, which `/graphify` flagged as an AMBIGUOUS edge).
 - Ported the original Python 2-era code to Python 3 and fixed a broken `-h`
   flag.
 
