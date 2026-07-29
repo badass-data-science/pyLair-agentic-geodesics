@@ -82,16 +82,17 @@ Chapter 3 is where you'll actually pick a polyhedron and get a real dome back. T
 
 ```json
 {
-  "polyhedron": ...,
-  "dome_class": ...,
-  "frequency": ...,
-  "n_vertices": ...,
-  "n_edges": ...,
-  "n_faces": ...,
+  "vertex_count": ...,
+  "edge_count": ...,
+  "face_count": ...,
+  "truncated": ...,
   "bounding_box": ...,
   "height": ...,
   "footprint_diameter": ...,
-  "total_strut_length": ...
+  "total_strut_length": ...,
+  "resolved_parameters": {
+    "radius": ..., "frequency": ..., "polyhedron": ..., "dome_class": ..., ...
+  }
 }
 ```
 
@@ -100,13 +101,11 @@ And here, its counterpart one problem domain over, is `design_nest`'s own skelet
 ```json
 {
   "sheets_used": ...,
-  "sheet_utilization": [...],
-  "total_parts_placed": ...,
-  "total_parts_requested": ...
+  "utilization_by_sheet": [...]
 }
 ```
 
-Notice what the two have in common, despite answering completely different questions: both are flat, labeled, and immediately actable — `n_vertices` next to `n_faces`, `sheets_used` next to `sheet_utilization`, never a clause buried in a paragraph. That's not decoration. It's the same rule showing up in both toolkits, in every layer, without exception: **a result worth trusting is a result you can name a field in, not a sentence you have to interpret.** You'll see pyLair's own version of this skeleton filled in with real numbers in Chapter 3, and pyFit's in Part VI, and then both again, in progressively more demanding forms, for the rest of the book.
+Notice what the two have in common, despite answering completely different questions: both are flat, labeled, and immediately actable — `vertex_count` next to `face_count`, `sheets_used` next to `utilization_by_sheet`, never a clause buried in a paragraph. That's not decoration. It's the same rule showing up in both toolkits, in every layer, without exception: **a result worth trusting is a result you can name a field in, not a sentence you have to interpret.** You'll see both of these skeletons filled in with real numbers as soon as Chapter 2's own installation smoke test, and then again, with a real design behind them instead of just a wiring check, for the rest of the book.
 
 ## What's Next
 
