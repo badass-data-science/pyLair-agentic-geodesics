@@ -5,7 +5,7 @@ pyLair - An Agentic Geodesic Structure Designer
 [![Python 3.9 | 3.10 | 3.11 | 3.12 | 3.13](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue)](pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-![dome-image](images/edited_truncated.png)
+![dome-image](blog-posts/edited_truncated.png)
 
 A geodesic dome calculator written in Python.
 
@@ -149,7 +149,6 @@ A few behaviors are worth understanding before relying on the output for a real 
 | `SKILL.md` | [OpenClaw](https://openclaw.ai/) skill definition wrapping the `pylair` CLI, for agentic use through OpenClaw (see "OpenClaw interface" above). |
 | `openclaw.config.snippet.jsonc` | Config snippet to enable the `pylair` skill in `~/.openclaw/openclaw.json`. |
 | `blog-posts/METHOD.md` | The geometric method walkthrough with reference images (icosahedron subdivision, projection, truncation). |
-| `images/` | Diagrams referenced by this README. |
 
 Internally, vertices/chords/faces are referenced by plain integer index into Python lists — 0-indexed throughout, matching how they're actually used (this wasn't always true; earlier versions numbered them 1-indexed and subtracted 1 at every point of use).
 

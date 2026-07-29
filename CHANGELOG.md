@@ -72,6 +72,11 @@ lives under `[Unreleased]` against the `0.1.0` version in `pyproject.toml`.
   `blog-posts/introducing-pylair.md` about the diagonal-seam strut (it was
   marked "Done." inline via strikethrough rather than being taken out once
   the feature shipped, which `/graphify` flagged as an AMBIGUOUS edge).
+- Removed the top-level `images/` directory: all 10 files were
+  byte-identical duplicates of files already in `blog-posts/` (which needs
+  its own local copies for `blog-posts/METHOD.md`'s relative image links).
+  README's hero image now points at `blog-posts/edited_truncated.png`
+  instead of the removed `images/edited_truncated.png`.
 - Ported the original Python 2-era code to Python 3 and fixed a broken `-h`
   flag.
 
