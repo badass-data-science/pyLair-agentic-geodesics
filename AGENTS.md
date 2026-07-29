@@ -97,6 +97,12 @@ the feature shipped and the README was updated). `SKILL.md` in particular mirror
 the CLI flag table in README.md's "Command-line options" section — if you add or
 change a flag, update both.
 
+Also add an entry to `CHANGELOG.md` under `[Unreleased]` (Added/Changed/Fixed,
+per [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)) whenever you ship
+a user-visible change — a new flag, a behavior change, a bug fix. There have been
+no tagged releases yet, so everything accumulates under `[Unreleased]` against
+the `0.1.0` version in `pyproject.toml`; don't invent a version bump.
+
 ## graphify-out/
 
 Generated knowledge-graph artifacts from `/graphify` (see `.claude/skills` if
