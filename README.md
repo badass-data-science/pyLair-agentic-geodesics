@@ -5,13 +5,13 @@ pyLair - An Agentic Geodesic Structure Designer
 [![Python 3.9 | 3.10 | 3.11 | 3.12 | 3.13](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue)](pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-![dome-image](images/edited_truncated.png)
+![dome-image](blog-posts/edited_truncated.png)
 
 A geodesic dome calculator written in Python.
 
 pyLair calculates vertices and chords of Class I ("Alternate"), Class II ("Triacon"), and Class III ("Skew"/chiral) geodesic domes of arbitrary size. Domes created by pyLair can be truncated to facilitate structure design. The program produces DXF for easy import into CAD programs, and VRML output for easy display, plus a Bill of Materials report (chord lengths/counts, hub angles, and total strut length/cost) for construction.
 
-For the geometric method (icosahedron/octahedron subdivision, projection, truncation) and reference images, see [METHOD.md](METHOD.md).
+For the geometric method (icosahedron/octahedron subdivision, projection, truncation) and reference images, see [METHOD.md](blog-posts/METHOD.md).
 
 ## Installation
 
@@ -148,8 +148,7 @@ A few behaviors are worth understanding before relying on the output for a real 
 | `tests/` | pytest suite: unit tests per module (importing from `pylair.*`) plus subprocess-level CLI integration tests (invoked via `python -m pylair`). |
 | `SKILL.md` | [OpenClaw](https://openclaw.ai/) skill definition wrapping the `pylair` CLI, for agentic use through OpenClaw (see "OpenClaw interface" above). |
 | `openclaw.config.snippet.jsonc` | Config snippet to enable the `pylair` skill in `~/.openclaw/openclaw.json`. |
-| `METHOD.md` | The geometric method walkthrough with reference images (icosahedron subdivision, projection, truncation). |
-| `images/` | Diagrams referenced by `METHOD.md`. |
+| `blog-posts/METHOD.md` | The geometric method walkthrough with reference images (icosahedron subdivision, projection, truncation). |
 
 Internally, vertices/chords/faces are referenced by plain integer index into Python lists — 0-indexed throughout, matching how they're actually used (this wasn't always true; earlier versions numbered them 1-indexed and subtracted 1 at every point of use).
 
