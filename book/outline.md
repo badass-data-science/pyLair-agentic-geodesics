@@ -1,5 +1,5 @@
 # Agentic Geodesic Lair Design for Supervillains
-### Computational Geometry and Agentic AI with pyLair
+### Computational Geometry and Agentic AI with pyLair and pyFit
 **Proposed Outline**
 
 ---
@@ -13,20 +13,50 @@ this series' companion volume, whose structure and conventions this outline
 deliberately follows. Every chapter below uses the same template:
 
 - **Concept(s) taught** — the geometry/engineering idea(s) at the center of the chapter.
-- **pyLair interfaces used** — the actual CLI flags, Python API calls, and/or
-  MCP tools the chapter's exercises use, by name.
+- **pyLair/pyFit interfaces used** — the actual CLI flags, Python API calls, and/or
+  MCP tools the chapter's exercises use, by name, from whichever of the two
+  toolkits (or both) the chapter concerns.
 - **Learning objectives** — what the reader should be able to do afterward.
-- **The villainous example** — the running dome design for the chapter, and why its shape fits the lesson.
-- **Gotchas & rationale** — the specific "here's why this isn't as simple as it looks" content the book promises, grounded in real, documented behavior of pyLair (its README caveats, its test suite, and its git history) — not invented for the outline.
-- **Sample prompts** — 2–3 representative prompts in the book's prompt-based instructional style, in the same voice as Part VI's agentic-prompting chapters.
+- **The villainous example** — the running dome/nesting design for the chapter, and why its shape fits the lesson.
+- **Images** — the figures this chapter needs, and whether each is a real
+  rendered output (pyLair's `-P/--preview`, pyFit's own `-P/--preview`) or a
+  purpose-drawn conceptual diagram. See "A Note on This Book's Images" below
+  for how these get produced consistently.
+- **Gotchas & rationale** — the specific "here's why this isn't as simple as it looks" content the book promises, grounded in real, documented behavior of pyLair and pyFit (their READMEs' caveats, their test suites, and their git history) — not invented for the outline.
+- **Sample prompts** — 2–3 representative prompts in the book's prompt-based instructional style, in the same voice as Part VII's agentic-prompting chapter.
 
-Chapters follow the actual shape of a dome moving through pyLair's pipeline —
-pick a polyhedron, subdivide it, project it onto a sphere, shape it
-(elongate, truncate), then account for it (bill of materials, cutting
-templates, export) — because that's also the order in which each stage's
+This book treats geodesic lair design as a book-length subject in its own
+right — geodesic mathematics, all three subdivision classes, chirality, and
+the engineering tradeoffs of elongation/truncation, taught in far more depth
+than the companion blog post or `blog-posts/METHOD.md` have room for — with
+the agentic tool-use (pyLair and pyFit, driven through a real MCP or OpenClaw
+interface) as the vehicle for actually *doing* the geometry rather than the
+book's real subject. Every teaching chapter accordingly pairs its concept
+with a **villainous example** worked all the way through, in the book's
+running prompt / **What Comes Back** / **What It Means** format, so the
+humor stays load-bearing for the pedagogy rather than decorative.
+
+Chapters follow the actual shape of a dome moving through pyLair's pipeline,
+and then — new in this revision — the shape a *panel* takes once it leaves
+that pipeline and needs to actually get cut from real sheet stock: pick a
+polyhedron, subdivide it, project it onto a sphere, shape it (elongate,
+truncate), account for it (bill of materials, cutting templates), export it,
+then **nest** its cutting templates onto actual plywood/acrylic/aluminum
+sheets with pyFit — because that's also the order in which each stage's
 correctness *depends* on the one before it: you can't honestly truncate a
-sphere whose projection is wrong, and you can't honestly report a bevel
-angle for a face whose truncation clipped it incorrectly.
+sphere whose projection is wrong, you can't honestly report a bevel angle
+for a face whose truncation clipped it incorrectly, and you can't honestly
+nest a panel shape pyLair never correctly computed in the first place.
+
+pyLair and pyFit are, by design, two genuinely independent projects with no
+code dependency on each other — pyFit reads plain DXF files, and doesn't
+know or care whether pyLair (or any other CAD tool) produced them. This
+book treats that independence honestly rather than pretending the two are
+one integrated product: Parts II–V are pyLair-only, Part VI is pyFit's own
+subject taught on its own terms (including a standalone pyFit example that
+has nothing to do with domes at all), and only where the two toolkits
+actually meet — a pyLair panel-template DXF file becoming a pyFit job spec's
+`"dxf"` field — does the book show them working together.
 
 Two dome designs recur across multiple chapters as a light narrative
 through-line, the same way the companion blog post ("Introducing pyLair, or,
@@ -40,9 +70,12 @@ heroine's Ultimate Cunning Master Plan&trade;:
   anything statistically.
 - **The Actual Secret Lair** — a full-scale Class III (chiral) dome,
   elongated for extra ceiling height, truncated on multiple axes for a
-  ground-flush footprint with room for a door, finally exported for real in
-  Part V. This is the dome the blog post's heroine is actually building, and
-  the one this book's chapters slowly earn the right to export.
+  ground-flush footprint with room for a door, exported for real in Part V,
+  and finally **nested for real** — its cutting templates laid out onto
+  actual 96"×48" plywood sheets in the henchmen's fabrication bay — in Part
+  VI. This is the dome the blog post's heroine is actually building, and the
+  one this book's chapters slowly earn the right to actually cut material
+  for.
 
 A third, smaller example — **The Under-the-Ocean Prototype** — appears where
 a chapter specifically needs a second, contrasting shape (a squashed
@@ -51,7 +84,11 @@ lifted directly from the blog post's own opening joke about where a secret
 laboratory really belongs), and gets a full dedicated tour alongside four
 new siblings — an orbital station, a volcano lair, an arctic cache, and one
 deliberately un-hidden mountain spire — in Chapter 11, once Part III has
-given readers every shaping tool those examples actually use.
+given readers every shaping tool those examples actually use. Its panels
+return once more in Part VI, specifically because they're chirality-sensitive
+(a one-sided pressure coating, per Chapter 14's chirality trap) in a way the
+plywood-built Actual Secret Lair's panels aren't — giving pyFit's own
+`allow_mirror` flag a real, previously-established reason to matter.
 
 ---
 
@@ -59,7 +96,8 @@ given readers every shaping tool those examples actually use.
 
 - **Title Page** — title, subtitle, "as told by our heroine," and a
   one-paragraph framing note connecting this book to
-  [`blog-posts/introducing-pylair.md`](../blog-posts/introducing-pylair.md),
+  [`blog-posts/introducing-pylair.md`](../blog-posts/introducing-pylair.md)
+  and [pyFit's own introductory blog post](https://github.com/badass-data-science/pyFit-agentic-polygon-nesting/blob/main/blog-posts/introducing-pyfit.md),
   which readers are encouraged to treat as companion reading, not a
   prerequisite — the same relationship the Omen book has with its own blog
   series.
@@ -68,142 +106,286 @@ given readers every shaping tool those examples actually use.
   `about_the_series.md` already promised was coming, several NDAs later than
   planned. Notes the shared universe (same heroine, same Ultimate Cunning
   Master Plan&trade;, mojitos optional but encouraged) without requiring the
-  other book as a prerequisite.
+  other book as a prerequisite, and notes that this volume is itself a
+  two-toolkit story — pyLair designs the dome, pyFit cuts it — the same way
+  a real fabrication project is never just one piece of software.
 - **How to Use This Book**
   - Who this book assumes you are: comfortable with basic 3D coordinate
     geometry (vertices, planes, angles) and command-line tools; new to
-    geodesic subdivision specifically and to agentic tool-use generally.
+    geodesic subdivision, 2D nesting/bin-packing, and agentic tool-use
+    generally.
   - The prompt-based convention used throughout: every worked example shows
     a boxed **Prompt** (what you'd actually type to your agent) followed by
     **What Comes Back** (the tool's real JSON/CLI output, trimmed for
     space) and **What It Means** (the plain-language interpretation).
-  - A note that every number, error message, and file shown in this book is
-    from a *real* `pylair`/`pylair-mcp` run against real parameters — not a
-    hand-typed mockup — and that every named dome design (the
-    Proof-of-Concept Yurt, the Actual Secret Lair, and the rest) can be
-    regenerated exactly by running `book/examples/generate_book_domes.py`
-    (see `book/examples/README.md`), the same reproducibility convention
-    the Omen book established for its datasets.
-  - Pointers to `README.md` (the full CLI/MCP reference and caveats list)
-    and `AGENTS.md` (the toolkit's own agent-facing engineering notes,
-    including the geometry pipeline's historical footguns) for readers who
-    want to go deeper than any one chapter.
-- **A Word on AI Use** — matches the convention already established in the
-  blog post's own AI Use Statement: the original pyLair implementation was
-  hand-written from scratch, then extended feature-by-feature in
-  collaboration with an AI coding assistant (Class II/III subdivision,
-  elongation, STL/OBJ/PNG output, face-aware truncation); this book's prose
-  follows the same pattern — drafted collaboratively, checked line-by-line
-  against the actual codebase, test suite, and git history, not invented.
+  - A note that every number, error message, image, and file shown in this
+    book is from a *real* `pylair`/`pylair-mcp`/`pyfit`/`pyfit-mcp` run
+    against real parameters — not a hand-typed mockup — and that every
+    named dome design (the Proof-of-Concept Yurt, the Actual Secret Lair,
+    and the rest) and every named nesting job can be regenerated exactly by
+    running `book/examples/generate_book_domes.py` and
+    `book/examples/generate_book_nests.py` (see `book/examples/README.md`),
+    the same reproducibility convention the Omen book established for its
+    datasets.
+  - Pointers to pyLair's `README.md`/`AGENTS.md` and pyFit's `README.md`/
+    `AGENTS.md` (the full CLI/MCP reference, caveats lists, and each
+    toolkit's own agent-facing engineering notes, including the geometry and
+    nesting pipelines' historical footguns) for readers who want to go
+    deeper than any one chapter.
+- **A Note on This Book's Images** — this book is illustration-heavy on
+  purpose: every subdivision class, every shaping operation, and every
+  nesting concept gets at least one figure, because geodesic geometry and
+  2D nesting are both subjects that are much easier to *see* than to read a
+  paragraph about. Three sources produce every image in the book, and none
+  of them are hand-drawn or AI-generated illustrations dressed up as real
+  output:
+  - **pyLair's own `-P/--preview` renderer** (`pylair/preview.py`) for every
+    dome/sphere wireframe figure — the same equal-axis-scaled 3D wireframe
+    a reader gets from their own terminal, so a figure in this book and a
+    figure a reader generates themselves from the same parameters are
+    pixel-for-pixel comparable in shape (not necessarily in file format).
+  - **pyFit's own `-P/--preview` renderer** (`pyfit/preview.py`) for every
+    sheet-layout figure — boundary plus every placed part's outline, the
+    same convention pyLair's own preview uses one dimension down.
+  - **`book/examples/generate_book_images.py`**, a small script that calls
+    both preview renderers with this book's own named examples' exact
+    parameters (never hand-edited afterward) and additionally draws a
+    handful of purpose-built conceptual diagrams neither tool renders on its
+    own — a bare symmetry-triangle grid before it's replicated across a
+    polyhedron, a chiral `(m,n)`/`(n,m)` mirror-pair comparison, a no-fit-
+    polygon (NFP) construction — using the same color palette and figure
+    style as the two tools' own preview output, so a conceptual diagram
+    never looks like a different, less trustworthy kind of image than a
+    real tool render sitting next to it on the same page. Every figure
+    caption in this book names which of the three produced it.
+  - This mirrors `book/examples/generate_book_domes.py`'s own
+    reproducibility promise: run the script, get the exact figure, no
+    exceptions.
+- **A Word on AI Use** — matches the convention already established in both
+  projects' own AI Use Statements: the original pyLair and pyFit
+  implementations were hand-written from scratch, then extended
+  feature-by-feature in collaboration with an AI coding assistant (pyLair's
+  Class II/III subdivision, elongation, STL/OBJ/PNG output, face-aware
+  truncation; pyFit's NFP-based nesting engine); this book's prose follows
+  the same pattern — drafted collaboratively, checked line-by-line against
+  the actual codebases, test suites, and git history of both projects, not
+  invented.
 - **Dedication** — short, in the same register as the Omen book's own.
 
 ---
 
-## Part I — Meet Your New Design Engineer
+## Part I — Meet Your New Design Engineers
 
-### Chapter 1: Introducing pyLair and the Agentic Interface
+### Chapter 1: Introducing pyLair, pyFit, and the Agentic Interface
 
-**Concept(s) taught:** What pyLair actually computes (vertices, chords, and
-faces of a geodesic dome or sphere) and what it doesn't (it is not a
-structural engineering tool — it reports lengths and angles, not load
-ratings); the same "agentic AI" distinction the Omen book opens with,
-applied to CAD instead of statistics — an agent driving pyLair's typed
-tools and reasoning between calls, as opposed to an LLM free-handing
-`numpy` trigonometry from scratch and hoping it's right.
+**Concept(s) taught:** What "agentic AI" actually means in a design/fabrication
+context, as distinct from "an AI that writes CAD code for you"; what pyLair
+and pyFit each actually compute (pyLair: vertices, chords, and faces of a
+geodesic dome or sphere; pyFit: where each of a set of 2D shapes should sit
+on a sheet of material) and what neither does (neither is a structural
+engineering tool, and pyFit has no opinion on whether a shape it nests
+*should* exist — it just nests whatever it's given); the same "agentic AI"
+distinction the Omen book opens with, applied to CAD and fabrication instead
+of statistics — an agent driving typed tools and reasoning between calls, as
+opposed to an LLM free-handing `numpy` trigonometry or packing logic from
+scratch and hoping it's right; why every single tool result in this book
+comes back as **JSON**, and what JSON actually is.
 
-**pyLair interfaces used:** None yet — conceptual scaffolding. Previews
-`design_dome`'s output shape as a teaser without explaining it.
+**pyLair/pyFit interfaces used:** None yet — conceptual scaffolding.
+Previews `design_dome`'s and `design_nest`'s output shapes as a teaser
+without explaining them.
 
 **Learning objectives:**
 - Describe, at a high level, what a geodesic subdivision *is* (a polyhedron
   face divided into a triangular grid, then projected onto a sphere) and
   why it distributes structural stress more evenly than a dome with large
   flat panels.
-- Distinguish the four things pyLair actually hands back — a shape
-  (vertices/chords/faces), export files (DXF/VRML/STL/OBJ), a bill of
-  materials, and cutting templates — from the physical build itself, which
-  remains entirely the reader's problem.
-- Explain why "just ask the AI to design a dome" without a real geometry
-  engine underneath it fails silently: an LLM asked to compute hub angles
-  freehand will produce *plausible-looking* numbers with no guarantee they
-  close correctly in 3D.
+- Describe, at a high level, what 2D nesting/bin-packing *is* (arranging a
+  set of shapes onto rectangular stock to minimize wasted material) and why
+  it's a genuinely different, and genuinely harder (NP-hard), problem than
+  the geometry pyLair solves — knowing where a panel goes on a dome tells
+  you nothing about where it should sit on a sheet of plywood next to a
+  dozen others.
+- Distinguish the things pyLair hands back (a shape, export files, a bill
+  of materials, cutting templates) and the things pyFit hands back (a
+  per-sheet placement report and DXF files) from the physical build itself,
+  which remains entirely the reader's problem in both cases.
+- Explain why "just ask the AI to design a dome" or "just ask the AI to
+  figure out how to lay these out on plywood" without a real geometry/nesting
+  engine underneath fails silently: an LLM asked to compute hub angles or
+  pack irregular triangles freehand will produce *plausible-looking* numbers
+  or layouts with no guarantee they're correct.
+- Read a JSON object confidently: objects (`{ }`) as labeled bags of
+  values, arrays (`[ ]`) as ordered lists, and the four value types (string,
+  number, boolean, `null`) — and explain why `null` means "genuinely no
+  value," not "zero" or "unknown."
+- Explain why an agent that needs to *act* on a tool's result (compare a
+  number against a threshold, pass a placement into the next call) needs
+  that result in a fixed, machine-readable shape rather than a prose
+  sentence — and why a sentence that reads fine to a human is exactly the
+  failure mode an agentic tool's JSON output exists to close off.
 
 **The villainous example:** A cold open, borrowed directly from the blog
 post — our heroine's secret laboratory has outgrown her studio apartment,
-and whatever she builds next needs to (a) look cool, and (b) handle
-pressure gradients gracefully, because a proper secret lab belongs deep
-underwater or in circumpolar orbit, not in an unassuming San Diego
-neighborhood. This is the problem the book solves, not yet with geometry —
-just a promise that Chapter 3 picks this back up.
+and whatever she builds next needs to (a) look cool, (b) handle pressure
+gradients gracefully, because a proper secret lab belongs deep underwater or
+in circumpolar orbit, not in an unassuming San Diego neighborhood, and (c) —
+new to this telling — actually get *built*, which means someone (a henchman,
+almost certainly, and definitely not our heroine personally) has to figure
+out how to cut every one of that dome's panels out of actual sheet material
+without wasting half of it. This is the two-part problem the book solves,
+not yet with geometry or nesting — just a promise that Chapter 3 picks the
+design half back up, and Part VI picks the cutting half up once there's
+something real to cut.
+
+**Images:**
+- A single finished-dome photo/render as the chapter's cold-open image
+  (`blog-posts/edited_truncated.png` or `blog-posts/CAD_dome.jpg`, both real
+  pyLair output already in the repo) — the "this is what we're building
+  toward" teaser.
+- A single nested-sheet render as the chapter's second teaser
+  (`pyFit`'s own `blog-posts/images/nest_sheet1_pylair_triangles.png`,
+  already real pyFit output nesting actual pyLair triangles) — "and this is
+  what it takes to actually cut it out."
+- A small side-by-side conceptual diagram (purpose-drawn, per the image note
+  above): a prose sentence describing a mean and confidence interval next to
+  the equivalent JSON object, visually underlining the "an agent has to
+  re-parse the sentence; it just reads the JSON field" point.
 
 **Gotchas & rationale:**
 - Why hand-rolled dome math is dangerous specifically at the *hub*, not the
   *chord*: a chord length is forgiving of small errors (the strut is just
   slightly the wrong length), but a wrong hub angle compounds — every strut
   meeting at that hub inherits the error, and the dome may not physically
-  close.
-- The core tension this book keeps returning to: pyLair deliberately keeps
-  its geometry engine's validation rule-based and shared (`api.py`, used
-  identically by the CLI and every MCP tool) rather than letting an agent
-  freelance the math per request — the same "deterministic gates around
-  agentic judgment" idea the Omen book centers, applied here to geometric
-  correctness instead of a deploy decision.
+  close. Nesting has its own version of this danger at the *no-fit-polygon*,
+  not the individual shape: a single wrong NFP computation doesn't just
+  misplace one part, it can silently validate an overlapping placement as
+  legal.
+- The core tension this book keeps returning to: both toolkits deliberately
+  keep their core engines rule-based and shared (`pylair/api.py`, used
+  identically by pyLair's CLI and every MCP tool; `pyfit/api.py`, used
+  identically by pyFit's CLI and every MCP tool) rather than letting an
+  agent freelance the math per request — the same "deterministic gates
+  around agentic judgment" idea the Omen book centers, applied here to
+  geometric and combinatorial correctness instead of a deploy decision.
+- A prose answer can silently drift between two phrasings of the same fact
+  ("about 244, give or take five" vs. "roughly 240 to 249") in a way an
+  agent parsing it back out has no reliable way to detect; a JSON field
+  spelled `"mean_ci_lower"` cannot drift the same way without the number
+  itself changing.
 
 **Sample prompts:**
 - "Explain, in your own words, why pyLair computes the geometry itself
   instead of just asking you to describe what a geodesic dome would look
-  like."
+  like — and why pyFit's nesting works the same way."
 - "What's the difference between asking for a dome's vertex/edge/face
-  counts and asking for its full bill of materials?"
+  counts and asking for its full bill of materials? And what's the
+  difference between that bill of materials and a nesting job's placement
+  report?"
 
 ---
 
-### Chapter 2: Installing pyLair (CLI, MCP, and Your Agent of Choice)
+### Chapter 2: Installing pyLair and pyFit (OpenClaw, Claude Code, Hermes, Claude Desktop, and Any MCP Framework)
 
 **Concept(s) taught:** Python packaging extras as an install-time choice
-(`[test]`, `[mcp]`, `[verify]`) rather than one monolithic dependency list;
-how an MCP (Model Context Protocol) server connects to an agentic client —
-stdio transport, tool discovery, the console-script pattern — enough to
-install pyLair on whatever platform the reader is actually using.
+(`[test]`, `[mcp]`, `[verify]` for pyLair; `[test]`, `[mcp]`, `[lint]` for
+pyFit) rather than one monolithic dependency list; how an MCP (Model Context
+Protocol) server actually connects to an agentic client — stdio transport,
+tool discovery, the console-script pattern — as one underlying contract that
+looks different only in configuration-file shape across OpenClaw, Claude
+Code, Hermes, Claude Desktop, and any other MCP-speaking framework; how
+OpenClaw's *skill* mechanism (a different, CLI-wrapping integration path,
+used by both toolkits alongside their MCP servers) fits into the same
+picture without being confused for MCP itself.
 
-**pyLair interfaces used:** `pip install -e ".[mcp]"`, the `pylair-mcp`
-console command; the chapter ends with a real smoke test calling
-`design_dome` once, successfully, as proof of life.
+**pyLair/pyFit interfaces used:** `pip install -e ".[mcp]"` for both
+projects, the `pylair-mcp` and `pyfit-mcp` console commands; pyLair's
+`SKILL.md` (repo root) and pyFit's `skills/pyfit/SKILL.md` (nested — a real,
+documented difference between the two, not a typo) plus each project's
+`openclaw.config.snippet.jsonc`; the chapter ends with a real smoke test
+calling `design_dome` and `design_nest` once each, successfully, as proof of
+life for both.
 
 **Learning objectives:**
-- Install pyLair (`pip install -e .` for the CLI alone, `.[mcp]` to add the
-  agentic interface) into a clean environment.
-- Register the `pylair-mcp` server with at least one MCP-speaking client.
-- Confirm installation success via a live tool call, not just "the install
-  command didn't error."
-- Know which extra to reach for later: `[test]` for the test suite,
-  `[verify]` for the independent geometry oracle used in Part II and Part
-  IV (and, as this book's own real history proves in Chapter 21, worth
-  double-checking on whatever Python version you're actually running).
+- Install pyLair and pyFit (`pip install -e .` for each CLI alone, `.[mcp]`
+  to add each agentic interface) into a clean environment.
+- Register both `pylair-mcp` and `pyfit-mcp` with at least one MCP-speaking
+  client, understanding that "register an MCP server" always reduces to the
+  same three things regardless of platform: know the launch command, launch
+  it over stdio, let the client discover its tools.
+- Install both projects' OpenClaw skills correctly despite their different
+  directory conventions — pyLair's `SKILL.md` sits at the repo root; pyFit's
+  sits at `skills/pyfit/SKILL.md`, because OpenClaw discovers skills by
+  scanning configured roots for `<root>/<skill-name>/SKILL.md` and pyFit's
+  own `openclaw.config.snippet.jsonc` adds its `skills/` directory to
+  `skills.load.extraDirs` accordingly.
+- Confirm installation success via live tool calls to both servers, not
+  just "the install command didn't error."
+- Know which extra to reach for later in each project: pyLair's `[verify]`
+  for the independent geometry oracle used in Part IV (and, as this book's
+  own real history proves in an earlier draft, worth double-checking on
+  whatever Python version you're actually running); pyFit's `[lint]` is a
+  contributor concern this book doesn't otherwise use.
 
 **The villainous example:** **The Proof-of-Concept Yurt** — `pylair -o
 poc-yurt -f 2 -r 1.0`, a tiny, unremarkable Class I dome, deliberately
-too small and plain to be anyone's actual secret lair. The point isn't the
-shape; it's proving the wiring works before anything ambitious is
-attempted.
+too small and plain to be anyone's actual secret lair, paired with a
+matching **Proof-of-Concept Nesting Job** — a `pyfit` job spec nesting
+nothing more ambitious than three identical unit-square placeholders onto a
+small sheet, deliberately too trivial to represent real fabrication work.
+The point of both isn't the shape or the layout; it's proving the wiring
+works, on both toolkits, before anything ambitious is attempted.
+
+**Images:**
+- A single conceptual diagram (purpose-drawn) of the three-step MCP
+  contract — client → launch command over stdio → tool discovery — labeled
+  generically so it visibly applies to every platform named in the chapter,
+  not just one.
+- A real preview render of the Proof-of-Concept Yurt (`pylair -P`) and a
+  real preview render of the Proof-of-Concept Nesting Job's single sheet
+  (`pyfit -P`), side by side as the chapter's "proof of life, and here's
+  what it looked like" pair.
 
 **Gotchas & rationale:**
-- The CLI and the MCP server share one validation engine
-  (`pylair/api.py:validate_geometry_params`) — demonstrated live by
-  triggering the same error (an invalid Class II odd frequency) through
-  both interfaces and getting the identical message back, proof this isn't
-  two implementations that happen to agree today.
-- A live, narrated example of a real class of MCP install failure: a
-  subprocess launched by a bare command name can fail to find `pylair-mcp`
-  if it doesn't inherit the parent process's activated-environment `PATH`
-  — fixed by pointing the client config at the console script's absolute
-  path instead.
+- The CLI and the MCP server share one validation engine in each project
+  (`pylair/api.py:validate_geometry_params`; `pyfit/api.py:run_nest`/
+  `load_part`) — demonstrated live by triggering the same error (an invalid
+  Class II odd frequency for pyLair; a malformed job spec for pyFit)
+  through both interfaces of each project and getting the identical message
+  back, proof this isn't two implementations that happen to agree today.
+- A live, narrated example of a real class of MCP install failure, in the
+  same voice as the Omen book's own Chapter 2: a subprocess launched by a
+  bare command name can fail to find `pylair-mcp` or `pyfit-mcp` if it
+  doesn't inherit the parent process's activated-environment `PATH` — fixed
+  by pointing the client config at each console script's absolute path
+  instead. Shown once, explicitly, as applying identically to both servers,
+  rather than narrated twice.
+- Neither `pylair-mcp` nor `pyfit-mcp` has a published release supporting
+  Python 3.9 (both projects pin `mcp<2.0` for the same reason: `mcp` 2.0.0
+  removed `mcp.server.fastmcp` entirely, which both servers' `FastMCP`/
+  `Image` imports depend on) — worth knowing before setting up a CI matrix
+  or an older interpreter and wondering why the `mcp` extra alone refuses to
+  install.
+- OpenClaw's two skills for these projects are genuinely *not* symmetric in
+  file layout, and a reader who copies pyLair's flat `SKILL.md`-at-root
+  pattern for pyFit will find nothing gets discovered: pyFit's skill lives
+  nested at `skills/pyfit/SKILL.md` specifically so its
+  `openclaw.config.snippet.jsonc` can point `skills.load.extraDirs` at a
+  whole `skills/` directory rather than the repo root itself — a small,
+  real difference worth checking explicitly rather than assuming the two
+  projects mirror each other exactly.
+- Neither skill needs an API key or environment variable — both gate purely
+  on their respective CLI binary (`pylair`, `pyfit`) being on `PATH` via
+  each `SKILL.md`'s `metadata.openclaw.requires.bins`, so "the skill didn't
+  show up" almost always means "the CLI itself isn't installed or isn't on
+  `PATH` yet," not a configuration problem in the skill file itself.
 
 **Sample prompts:**
-- "Confirm the pyLair MCP server is running and list every tool it
-  exposes."
-- "Run `design_dome` on the smallest, cheapest configuration you can, just
-  to prove the connection works end to end."
+- "Confirm both the pyLair and pyFit MCP servers are running and list every
+  tool each one exposes."
+- "Run `design_dome` on the smallest, cheapest configuration you can, then
+  run `design_nest` on three placeholder squares, just to prove both
+  connections work end to end."
 
 ---
 
@@ -217,7 +399,7 @@ icosahedron (20 faces, 12 vertices) versus the octahedron (8 faces, 6
 vertices) as pyLair's two starting points, and how that choice ripples
 through every later vertex/face count.
 
-**pyLair interfaces used:** `-p/--polyhedron`, `pylair.polyhedral.Icosahedron`
+**pyLair/pyFit interfaces used:** `-p/--polyhedron`, `pylair.polyhedral.Icosahedron`
 / `Octahedron`.
 
 **Learning objectives:**
@@ -238,6 +420,11 @@ here specifically for base-polyhedron choice: an icosahedron's already-flatter
 near-equatorial ring of vertices turns out to matter once Chapter 9 needs to
 truncate this exact shape for a pressure-symmetric hull.
 
+**Images:**
+- A side-by-side pair (real `-P/--preview` renders): a bare icosahedron and
+  a bare octahedron at the same scale, so the vertex/face-count contrast is
+  visible, not just tabulated.
+
 **Gotchas & rationale:**
 - The two base polyhedra are not interchangeable at "the same" frequency —
   an octahedron-based Class I dome at frequency `f` has `8f²` faces where
@@ -247,9 +434,8 @@ truncate this exact shape for a pressure-symmetric hull.
 - pyLair's internal indexing is 0-indexed throughout — worth mentioning
   here as a "boring but real" note, since an earlier version of the
   codebase numbered vertices 1-indexed and subtracted 1 at every point of
-  use, a class of bug this book will return to in Part VI as an example of
-  why "modernize it if you're in the area" is real, standing engineering
-  guidance in this codebase (`AGENTS.md`), not just a stylistic nicety.
+  use, a real historical footgun documented in `AGENTS.md`'s standing
+  guidance to modernize such holdovers on sight rather than leave them be.
 
 **Sample prompts:**
 - "Using `design_dome`, compare an icosahedron and an octahedron at the
@@ -267,7 +453,7 @@ and the Class I ("Alternate") method's grid, drawn parallel to each face's
 own edges, as the simplest case to build intuition on before Classes II and
 III complicate it.
 
-**pyLair interfaces used:** default `-c 1`,
+**pyLair/pyFit interfaces used:** default `-c 1`,
 `pylair.symmetry_triangle.ClassOneMethodOneSymmetryTriangle`.
 
 **Learning objectives:**
@@ -283,11 +469,22 @@ III complicate it.
 introduced here at a modest frequency purely to establish its baseline
 shape, before Part III starts reshaping it.
 
+**Images:**
+- A real, purpose-drawn diagram of one bare, unreplicated Class I symmetry
+  triangle (the grid, drawn parallel to the face's own edges) before it's
+  copied onto the rest of the polyhedron — the first of the book's three
+  required per-class symmetry-triangle images (see Chapters 5 and 6 for the
+  other two, and the front-matter image note for how this is drawn
+  consistently across all three).
+- A real `-P/--preview` render of the fully replicated Class I sphere at a
+  frequency high enough to look genuinely dome-like.
+
 **Gotchas & rationale:**
 - Chord/vertex counts grow with the *square* of frequency, not linearly — a
   reader doubling frequency expecting roughly double the strut count will
   instead get roughly four times as many, with real consequences for
-  fabrication time and file size at high frequency.
+  fabrication time and file size at high frequency (and, as Part VI will
+  show, for how long a nesting job takes to pack).
 - The default vertex-deduplication threshold (`-v`, `1e-7`) is tuned for
   the default unit radius; a reader who scales `-r` up or down by orders of
   magnitude without adjusting `-v` proportionally can end up with either
@@ -310,7 +507,7 @@ subdivides those — as a genuinely different construction, not just a
 different-looking grid; the real historical bug this construction exposed
 in an earlier version of pyLair, and how Euler's formula caught it.
 
-**pyLair interfaces used:** `-c 2`, `pylair.polyhedral.build_lcd_faces`,
+**pyLair/pyFit interfaces used:** `-c 2`, `pylair.polyhedral.build_lcd_faces`,
 `pylair.symmetry_triangle.ClassTwoMethodOneSymmetryTriangle`.
 
 **Learning objectives:**
@@ -329,6 +526,16 @@ in an earlier version of pyLair, and how Euler's formula caught it.
 **The villainous example:** Continues **The Actual Secret Lair**, rebuilt
 at the same nominal frequency under Class II for direct visual/structural
 comparison against Chapter 4's Class I version.
+
+**Images:**
+- A real, purpose-drawn diagram of one bare Class II symmetry construction
+  — a single polyhedron face first split into its 6 LCD sub-triangles
+  around the centroid, then one of those sub-triangles' own frequency grid
+  shown — the second of the book's three required per-class symmetry-
+  triangle images.
+- A real `-P/--preview` side-by-side of the Actual Secret Lair under Class I
+  (reused from Chapter 4) versus Class II at the same nominal frequency, so
+  the visibly different strut pattern is immediate, not just described.
 
 **Gotchas & rationale:**
 - The real, documented bug: an earlier `ClassTwoMethodOneSymmetryTriangle`
@@ -353,22 +560,42 @@ comparison against Chapter 4's Class I version.
 
 ### Chapter 6: Class III — Going Chiral
 
-**Concept(s) taught:** The Class III ("Skew") method's angled grid as a
-genuinely chiral construction — `(m,n)` and `(n,m)` are mirror-image domes
-of the same size, not the same dome rotated — introduced via the
-Caspar-Klug/Goldberg-Coxeter `T = m² + mn + n²` triangulation number that
-all three of pyLair's subdivision classes turn out to be special cases of.
+**Concept(s) taught:** **A formal definition of chirality**, established
+here before anything else in the chapter: a shape is chiral if it cannot be
+superimposed on its own mirror image by any combination of rotation and
+translation alone — a left hand and a right hand are the textbook example,
+identical in every measurable length and angle, and still not
+interchangeable without literally reflecting one of them through a plane.
+The Class III ("Skew") method's angled grid as a genuinely chiral
+construction — `(m,n)` and `(n,m)` are mirror-image domes of the same size,
+not the same dome rotated, which is exactly the left-hand/right-hand
+relationship applied to an entire strut pattern — introduced via the
+Caspar-Klug/Goldberg-Coxeter `T = m² + mn + n²` triangulation number that all
+three of pyLair's subdivision classes turn out to be special cases of
+(`m=n` recovers Class II; `n=0` recovers Class I).
 
-**pyLair interfaces used:** `-c 3 -n`, `pylair.class_three.py`
+**pyLair/pyFit interfaces used:** `-c 3 -n`, `pylair.class_three.py`
 (`cross_face_matches`, `local_priority`), `pylair.geodesic_sphere.GeodesicSphere`.
 
 **Learning objectives:**
+- State the definition of chirality precisely enough to apply it outside
+  this book — "cannot be superimposed on its mirror image by rotation and
+  translation alone" — and recognize *why* Class I and Class II domes are
+  each achiral (both have at least one mirror-symmetric construction, so
+  their own mirror image is just a rotation of themselves) while a Class
+  III dome with `m≠n` genuinely is not.
 - State what makes `(m,n)` and `(n,m)` genuinely different physical strut
   patterns rather than the same dome viewed differently, and choose between
   them deliberately rather than arbitrarily.
-- Explain, at a conceptual level, why a chiral lattice can't be stitched
-  together across adjacent polyhedron faces by 3D proximity alone the way
-  Class I and Class II can.
+- Explain why chirality matters practically, not just mathematically, for
+  geodesic design: a chiral lattice can't be stitched together across
+  adjacent polyhedron faces by 3D proximity alone the way Class I and Class
+  II can (no reflection symmetry means a point near a face's edge generally
+  doesn't land at the same 3D position when computed independently from a
+  neighboring face's own basis), and — looking ahead to Chapters 14 and
+  20 — it means some of a chiral dome's own *panels* can be mirror images of
+  each other despite reporting identical edge lengths, a fact that will
+  matter again once those panels need to be cut from directional material.
 - Read the Class III golden-value formula (`10T+2` vertices, `20T` faces,
   where `T = m²+mn+n²`) and connect it back to Chapter 4/5's formulas as
   instances of the same general family.
@@ -377,6 +604,18 @@ all three of pyLair's subdivision classes turn out to be special cases of.
 choice — Class III, `(m,n)` chosen deliberately over its mirror `(n,m)` for
 a specific strut-pattern aesthetic, carried forward as the flagship shape
 for the rest of the book.
+
+**Images:**
+- A real, purpose-drawn diagram of one bare Class III symmetry construction
+  — the angled grid, at a deliberately non-square `(m,n)` — the third of the
+  book's three required per-class symmetry-triangle images, drawn so its
+  angled grid contrasts visually against Chapter 4's parallel-to-edges grid
+  and Chapter 5's centroid-radiating one.
+- A purpose-drawn `(m,n)` vs. `(n,m)` mirror-pair diagram — two symmetry
+  triangles, same `T`, drawn side by side so the reflection relationship is
+  immediately visible rather than only algebraic — this book's single most
+  important chirality illustration, referenced again in Chapters 14 and 20.
+- A real `-P/--preview` render of the full Class III Actual Secret Lair.
 
 **Gotchas & rationale:**
 - The real, documented bug, told as a full story: a first Class III
@@ -396,12 +635,22 @@ for the rest of the book.
   library bit-for-bit (mean-normalized edge-length distributions matching
   to `1e-15`) across several `(m,n)` pairs on both base polyhedra, not
   trusted on the strength of the golden-value counts alone.
+- A subtlety worth stating precisely: `(m,n)` and `(n,m)` produce the *same*
+  total strut length and the *same* vertex/edge/face counts (both share the
+  same `T = m²+mn+n²`), because mirroring a shape never changes its lengths
+  or angles — only its handedness. A reader checking "did I get the mirror
+  image" by comparing golden-value counts alone will find no difference at
+  all; only a direct geometric comparison (or the chirality flag Chapters 14
+  and 20 introduce) actually distinguishes them.
 
 **Sample prompts:**
 - "Build a Class III dome with `f=4, n=1`. Then build one with `f=1, n=4`.
-  Are these the same dome, or mirror images?"
+  Are these the same dome, or mirror images? Do their vertex/edge/face
+  counts actually differ?"
 - "Why can't Class III rely on the same vertex-deduplication-by-distance
   trick that Class I and II use across face boundaries?"
+- "In your own words, define chirality — then explain why an achiral Class
+  I dome has no equivalent of this `(m,n)`/`(n,m)` distinction at all."
 
 ---
 
@@ -413,7 +662,7 @@ actual sphere of the requested radius, while deduplicating vertices shared
 along adjacent-face edges — and the KD-tree as the practical tool that
 makes that deduplication scale.
 
-**pyLair interfaces used:** `pylair.geodesic_sphere.GeodesicSphere`
+**pyLair/pyFit interfaces used:** `pylair.geodesic_sphere.GeodesicSphere`
 (`.project_onto_sphere()`, `.locate_duplicate_vertices()`,
 `.remove_duplicate_chords()`), `-v/--vthreshold`.
 
@@ -429,6 +678,14 @@ makes that deduplication scale.
 **The villainous example:** Continues **The Actual Secret Lair**,
 specifically at a high enough frequency that an all-pairs vertex comparison
 would visibly slow down, motivating the KD-tree without hand-waving.
+
+**Images:**
+- A purpose-drawn before/after pair: the flat, unprojected symmetry-grid
+  faces (reusing the same rendering convention as Chapters 4–6's bare
+  symmetry-triangle diagrams) next to the same points pushed outward onto a
+  sphere — the "flat, then push outward" idea shown, not just narrated.
+- A real `-P/--preview` render of the fully projected sphere at high
+  frequency.
 
 **Gotchas & rationale:**
 - Class III supplies its own combinatorial cross-face matches (Chapter 6)
@@ -458,7 +715,7 @@ every downstream angle calculation has to use the *true* ellipsoid surface
 normal (the gradient of the ellipsoid equation) rather than naively
 treating a vertex's position vector as its own normal.
 
-**pyLair interfaces used:** `-e`, `pylair.elongation.elongate()`.
+**pyLair/pyFit interfaces used:** `-e`, `pylair.elongation.elongate()`.
 
 **Learning objectives:**
 - Apply independent X/Y/Z elongation factors to raise ceiling height,
@@ -475,6 +732,15 @@ here elongated slightly *inward* along Z (a gentle squash, `"1.0,1.0,0.9"`)
 for pressure-symmetric hull reasons, contrasted directly against **The
 Actual Secret Lair**'s opposite choice: stretched upward
 (`"1.0,1.0,1.8"`) purely for headroom.
+
+**Images:**
+- A real `-P/--preview` triptych: the unelongated sphere, the
+  Under-the-Ocean Prototype's gentle squash, and the Actual Secret Lair's
+  upward stretch, all at the same base frequency so only the elongation
+  ratio differs visually.
+- pyLair's existing `blog-posts/ellipsoid.png` (real prior output), reused
+  as a second, independently-produced reference for the general-ellipsoid
+  shape.
 
 **Gotchas & rationale:**
 - A real, verifiable formula check: pyLair's true-ellipsoid-normal
@@ -504,7 +770,7 @@ multi-axis truncation (X, then Y, then Z) and why each axis's cutoff is
 computed against that axis's *already-trimmed* range, not the original
 sphere's.
 
-**pyLair interfaces used:** `-t/-x/-y`, `pylair.truncation.truncate()`.
+**pyLair/pyFit interfaces used:** `-t/-x/-y`, `pylair.truncation.truncate()`.
 
 **Learning objectives:**
 - Truncate along a single axis and explain what the cutoff fraction
@@ -520,6 +786,14 @@ sphere's.
 along Z at `0.499999` for a ground-flush floor, exactly the documented safe
 default and exactly why that specific number, not a rounder one, is
 recommended.
+
+**Images:**
+- pyLair's existing `blog-posts/edited_truncated.png` and
+  `blog-posts/truncated_qcad_focused.png` (real prior output), reused as
+  the "here's a correctly truncated dome" reference.
+- A purpose-drawn diagram contrasting a safe cutoff (`0.499999`, clear of
+  the vertex ring) against an unsafe one (`0.5` exactly, landing on it) —
+  the flat-chord failure shown geometrically, not just described.
 
 **Gotchas & rationale:**
 - **The flat-chord failure, reproduced live:** a truncation cutoff landing
@@ -551,7 +825,7 @@ original triangle's corner is clipped — being split into two triangles
 along a diagonal seam, and what "correctly account for that seam" actually
 requires.
 
-**pyLair interfaces used:** `-F/--face`, `-s/--stl`, `-O/--obj`,
+**pyLair/pyFit interfaces used:** `-F/--face`, `-s/--stl`, `-O/--obj`,
 `-T/--face-templates`; the same `truncate()` face-clipping path as Chapter
 9.
 
@@ -573,6 +847,13 @@ truncated on 2+ axes through the same original triangle specifically to
 produce this exact case, so the diagonal seam shows up honestly in the
 data rather than as a contrived example.
 
+**Images:**
+- A purpose-drawn close-up diagram of a single clipped triangle's corner
+  becoming a quad, then that quad split into two triangles along its new
+  diagonal seam — a magnified, single-panel version of the whole-dome
+  renders elsewhere in the book, since this is a detail no whole-dome
+  wireframe shows clearly at normal scale.
+
 **Gotchas & rationale:**
 - **A real, corrected piece of this project's own history, told straight:**
   this diagonal was originally a data-format-only seam — real for area/
@@ -580,11 +861,10 @@ data rather than as a contrived example.
   got no strut length and no bevel angle in the report. A later change
   (`pylair`'s `26de45e` commit) made `_clip_face` report it as a genuine
   new chord, so it now flows through the same strut/BOM/bevel-angle
-  machinery as any other edge — and this book's own outline process is
-  what caught a stale blog post still describing the *old*, pre-fix
-  behavior as an open problem (see Chapter 20), which is as good a
-  real-world argument for keeping documentation and code in sync as this
-  project has.
+  machinery as any other edge — a good real-world argument, on its own,
+  for keeping a project's documentation and its code in sync, since a
+  companion blog post once kept describing this exact case as an open
+  problem after the fix had already shipped.
 - Sequential multi-axis truncation composes correctly across this exact
   case too: each axis's `truncate()` call computes crossing points fresh
   from whatever geometry the previous axis's call produced, including any
@@ -613,7 +893,7 @@ lengths internally consistent) and what it flatly does not (whether any of
 this survives contact with real water pressure, vacuum, magma, or a
 building inspector).
 
-**pyLair interfaces used:** `design_dome` and `preview_dome` for rapid
+**pyLair/pyFit interfaces used:** `design_dome` and `preview_dome` for rapid
 comparison-shopping across configurations; `-p/--polyhedron`, `-c/--class`,
 `-e/--elongation`, `-t/-x/-y` truncation, and `-w/--panel-density`/
 `-a/--area-cost` for the material-budget side of each environment's
@@ -680,6 +960,15 @@ stop reusing the same design lens on a different environment:
   truncation — is exactly as usable for a modest home addition as for a
   volcano lair.
 
+**Images:**
+- One real `-P/--preview` render per stop (six total: Under-the-Ocean,
+  Orbital Panopticon, Magma Redoubt, Permafrost Cache, Ostentatious Mesa
+  Spire, and the studio-apartment coda) — a genuine visual gallery, since
+  this chapter's whole premise is comparison-shopping between silhouettes.
+- A single comparison chart (purpose-drawn) plotting each stop's footprint
+  diameter against its total strut length/cost, so the material-budget
+  tradeoff the chapter discusses is visible as data, not just prose.
+
 **Gotchas & rationale:**
 - **pyLair's truncation is always an axis-aligned plane, never a
   terrain-conforming surface.** The Magma Redoubt's caldera rim, in
@@ -738,7 +1027,7 @@ given strut) and spoke angle (how far around the hub each strut sits
 relative to a chosen reference strut) — as together sufficient to fabricate
 every joint in the structure.
 
-**pyLair interfaces used:** `get_bill_of_materials` /
+**pyLair/pyFit interfaces used:** `get_bill_of_materials` /
 `pylair.bill_of_materials.compute_dihedral_angles`,
 `compute_spoke_angles`, `compute_hub_data`.
 
@@ -754,6 +1043,15 @@ every joint in the structure.
 **The villainous example:** Continues **The Actual Secret Lair**, now
 elongated *and* truncated (Chapters 8–10 combined), specifically so its hub
 angles reflect the true ellipsoid normal, not the simpler sphere case.
+
+**Images:**
+- pyLair's existing `blog-posts/tangent_angle_image_CROPPED.png` and
+  `blog-posts/spoke_angle_image_CROPPED.png` (real prior diagrams), reused
+  as the canonical illustration of each angle type.
+- pyLair's existing `blog-posts/STDOUT_tangent_angles.png` and
+  `blog-posts/STDOUT_spoke_angles.png` (real prior terminal output), reused
+  to show these angles as they actually appear in a report, not just as
+  geometry diagrams.
 
 **Gotchas & rationale:**
 - A hub's spoke angles are relative to an arbitrarily *chosen* reference
@@ -779,7 +1077,7 @@ by *clustering* their lengths rather than independently rounding each one;
 at once (display precision and merge granularity) and why that dual role
 is a deliberate, if slightly surprising, design choice.
 
-**pyLair interfaces used:** `-b/--bom-rounding`,
+**pyLair/pyFit interfaces used:** `-b/--bom-rounding`,
 `pylair.bill_of_materials` chord-clustering logic.
 
 **Learning objectives:**
@@ -797,6 +1095,11 @@ is a deliberate, if slightly surprising, design choice.
 enough frequency that its strut-length list is long enough for merge
 granularity to actually matter, contrasted against a deliberately
 lowered `-b` to show real strut lengths merging that shouldn't have.
+
+**Images:**
+- A purpose-drawn bar chart of strut-length groups at the default `-b 9`
+  next to the same data re-clustered at a deliberately coarse `-b 2`,
+  visually showing distinct bars collapsing into one.
 
 **Gotchas & rationale:**
 - The documented default (`-b 9`) stays exact — no unintended merging — at
@@ -820,27 +1123,39 @@ lowered `-b` to show real strut lengths merging that shouldn't have.
 **Concept(s) taught:** Grouping triangular panels by their 3 edge lengths
 (SSS) the same way struts are grouped by length; the specific ambiguity
 this creates — two panels with identical edge lengths can still be mirror
-images of each other, not true duplicates — and why that matters for
-directional materials.
+images of each other, not true duplicates, exactly Chapter 6's chirality
+definition applied to a single flat triangle instead of a whole dome — and
+why that matters for directional materials.
 
-**pyLair interfaces used:** `pylair.bill_of_materials.group_face_types`,
+**pyLair/pyFit interfaces used:** `pylair.bill_of_materials.group_face_types`,
 `_face_type_signature`, `_face_chirality_key`.
 
 **Learning objectives:**
 - Group a dome's faces into shape "types" by edge length and read the
   reported panel counts per type.
 - Explain why SSS grouping alone can't distinguish a triangle from its
-  mirror image, and check a group's `chiral` flag and orientation
-  breakdown before ordering directional material.
+  mirror image — applying Chapter 6's chirality definition at the scale of
+  a single flat panel rather than an entire strut lattice — and check a
+  group's `chiral` flag and orientation breakdown before ordering
+  directional material.
 - Recognize that this is a *structurally common* case, not a rare
   edge case exclusive to Class III's inherently chiral construction — it
   shows up on ordinary Class I domes too, once elongation or truncation is
   in play.
+- Preview why this same flag matters again in Part VI: pyFit's own
+  `allow_mirror` job-spec field is this exact chirality question, asked one
+  more time at nesting time rather than design time.
 
 **The villainous example:** Continues **The Actual Secret Lair** — its
 panel report is checked specifically for mirror-image pairs, framed as "you
 were about to order wood-grain paneling; here's what would have gone wrong
 without this check."
+
+**Images:**
+- A purpose-drawn pair of triangles: identical edge-length labels, opposite
+  orientation, laid side by side (a flat-panel companion to Chapter 6's
+  whole-dome `(m,n)`/`(n,m)` mirror-pair diagram) — the chapter's central
+  illustration.
 
 **Gotchas & rationale:**
 - A worked, real example where two panels report identical edge-length
@@ -866,9 +1181,12 @@ without this check."
 connectors (`-H`) and panels (`-T`) — grouping by a genuine geometric
 signature (valence and the cyclic pattern of angular gaps, or edge lengths)
 rather than by symmetry-group membership — so the reader gets one DXF
-template per truly distinct shape, not one per hub/panel instance.
+template per truly distinct shape, not one per hub/panel instance. This
+chapter's `-T/--face-templates` output is also this book's bridge into Part
+VI: every DXF file it writes is exactly the kind of file a pyFit job spec's
+`"dxf"` field expects.
 
-**pyLair interfaces used:** `-H/--hub-templates`, `-T/--face-templates`,
+**pyLair/pyFit interfaces used:** `-H/--hub-templates`, `-T/--face-templates`,
 `pylair.bill_of_materials.group_hub_types`, `_hub_type_signature`.
 
 **Learning objectives:**
@@ -881,10 +1199,19 @@ template per truly distinct shape, not one per hub/panel instance.
   template.
 - Recognize the specific floating-point noise floor this clustering has to
   tolerate, and why the tolerance is tuned where it is.
+- State, in one sentence, what a template count and a `panel_count` per
+  shape group *don't yet* answer — how many sheets of material it will
+  take to actually cut them all out — as the open question Part VI exists
+  to close.
 
 **The villainous example:** Continues **The Actual Secret Lair**, generating
 its full set of hub and panel templates as the payoff for four chapters of
 geometry work.
+
+**Images:**
+- A real DXF-derived render of a handful of distinct panel cutting
+  templates side by side (shape only, not yet nested on any sheet — Part VI
+  is where that happens).
 
 **Gotchas & rationale:**
 - **A real, empirically-tuned number, explained rather than just stated:**
@@ -897,7 +1224,7 @@ geometry work.
   suspiciously large template count is told, explicitly, to suspect this
   noise floor first.
 - Panel templates cover both orientations of a shape in one file (Chapter
-  13's chirality point, paid off here concretely) — `-T` writes one file
+  14's chirality point, paid off here concretely) — `-T` writes one file
   per shape group, never per orientation.
 
 **Sample prompts:**
@@ -916,7 +1243,7 @@ but practically useless slivers — a chord shortened to near-zero length, or
 a panel clipped to a near-zero-area triangle — and why pyLair flags rather
 than drops them.
 
-**pyLair interfaces used:** the `Possible truncation-artifact
+**pyLair/pyFit interfaces used:** the `Possible truncation-artifact
 chords`/`panels` sections of the `get_bill_of_materials` report.
 
 **Learning objectives:**
@@ -935,6 +1262,11 @@ chords`/`panels` sections of the `get_bill_of_materials` report.
 deliberately truncated at an unsafe near-vertex-ring cutoff to provoke real
 sliver artifacts on purpose, then re-cut at the documented safe value for
 comparison.
+
+**Images:**
+- A purpose-drawn close-up of a single sliver panel next to a normal panel
+  at the same scale, so the near-zero-area case is visually obvious rather
+  than only a suspiciously small number in a table.
 
 **Gotchas & rationale:**
 - Nothing crashes when a sliver appears — the geometry is mathematically
@@ -955,31 +1287,38 @@ comparison.
 
 ---
 
-## Part V — Output, Interfaces, and Agentic Use
+## Part V — Output, Interfaces, and Agentic Use (pyLair)
 
 ### Chapter 17: Getting It Out the Door — DXF, VRML, STL, OBJ
 
 **Concept(s) taught:** pyLair's export formats and what each is actually
-for — DXF for CAD import, VRML for 3D display, STL/OBJ for 3D printing —
-and how face-aware truncation (Part III) is the prerequisite that makes the
-face-dependent formats (`-F`, `-s`, `-O`) work correctly on a truncated
-dome at all.
+for — DXF for CAD import (and, as Part VI will show, for pyFit nesting),
+VRML for 3D display, STL/OBJ for 3D printing — and how face-aware
+truncation (Part III) is the prerequisite that makes the face-dependent
+formats (`-F`, `-s`, `-O`) work correctly on a truncated dome at all.
 
-**pyLair interfaces used:** default DXF/VRML output, `-F/--face`,
+**pyLair/pyFit interfaces used:** default DXF/VRML output, `-F/--face`,
 `-s/--stl`, `-O/--obj`, `-P/--preview`,
 `pylair.output.OutputDXF/OutputFaceVRML/OutputSTL/OutputOBJ`.
 
 **Learning objectives:**
 - Choose the right export format(s) for a given downstream use (CAD
-  import, quick visual sanity check, 3D-printed scale model).
+  import, quick visual sanity check, 3D-printed scale model, and — new as
+  of this chapter — feeding a pyFit nesting job).
 - Explain why `-F/--face` skips DXF entirely in favor of face-inclusive
-  VRML, and plan a workflow that gets both a wireframe DXF *and* face-based
-  files from the same design.
+  VRML, but why `-T/--face-templates` (Chapter 15) still writes its own
+  per-shape DXF files regardless — those, not the whole-dome VRML, are
+  what Part VI's nesting job actually needs.
 - Generate a preview PNG (`-P`) as a fast sanity check before committing to
   a full multi-format export.
 
 **The villainous example:** **The Actual Secret Lair**'s full export — the
 payoff of Parts II–IV, written out in every format at once.
+
+**Images:**
+- pyLair's existing `blog-posts/CAD_dome.jpg` and `sample_image.png` (real
+  prior CAD-import screenshots), reused as the "here's what a DXF import
+  actually looks like" reference.
 
 **Gotchas & rationale:**
 - `-F`, `-s`, `-O`, `-T`, `-a`, `-w` all require face data, and — thanks to
@@ -1009,8 +1348,8 @@ commitment — built for the iterate-then-commit workflow the blog post
 describes as "try a shape, look at it, check what it costs, adjust, and
 only export once it's actually right."
 
-**pyLair interfaces used:** all four MCP tools, each sharing the one
-geometry parameter schema described in `README.md`.
+**pyLair/pyFit interfaces used:** all four pyLair MCP tools, each sharing
+the one geometry parameter schema described in `README.md`.
 
 **Learning objectives:**
 - Use `design_dome` to cheaply try several configurations (frequency, class,
@@ -1028,6 +1367,10 @@ trying different frequency/truncation combinations, one `preview_dome`
 check, one `get_bill_of_materials` cost interrogation, and finally one
 `export_dome` call — the same shape Chapter 17 exported, but shown here as
 a *process*, not a single command.
+
+**Images:** None new — this chapter is a narrated tool-call session, and
+reuses the preview images already generated in earlier chapters as its
+inline "here's what came back" figures.
 
 **Gotchas & rationale:**
 - All four tools enforce the exact same validation rules as the CLI,
@@ -1048,31 +1391,286 @@ a *process*, not a single command.
 
 ---
 
-### Chapter 19: Prompting pyLair Like You Mean It
+## Part VI — From Panels to Sheets: Nesting with pyFit
 
-**Concept(s) taught:** Practical prompt craft for pyLair's four-tool
+### Chapter 19: Introducing pyFit — Nesting as a Second Geometry Problem
+
+**Concept(s) taught:** pyFit as a genuinely standalone project — no code
+dependency on pyLair whatsoever, just a shared file format (DXF) — that
+solves a different, and differently hard, geometry problem: given a set of
+2D shapes and how many of each you need, arrange them on rectangular sheet
+stock with minimal wasted material. The **no-fit-polygon (NFP)**: the
+region a moving shape's reference point must stay outside of to avoid
+overlapping a fixed shape, computed via a Minkowski-sum technique; the
+**bottom-left-fill heuristic** built on top of it (largest parts first, try
+a range of rotation/mirror orientations, pick the leftmost-then-bottommost
+legal placement); and why this is fundamentally a *combinatorial*, NP-hard
+problem in a way pyLair's own geometry (closed-form, once you know the
+formula) never was — meaning pyFit's own correctness story is "a good
+heuristic, honestly verified," not "the provably optimal layout."
+
+**pyLair/pyFit interfaces used:** `pip install "pyfit-agentic-polygon-nesting[mcp]"`,
+`pyfit -j job.json -o output/nest`, `pyfit.nfp`, `pyfit.packer.pack`.
+
+**Learning objectives:**
+- Explain what a no-fit-polygon is and why the NFP of two unit squares
+  being exactly a 2×2 square centered at the origin is a hand-checkable
+  sanity case worth knowing, not an arbitrary example.
+- Describe the bottom-left-fill heuristic's basic loop (place the largest
+  remaining part, try a set of rotation angles and, unless
+  `allow_mirror` is false, mirrored orientations, pick the
+  leftmost-then-bottommost legal candidate) well enough to predict, roughly,
+  what order a job will place its parts in.
+- Explain why 2D irregular nesting is NP-hard, and what that implies about
+  pyFit's own honesty: it documents itself as a heuristic in the same
+  family as tools like SVGnest/DeepNest, not a globally optimal solver, and
+  never claims otherwise.
+- Recognize that pyFit is genuinely general-purpose — it will nest any set
+  of closed 2D polygons on any rectangular sheet, dome panels or otherwise.
+
+**The villainous example:** Two, deliberately: **a standalone, non-dome
+nesting job** — a batch of henchman-uniform patch blanks and throwing-star
+stencils, nested purely to prove pyFit owes nothing to pyLair and is happy
+nesting shapes that have nothing to do with a geodesic anything — followed
+by the chapter's real payoff, **the first real pyFit run on pyLair output**:
+a handful of the Actual Secret Lair's own panel-template DXF files
+(Chapter 15), nested for the first time, previewed inline, no files written
+yet.
+
+**Images:**
+- pyFit's existing `blog-posts/images/nest_sheet1_pylair_triangles.png`
+  (real prior output), reused as this Part's opening "here's the payoff"
+  image.
+- A purpose-drawn NFP construction diagram: two unit squares and the
+  resulting 2×2 no-fit-polygon, drawn as a hand-checkable geometric proof
+  rather than only stated as a formula.
+- A purpose-drawn bottom-left-fill placement-order diagram: a handful of
+  parts placed in sequence, each one's chosen "leftmost-then-bottommost"
+  point marked, so the heuristic's own logic is visible step by step.
+- A real `-P/--preview` render of the standalone patch/stencil nesting job.
+
+**Gotchas & rationale:**
+- **A real, documented Minkowski-sum bug, told straight, the same way this
+  book has told pyLair's own historical bugs:** `pyclipper.MinkowskiSum` on
+  a closed path doesn't return one resolved polygon — it returns raw sweep
+  contours, which for a small pattern swept around a larger path includes
+  an inner contour that *looks* like a hole but mathematically can't be one
+  (the Minkowski sum of two convex filled shapes is always itself convex).
+  The fix (`pyfit/nfp.py`) treats every returned contour as an independent
+  solid region and unions them via `shapely` rather than trusting Clipper's
+  own winding-direction-implied fill rule — and, just as importantly, this
+  bug passed a first hand-computable test case (two unit squares) cleanly;
+  it only showed up on a size-mismatched second case, which is this
+  chapter's own concrete argument for testing a geometric primitive against
+  more than one shape/size combination before trusting it.
+- **Candidate placement points aren't fully exhaustive, on purpose, and this
+  is stated as a scope decision, not a bug**: the search considers the
+  sheet's corners, every NFP vertex, and every NFP-vs-boundary and
+  NFP-vs-NFP crossing — enough to tile, say, six unit squares perfectly
+  onto a 3×2 sheet — but it isn't full NFP-boundary tracing, so it can
+  occasionally miss an even tighter placement. Every candidate is
+  re-validated for overlap/containment before acceptance, though, so this
+  can only produce a *non-optimal* placement, never an *invalid* one — the
+  same "wrong shape vs. wrong count" distinction Chapter 6 taught, one
+  problem domain over.
+
+**Sample prompts:**
+- "Explain, in your own words, why nesting a set of triangles onto plywood
+  is a harder problem than computing their shapes in the first place."
+- "Show me the no-fit-polygon of two unit squares. Does it match what you'd
+  expect by hand?"
+- "Nest this batch of patch/stencil blanks — nothing to do with any dome —
+  just to see pyFit work on its own terms first."
+
+---
+
+### Chapter 20: From Bill of Materials to Job Spec — Nesting the Actual Secret Lair's Panels
+
+**Concept(s) taught:** How a pyFit job spec is actually built from a real
+upstream bill of materials — pointing a `"dxf"` field at one of Chapter 15's
+`-T/--face-templates` output files and its `"quantity"` at that same shape
+group's reported `panel_count` — with zero code coupling between the two
+projects, just a shared, plain DXF file; **sheet utilization** as the
+metric that actually answers "how much material am I wasting"; and
+`allow_mirror` as Chapter 14's chirality flag, encountered again, now as a
+decision that changes what pyFit is *allowed to place*, not just what it
+reports.
+
+**pyLair/pyFit interfaces used:** a full pyFit job spec built from pyLair's
+own `-T` output and BOM `panel_count`s; `-R/--rotation-step`;
+`"allow_mirror"`; the utilization figures in `pyfit`'s JSON report.
+
+**Learning objectives:**
+- Construct a real job spec from a real bill of materials: one `"parts"`
+  entry per distinct panel shape group, `"dxf"` pointing at that group's
+  template file, `"quantity"` set from the group's `panel_count` — not
+  guessed, not hand-counted.
+- Read a per-sheet utilization figure and total sheet count, and connect
+  "how many sheets does this dome actually need" back to Chapter 4's own
+  point about frequency growing struts (and, now, panels) quadratically.
+- Decide `allow_mirror` correctly for a given material: `true` (the
+  default) for non-directional stock like plain plywood, `false` for
+  anything chirality-sensitive — directly reusing Chapter 14's `chiral`
+  flag and orientation breakdown as the actual basis for that decision,
+  rather than a guess.
+- Use `-R/--rotation-step` as the honest speed/quality tradeoff it is: a
+  finer step tries more orientations per candidate (better packing,
+  slower), a coarser one is faster at the cost of a somewhat looser layout
+  — the exact same kind of tradeoff Chapter 13's `-b/--bom-rounding`
+  taught, one problem domain over.
+
+**The villainous example:** Two nesting jobs, deliberately contrasted:
+**The Actual Secret Lair**'s panels, built from ordinary plywood
+(`allow_mirror: true`, since plain sheet stock has no grain direction to
+worry about) — the chapter's main worked example, going from BOM straight
+through to a multi-sheet cut plan; and **The Under-the-Ocean Prototype**'s
+panels, revisited specifically because Chapter 8 elongated it and Chapter
+14's chirality check flagged real mirror-image pairs among its panels —
+nested here with `allow_mirror: false`, because its hull uses a one-sided
+pressure coating, giving a real, previously-established reason (not an
+invented one) for the flag to matter and visibly change the resulting
+layout.
+
+**Images:**
+- A real `-P/--preview` render of the Actual Secret Lair's full multi-sheet
+  nesting result (one image per sheet actually used), annotated with each
+  sheet's reported utilization percentage.
+- A real `-P/--preview` comparison pair: the Under-the-Ocean Prototype's
+  panels nested with `allow_mirror: true` versus `allow_mirror: false` on
+  the same sheet, so the flag's practical effect on the layout is visible,
+  not just reported as a JSON field.
+
+**Gotchas & rationale:**
+- **Reusing scrap across sheets costs real search time on large jobs**,
+  documented plainly rather than hidden: every part instance tries each
+  already-opened sheet in turn before a new one opens, so leftover scrap
+  gets reused — measured, on a real 40-panel, 3-sheet job of small pyLair
+  triangles, at about 3x slower than no-reuse at the default rotation step,
+  but back to roughly the same speed at a coarser one. `-R/--rotation-step`
+  is the direct, honest lever for this tradeoff, the same way `-b` was
+  pyLair's own precision/merge lever in Chapter 13.
+- **Rectangular sheets only, and no support yet for irregular stock or
+  offcuts with existing cutouts** — a real, stated MVP scope cut, not an
+  oversight; a reader whose actual plywood has a chunk already missing from
+  a prior project has to account for that manually, the same honest
+  boundary Chapter 11 drew around pyLair's own terrain-agnostic truncation.
+- A subtlety worth stating precisely, echoing Chapter 6's own mirror-pair
+  gotcha: `allow_mirror: false` doesn't make a job spec *fail* — it simply
+  removes mirrored orientations from the candidate search, which can mean
+  more sheets, not an error, is the honest cost of chirality-correctness.
+
+**Sample prompts:**
+- "Build a pyFit job spec from this dome's face-template output and panel
+  counts directly — don't hand-type any quantities."
+- "Nest it once with mirroring allowed, once without. How much does
+  disallowing mirroring change the sheet count or utilization?"
+- "If packing feels slow on this many panels, what's the first setting
+  you'd loosen, and what do I give up by loosening it?"
+
+---
+
+### Chapter 21: Talking to pyFit — The Four MCP Tools, Progress Notifications, and a Combined Workflow
+
+**Concept(s) taught:** `design_nest`, `preview_nest`, `get_nest_report`, and
+`export_nest` as pyFit's own version of Chapter 18's four-tool
+iterate-then-commit pattern — cheap sanity check, visual check, full
+placement report, commitment — plus a genuinely new idea neither pyLair
+chapter needed: **MCP progress notifications** on a long-running call, and
+why that requires the nesting work to run in a worker thread rather than
+block the server's own event loop. The chapter closes by narrating one
+complete, combined pyLair-then-pyFit design session end to end.
+
+**pyLair/pyFit interfaces used:** all four pyFit MCP tools
+(`design_nest`/`preview_nest`/`get_nest_report`/`export_nest`); MCP progress
+notifications (a progress token from the calling client); the full
+pyLair→pyFit pipeline, both MCP interfaces used together in one narrated
+session.
+
+**Learning objectives:**
+- Use `design_nest` to cheaply try a job spec (sheets used, utilization) and
+  `preview_nest` to see the layout inline, before committing to
+  `export_nest`'s real DXF files — the exact same discipline Chapter 18
+  taught for pyLair's own four tools.
+- Explain why a *synchronous* MCP tool can never emit a progress
+  notification mid-call (it blocks the server's single event loop for its
+  entire duration), and why pyFit's tools are instead `async def`,
+  running the actual pack in a worker thread and bridging its progress
+  callback back onto the event loop — concretely, not just as a stated
+  fact: a real ~5.6s job produced roughly 33 progress notifications spread
+  across the whole call, not bunched at the end.
+- Narrate, end to end, one full design session spanning both toolkits: a
+  `design_dome`/`preview_dome` iteration loop (pyLair), a
+  `get_bill_of_materials` check and `-T` template export (pyLair), a
+  `design_nest`/`preview_nest` iteration loop built from those exact
+  templates (pyFit), and a final `export_nest` commitment — the complete
+  arc this book has been building toward since Chapter 1's cold open.
+
+**The villainous example:** **The Actual Secret Lair**'s complete
+design-to-cut-plan session, narrated as one continuous transcript across
+both MCP servers — the same dome Chapters 4–18 built, now actually ready
+for a henchman to load material into a laser cutter.
+
+**Images:** None new — this chapter's images are the narrated session's own
+inline tool outputs, reusing renders already produced in Chapters 18 and
+20.
+
+**Gotchas & rationale:**
+- All four pyFit tools enforce the exact same validation as its CLI,
+  because one engine (`pyfit/api.py`) underlies both interfaces — echoing
+  Chapter 18's identical point about pyLair, now demonstrated on the
+  nesting side: a malformed job spec or an out-of-range rotation step
+  raises the same clear error through `design_nest` as through the CLI.
+- With no progress token supplied (or when a tool function is called
+  directly, e.g. in a test), progress reporting is simply a no-op — a
+  reader building their own client doesn't need to opt into anything
+  special to get correct behavior either way.
+- `design_nest` and `get_nest_report` write no files at all, exactly
+  mirroring `design_dome`/`get_bill_of_materials`'s own file-free iteration
+  loop from Chapter 18 — the same "iterate freely, commit once" discipline,
+  taught once per toolkit rather than assumed to transfer automatically.
+
+**Sample prompts:**
+- "Try two different rotation steps for this nesting job using `design_nest`
+  only — don't write any files yet. Which one gives better utilization for
+  the time it takes?"
+- "Preview the nesting result, then get the full placement report before we
+  export any DXFs for real."
+- "Walk me through this entire dome, from picking a polyhedron to a
+  ready-to-cut sheet layout, as one continuous session."
+
+---
+
+## Part VII — Becoming a Better Design Villain
+
+### Chapter 22: Prompting pyLair and pyFit Like You Mean It
+
+**Concept(s) taught:** Practical prompt craft across a two-toolkit, eight-tool
 agentic interface: being specific about which tool's answer you actually
-want, carrying forward settled findings (a chosen frequency, a validated
-cutoff) instead of re-deriving them, and recognizing when a tool's own
-output is telling you something the prompt didn't ask for.
+want (and, now, which *toolkit's* — a geometry question and a nesting
+question are never the same question), carrying forward settled findings
+(a chosen frequency, a validated cutoff, a resolved `allow_mirror` choice)
+instead of re-deriving them, and recognizing when a tool's own output is
+telling you something the prompt didn't ask for.
 
-**pyLair interfaces used:** A deliberate mixed review across all four MCP
-tools plus the CLI.
+**pyLair/pyFit interfaces used:** A deliberate mixed review across all four
+pyLair MCP tools, all four pyFit MCP tools, and both CLIs.
 
 **Learning objectives:**
 - Write prompts that carry an earlier chapter's findings (a safe truncation
-  cutoff, a chosen subdivision class) into a later request, rather than
-  starting from scratch.
+  cutoff, a chosen subdivision class, a resolved chirality/`allow_mirror`
+  decision) into a later request, rather than starting from scratch.
 - Recognize the difference between a prompt that under-specifies (leading
   to arbitrary defaults) and one that over-specifies (defeating the point
   of asking an agent to reason at all).
-- Distinguish which of pyLair's four tools actually answers a given
-  real-world question, rather than guessing.
+- Distinguish which of pyLair's four tools, or pyFit's four tools, actually
+  answers a given real-world question, rather than guessing — and
+  recognize when a question ("is this design good enough to build")
+  secretly spans both toolkits at once.
 
 **The villainous example:** A "clinic" chapter, following the Omen book's
-own Chapter 20 pattern directly — three real submitted prompts, each with a
-real flaw, rewritten and explained, reusing dome designs this book has
-already built rather than introducing a new one.
+own prompting-clinic pattern directly — four real submitted prompts, each
+with a real flaw, rewritten and explained, reusing dome and nesting designs
+this book has already built rather than introducing new ones.
 
 **Gotchas & rationale:**
 - **Prompt one, too vague to carry anything forward:** *"Design me a
@@ -1101,221 +1699,150 @@ already built rather than introducing a new one.
   visual check (does it look like what was intended) — each answered by a
   different tool, and a plausible-sounding answer to the wrong one of the
   three is worse than an agent that asks which was meant.
+- **Prompt four, a two-toolkit question mistaken for a one-toolkit one:**
+  *"How much material will this dome actually cost me?"* — pyLair's own
+  `-a/--area-cost` answers the *theoretical* material cost (total panel
+  area times unit price, assuming zero waste), which is a genuinely
+  different, always-smaller number than the *real* cost once Part VI's
+  actual sheet utilization is accounted for. **Rewritten:** "Give me
+  pyLair's theoretical panel-area cost, then nest the actual templates with
+  `design_nest` and tell me the real sheet count and utilization — how far
+  apart are the two cost figures?" — the fix isn't a better single prompt,
+  it's recognizing the question needs both toolkits' tools, in sequence, to
+  actually answer honestly.
 
 **Sample prompts:**
 - (This chapter's exercises *are* prompt-rewriting exercises, matching the
-  Omen book's own Chapter 20 structure — readers draft, then critique,
-  their own.)
+  Omen book's own prompting-clinic structure — readers draft, then
+  critique, their own.)
 
 ---
 
-## Part VI — Keeping the Lair's Paperwork Honest
-
-### Chapter 20: When the Docs Lie — Catching Documentation Drift with a Knowledge Graph
-
-**Concept(s) taught:** README, blog post, and method-walkthrough
-documentation as independent artifacts that can silently drift out of sync
-with each other and with the code — and a knowledge-graph tool
-(`graphify`) as a concrete, general technique for catching that drift by
-surfacing an AMBIGUOUS edge between two contradictory claims, rather than
-relying on a human to notice by chance.
-
-**pyLair interfaces used:** None of pyLair's own — this chapter is about
-the surrounding agentic tooling (`/graphify`), applied to pyLair's own
-`README.md`/`blog-posts/` as the worked example.
-
-**Learning objectives:**
-- Explain what an EXTRACTED/INFERRED/AMBIGUOUS confidence label means on a
-  knowledge-graph edge, and why AMBIGUOUS is a feature (flag for review),
-  not a failure to classify.
-- Trace a flagged AMBIGUOUS edge back to its two source documents and
-  determine which one is actually current, using git history as the
-  tiebreaker.
-- Recognize this as a general pattern applicable to any project with more
-  than one place the same fact gets documented, not a pyLair-specific
-  trick.
-
-**The villainous example:** A real, previously-unresolved documentation bug
-in this exact repository: the blog post's own "Next Steps" section
-described the diagonal-seam chord from Chapter 10 as still unstrutted, an
-open problem — while `README.md`'s caveats section, updated by a later
-commit (`26de45e`, "Strut the diagonal seam left over from corner-clipped
-panels"), already documented it as fixed, shipped behavior. The two
-documents flatly disagreed.
-
-**Gotchas & rationale:**
-- This isn't a hypothetical for the outline — it's the real graph output
-  from running `/graphify` on this repository, which surfaced exactly this
-  contradiction as an AMBIGUOUS `references` edge between the two nodes,
-  with a specific confidence score reflecting genuine uncertainty about
-  which side was current.
-- The resolution required git history, not just re-reading the two
-  documents more carefully: `26de45e`'s commit date, cross-referenced
-  against when the blog post file was last substantively touched (as
-  opposed to a later project-rename commit that recreated it verbatim,
-  carrying the stale text forward unnoticed), was what actually settled
-  which document was telling the truth.
-
-**Sample prompts:**
-- "Run a knowledge-graph pass over this repository's docs. Does it flag any
-  contradictions between the README and the blog post?"
-- "For any AMBIGUOUS edge it finds, check git history for both source
-  files — which one is actually current?"
-
----
-
-### Chapter 21: Letting the Agent Write Your CI (Carefully)
-
-**Concept(s) taught:** An agent authoring a GitHub Actions pipeline as a
-genuine test of the pipeline's own honesty — not "does the YAML parse,"
-but "does it actually catch a real bug the author didn't know about yet" —
-using this project's own real CI-authoring session as the worked example.
-
-**pyLair interfaces used:** `pip install -e ".[test,mcp,verify]"` across a
-Python version matrix; none of pyLair's own tools directly.
-
-**Learning objectives:**
-- Explain why testing across multiple Python versions matters even for a
-  project with modest runtime dependencies, using a real example where it
-  wasn't obvious in advance.
-- Diagnose a CI failure by reading the actual installer error rather than
-  guessing, and distinguish "my code is wrong" from "my dependency
-  declaration is wrong."
-- Recognize verifying a CI fix *locally*, in a clean environment, before
-  re-pushing, as the same discipline Part II's geometry oracle checks
-  teach — don't trust a fix you haven't independently confirmed.
-
-**The villainous example:** No dome this time — the CI pipeline itself,
-treated as the exercise, using two real, documented bugs this exact
-project's CI run caught on its very first execution.
-
-**Gotchas & rationale:**
-- **Bug one, real and reproducible:** the `verify` extra's own declared
-  dependencies (`trimesh`, `ezdxf`) were incomplete — `trimesh`'s
-  `slice_mesh_plane` (used by `test_geometry_oracle.py`'s truncation
-  cross-checks) needs `shapely` as a transitive dependency that `trimesh`
-  itself doesn't pull in as a hard requirement, so `pip install -e
-  ".[verify]"` was silently missing a piece and 9 real tests failed with
-  `ModuleNotFoundError` until `shapely` was added to `pyproject.toml`'s
-  `verify` extra explicitly.
-- **Bug two, caught by the matrix itself:** the `mcp` package has no
-  published release supporting Python 3.9 — every version on PyPI requires
-  3.10+ — so a naive "install every extra on every supported Python
-  version" CI matrix failed outright on 3.9 with a real, unambiguous
-  installer error, fixed by scoping the `mcp` extra to Python 3.10+ in the
-  matrix while confirming `test`/`verify` still install cleanly on 3.9
-  first.
-- The general lesson, stated plainly: an agent-authored CI pipeline that
-  goes green on the *first* try, on a project that had never had one
-  before, is more likely to indicate an undertested pipeline than a
-  bug-free one — real coverage tends to find something.
-
-**Sample prompts:**
-- "Set up a CI matrix testing every supported Python version with every
-  optional extra installed. If any leg fails, show me the actual installer
-  error, not just 'it failed.'"
-- "Before trusting this fix, reproduce the original failure locally in a
-  clean environment first — does it actually fail the way CI said it
-  would?"
-
----
-
-### Chapter 22: When to Trust the Agent, and When Not To
+### Chapter 23: When to Trust the Agent, and When Not To
 
 **Concept(s) taught:** A retrospective, cross-cutting look at every
 deliberately rule-based or independently-verified decision point this book
-has encountered — golden-value formulas, the `antitile`/`trimesh`/`ezdxf`
-oracles, the flat-chord `ValueError`, the CI matrix's own real failures —
-generalized into a checklist readers can apply to their *own* geometry or
-agentic tools, not just pyLair.
+has encountered across *both* toolkits — pyLair's golden-value formulas,
+the `antitile`/`trimesh`/`ezdxf` oracles, the flat-chord `ValueError`; and
+pyFit's own NFP correctness story, verified against a hand-computable case
+and, once that proved insufficient on its own, a second independent
+method — generalized into a checklist readers can apply to their *own*
+geometry, nesting, or agentic tools, not just these two.
 
-**pyLair interfaces used:** None new — a synthesis chapter.
+**pyLair/pyFit interfaces used:** None new — a synthesis chapter.
 
 **Learning objectives:**
-- Articulate a general rule for "when does a geometric claim need
-  independent verification, not just internal self-consistency" and test
-  it against several examples from the book (Class II's Euler-formula
-  catch, Class III's antitile cross-check, the panel oracle's trimesh/ezdxf
-  round-trip).
-- Recognize the pattern in pyLair's own repeated use of *external,
-  independently-implemented* oracles — never validating its own math only
-  against itself — as evidence for that rule, not just this project's
-  arbitrary house style.
+- Articulate a general rule for "when does a geometric or combinatorial
+  claim need independent verification, not just internal self-consistency"
+  and test it against several examples from the book (Class II's
+  Euler-formula catch, Class III's antitile cross-check, the panel oracle's
+  trimesh/ezdxf round-trip, and pyFit's own Minkowski-sum union fix).
+- Recognize the pattern in both toolkits' repeated use of *external,
+  independently-implemented* oracles or hand-checkable cases — never
+  validating their own math only against themselves — as evidence for that
+  rule, not just one project's arbitrary house style.
+- Contrast pyLair's closed-form correctness story (a subdivision either
+  matches its known golden-value formula or it doesn't) against pyFit's
+  honestly probabilistic one (a heuristic that's correct about *validity*
+  by construction — every accepted placement is re-checked for overlap —
+  but only ever *good*, never provably optimal, about efficiency) as two
+  legitimately different, equally honest ways for a geometry tool to state
+  what it actually guarantees.
 
-**The villainous example:** No new dome — a structured retrospective across
-every design used so far, framed as the after-action review our heroine
-holds after any operation.
+**The villainous example:** No new dome or nesting job — a structured
+retrospective across every design used so far, framed as the after-action
+review our heroine holds after any operation.
 
 **Gotchas & rationale:**
 - The chapter's central thesis, stated directly: a check that only compares
   a result against its own internal assumptions (Euler's formula on a
   construction that itself defines the vertex/edge/face relationship) can
   catch a *count* bug but not a *shape* bug — Class III's own real history
-  (Chapter 6) is the sharpest illustration in the whole book, because it
-  passed exactly that kind of internal check while still being wrong, and
-  only an independent, differently-implemented library caught it.
+  (Chapter 6) is the sharpest illustration in the pyLair half of the book,
+  because it passed exactly that kind of internal check while still being
+  wrong, and only an independent, differently-implemented library caught
+  it. pyFit's Minkowski-sum bug (Chapter 19) makes the identical point in
+  the nesting half: it passed its first hand-computable test case cleanly
+  and only failed on a second, differently-shaped one — one verified case
+  is not the same claim as a verified method.
 - Applied one level up: this same principle is why the book itself insists
-  every gotcha be traceable to a real commit, a real test, or a real CI
-  log — an outline that only checks its own internal consistency has
-  exactly the same blind spot Class III's first implementation did.
+  every gotcha be traceable to a real commit, a real test, or a real run
+  log across *both* projects — an outline that only checks its own
+  internal consistency has exactly the same blind spot Class III's first
+  implementation, and pyFit's first NFP test case, each did.
 
 **Sample prompts:**
 - "Looking back at everything this book covered, list every point where
-  pyLair checked a result against an independent, differently-implemented
-  source rather than just its own internal consistency. What do they have
-  in common?"
+  either pyLair or pyFit checked a result against an independent,
+  differently-implemented source rather than just its own internal
+  consistency. What do they have in common?"
 
 ---
 
-### Chapter 23: Conclusion
+### Chapter 24: Conclusion
 
 **Concept(s) taught:** A wrap-up, not a new concept — consolidates the
 book's arc from "pick a polyhedron" through "should you even trust this
-number" in light of everything the reader now knows.
+number" through "and now cut it out of actual plywood," in light of
+everything the reader now knows about both toolkits.
 
 **Content:**
-- A full recap of pyLair's pipeline (polyhedron → subdivision → projection
-  → shaping → bill of materials → export → agentic interface) in light of
-  the real gotchas each stage turned out to hide.
-- A pointer back to the companion blog post
-  (`blog-posts/introducing-pylair.md`) for readers who want the same
-  material in a shorter, funnier form, plus a pointer to `AGENTS.md` for
-  readers who want to go build on pyLair directly.
+- A full recap of the combined pipeline (polyhedron → subdivision →
+  projection → shaping → bill of materials → export → nesting → cut plan →
+  agentic interface, across both pyLair and pyFit) in light of the real
+  gotchas each stage turned out to hide.
+- A pointer back to both companion blog posts
+  (`blog-posts/introducing-pylair.md` and pyFit's own
+  `blog-posts/introducing-pyfit.md`) for readers who want the same material
+  in a shorter, funnier form, plus a pointer to each project's `AGENTS.md`
+  for readers who want to go build on either tool directly.
 - A closing status update on the running examples: the Actual Secret Lair
-  is designed, verified, and exported; the Under-the-Ocean Prototype
-  remains, honestly, just a prototype — a secret lab's actual construction
-  is (of course) kept secret, exactly as the blog post promised.
-- A short "where pyLair itself goes next" section, pulled honestly from the
-  blog post's own real, currently-open "Next Steps" items (proactive
-  truncation-risk warnings before export, an optional boundary cap for
-  fully enclosed structures, door-frame design assistance) rather than
-  invented future features — noting, honestly, that the diagonal-seam item
-  once on that same list is now done (Chapter 10), which is exactly the
-  kind of status update Chapter 20 exists to keep honest.
+  is designed, verified, exported, *and* nested — a real, sheet-by-sheet
+  cut plan sitting in the henchmen's fabrication queue; the Under-the-Ocean
+  Prototype remains, honestly, just a prototype — a secret lab's actual
+  construction is (of course) kept secret, exactly as the blog post
+  promised.
+- A short "where each toolkit itself goes next" section, pulled honestly
+  from each project's own real, currently-open items rather than invented
+  future features: pyLair's proactive truncation-risk warnings before
+  export, an optional boundary cap for fully enclosed structures, and
+  door-frame design assistance; pyFit's own stated next steps — a
+  refinement pass (simulated annealing or genetic reordering) on top of its
+  base bottom-left-fill heuristic, support for irregular stock/offcuts
+  beyond plain rectangles, and a PyPI publish that, as of this writing,
+  hasn't happened yet for either project.
 
 **Sample prompts:**
 - "Summarize everything you now know about the Actual Secret Lair's design
-  across every stage of the pipeline, as if handing off to whoever
-  actually builds it."
+  and its nesting plan across every stage of both pipelines, as if handing
+  off to whoever actually builds it."
 
 ---
 
 ## Appendices
 
-- **Appendix A — Glossary.** Every geometry and engineering term introduced
-  across the book (symmetry triangle, chord, hub, frequency, triangulation
-  number `T`, chirality, dihedral/bevel angle, Goldberg-Coxeter
-  construction, etc.), defined in one or two sentences each, cross-referenced
-  to the chapter that introduced it.
+- **Appendix A — Glossary.** Every geometry, engineering, and nesting term
+  introduced across the book — symmetry triangle, chord, hub, frequency,
+  triangulation number `T`, **chirality**, dihedral/bevel angle,
+  Goldberg-Coxeter construction, no-fit-polygon (NFP), Minkowski sum,
+  bottom-left-fill, sheet utilization, `allow_mirror`, and more — defined
+  in one or two sentences each, cross-referenced to the chapter that
+  introduced it.
 - **Appendix B — CLI and MCP Tool Reference.** Every CLI flag and every MCP
-  tool used in the book, with a one-line description and the chapter(s)
-  that cover it — a fast lookup companion once readers start designing
-  their own domes instead of the book's examples.
-- **Appendix C — Further Reading.** The real sources pyLair's own
-  construction is drawn from and verified against: Kenner, H. (1976),
+  tool used in the book, for both pyLair and pyFit, with a one-line
+  description and the chapter(s) that cover it — a fast lookup companion
+  once readers start designing (and nesting) their own domes instead of
+  the book's examples.
+- **Appendix C — Further Reading.** The real sources pyLair's and pyFit's
+  own constructions are drawn from and verified against: Kenner, H. (1976),
   *Geodesic math and how to use it*; Šiber, A. (2007), "Icosadeltahedral
   geometry of fullerenes, viruses and geodesic domes" (arXiv:0711.3527);
   [`antitile`](https://github.com/brsr/antitile); [`trimesh`](https://trimesh.org/);
-  [`ezdxf`](https://ezdxf.readthedocs.io/) — plus the companion blog post
-  and `README.md`'s own "Caveats and known limitations" section for
-  continued reference.
+  [`ezdxf`](https://ezdxf.readthedocs.io/); [`pyclipper`](https://github.com/fonttools/pyclipper)
+  and the underlying Clipper library pyFit's NFP computation is built on;
+  [`shapely`](https://shapely.readthedocs.io/); and, for readers who want to
+  go further with 2D nesting specifically, the same family of open-source
+  bottom-left-fill nesters (SVGnest/DeepNest) pyFit's own documentation
+  cites as kin — plus both companion blog posts and both projects'
+  `README.md` "Caveats"/"Known limitations" sections for continued
+  reference.
