@@ -1,0 +1,16 @@
+// Snippet for ~/.openclaw/openclaw.json — merge into the existing
+// "skills" -> "entries" object (see docs.openclaw.ai/tools/creating-skills).
+//
+// pyLair has no API key or environment variables to configure: SKILL.md's
+// `metadata.openclaw.requires.bins: ["pylair"]` gate already ensures the
+// skill only loads when the `pylair` CLI is on PATH, so this entry just
+// needs to exist and be enabled.
+{
+  skills: {
+    entries: {
+      pylair: {
+        enabled: true,
+      },
+    },
+  },
+}

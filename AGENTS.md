@@ -10,7 +10,10 @@ pyLair is a geodesic dome calculator: given a base polyhedron, subdivision
 class/frequency, and optional truncation/elongation, it computes vertices/chords/
 faces and exports DXF/VRML/STL/OBJ plus a JSON Bill of Materials. There's a CLI
 (`pylair`) and an MCP server (`pylair-mcp`) that both go through the same
-`pylair/api.py:build_dome` / `validate_geometry_params`.
+`pylair/api.py:build_dome` / `validate_geometry_params`. There's also an
+[OpenClaw](https://openclaw.ai/) skill (`SKILL.md` + `openclaw.config.snippet.jsonc`
+at the repo root) that drives the `pylair` CLI directly — OpenClaw has no MCP
+client, so that skill wraps the CLI rather than `pylair-mcp`.
 
 ## Setup
 
@@ -87,10 +90,12 @@ discrepancy while editing docs.
 
 ## Docs stay in sync
 
-`README.md`, `METHOD.md`, and `blog-posts/introducing-pylair.md` all describe
-overlapping behavior. If you change behavior that any of them documents, check the
-other two — this has drifted before (a blog "Next Steps" item lingered after the
-feature shipped and the README was updated).
+`README.md`, `METHOD.md`, `SKILL.md`, and `blog-posts/introducing-pylair.md` all
+describe overlapping behavior. If you change behavior that any of them documents,
+check the others — this has drifted before (a blog "Next Steps" item lingered after
+the feature shipped and the README was updated). `SKILL.md` in particular mirrors
+the CLI flag table in README.md's "Command-line options" section — if you add or
+change a flag, update both.
 
 ## graphify-out/
 
