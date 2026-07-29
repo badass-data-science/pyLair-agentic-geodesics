@@ -117,27 +117,27 @@ Our heroine wrote this article about 95% manually, with a small amount of outlin
 She wrote the original pyLair implementation from scratch in Python, and then had Claude code refactor it a bit to make it PyPI-ready. She then collaborated with Claude Code to quickly add features missing from her original implementation (Class II and III polyhedra face subdivision methods, sphere elongation functionality, STL/OBJ/PNG output, face truncation, multi-axis ellipsoid projection, multi-axis truncation, and face-aware truncation).
 # Tags
 
-geodesic
-geodesic math
-geodesic dome
-pyLair
-Python
-engineering
-CAD
-DXF
-STL
-OBJ
-VRML
-3D printing
-polyhedron
-geometry
-analytic geometry
-NumPy
-Claude Code
-agentic AI
-MCP
-Model Context Protocol
-OpenClaw
-chirality
-Ultimate Cunning Master Plan
+* geodesic
+* geodesic math
+* geodesic dome
+* pyLair
+* Python
+* engineering
+* CAD
+* DXF
+* STL
+* OBJ
+* VRML
+* 3D printing
+* polyhedron
+* geometry
+* analytic geometry
+* NumPy
+* Claude Code
+* agentic AI
+* MCP
+* Model Context Protocol
+* OpenClaw
+* chirality
+* Ultimate Cunning Master Plan
 
