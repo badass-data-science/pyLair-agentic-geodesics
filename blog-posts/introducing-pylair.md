@@ -87,6 +87,8 @@ The bundled MCP server hands an AI assistant four tools instead of one command:
 * **`export_dome`**, for when the design is actually settled and it's time to write the DXF, VRML, STL, OBJ, and hub-connector-template files to disk for real.
 
 The idea is to let an AI assistant iterate the way our heroine would iterate: try a shape, look at it, check what it costs, adjust, and only export once it's actually right, as opposed to making round trips between the command line and a separate viewer with every iteration. All four of these agentic tools enforce the exact same validation rules as the command line interface because a single geometry engine underlies both interface methods.
+
+For assistants that live outside an MCP client, pyLair also ships a [OpenClaw](https://openclaw.ai/) skill (`SKILL.md`, plus `openclaw.config.snippet.jsonc` to register it in `~/.openclaw/openclaw.json`). OpenClaw doesn't speak MCP, so this skill instead teaches an OpenClaw agent to drive the plain `pylair` command line directly — same geometry engine underneath, one more way in.
 # Next Steps
 
 * At the moment a risky truncation cutoff that produces absurdly small struts/panels only gets flagged *after* the fact, the warning buried in the bill of materials' artifact lists. A more proactive version would catch such cases before export, then warn (or refuse) the moment a chosen `-t`/`-x`/`-y` value lands suspiciously close to an existing vertex. Therefore the builder would not have to squint to notice warnings in the design report after generating the files.
@@ -135,6 +137,7 @@ Claude Code
 agentic AI
 MCP
 Model Context Protocol
+OpenClaw
 chirality
 Ultimate Cunning Master Plan
 

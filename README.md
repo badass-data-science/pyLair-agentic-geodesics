@@ -55,6 +55,17 @@ This provides a `pylair-mcp` console command: an [MCP](https://modelcontextproto
 
 Configure it in an MCP client (e.g. Claude Code/Desktop) by pointing at the `pylair-mcp` command. All four tools share the same validation as the CLI (`pylair/api.py:validate_geometry_params`) — an invalid combination (e.g. Class II with an odd frequency) raises a clear error rather than producing bad geometry.
 
+## OpenClaw interface
+
+For agentic use through [OpenClaw](https://openclaw.ai/), pyLair ships an [OpenClaw skill](https://docs.openclaw.ai/tools/creating-skills): [`SKILL.md`](SKILL.md) at the repo root. OpenClaw doesn't consume MCP servers directly, so this skill wraps the `pylair` CLI itself rather than `pylair-mcp` — it's gated on the `pylair` binary being on `PATH` (via `metadata.openclaw.requires.bins`), so it only loads once `pip install -e .` (or a published `pip install pylair`) has been run.
+
+To install it:
+
+1. Copy (or symlink) `SKILL.md` into your OpenClaw workspace's skills directory, e.g. `~/.openclaw/workspace/skills/pylair/SKILL.md`.
+2. Merge [`openclaw.config.snippet.jsonc`](openclaw.config.snippet.jsonc) into the `skills.entries` object of `~/.openclaw/openclaw.json` to enable it.
+
+The skill instructs the agent to drive the same `pylair` CLI documented below, so its behavior always matches the CLI/MCP interfaces — there is still one geometry/validation engine (`pylair/api.py`) underneath all three.
+
 ### Command-line options
 
 | Flag | Long form | Description | Default |
@@ -135,6 +146,8 @@ A few behaviors are worth understanding before relying on the output for a real 
 | `pylair/preview.py` | Renders a quick 3D wireframe preview PNG (`-P/--preview`), with equal axis scaling so the plot itself never distorts the dome's proportions. |
 | `pylair/bill_of_materials.py` | Clusters chords into strut-length groups, computes hub tangent-plane and spoke angles (using the true ellipsoid surface normal when elongated), clusters hubs into connector-plate "types" (`-H/--hub-templates`); on the face side, clusters triangular panels into shape "types" with a mirror-image (chirality) flag, computes total panel area/cost/weight and per-strut bevel angles between adjacent panels, and generates panel cutting templates (`-T/--face-templates`); prints the report as JSON. |
 | `tests/` | pytest suite: unit tests per module (importing from `pylair.*`) plus subprocess-level CLI integration tests (invoked via `python -m pylair`). |
+| `SKILL.md` | [OpenClaw](https://openclaw.ai/) skill definition wrapping the `pylair` CLI, for agentic use through OpenClaw (see "OpenClaw interface" above). |
+| `openclaw.config.snippet.jsonc` | Config snippet to enable the `pylair` skill in `~/.openclaw/openclaw.json`. |
 | `METHOD.md` | The geometric method walkthrough with reference images (icosahedron subdivision, projection, truncation). |
 | `images/` | Diagrams referenced by `METHOD.md`. |
 
