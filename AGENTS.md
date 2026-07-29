@@ -2,7 +2,7 @@
 
 Agent-facing guide to working in this repo. For user-facing docs (CLI flags, MCP
 tools, caveats) see [README.md](README.md); for the geometric method itself see
-[METHOD.md](METHOD.md).
+[METHOD.md](blog-posts/METHOD.md).
 
 ## What this is
 
@@ -83,19 +83,30 @@ limitations" and the corresponding "Development" paragraph — several of these
 (Class II's coordinate-basis bug, Class III's cross-face stitching, elongated
 surface-normal angles) were real historical bugs that passed a naive smoke test.
 
-Known live ambiguity: `truncate()`'s diagonal-seam handling for quad boundary
-panels is the current, correct behavior (see README caveat) — `blog-posts/` and
-`METHOD.md` should agree with README, not the other way around, if you find a
-discrepancy while editing docs.
+`truncate()`'s diagonal-seam handling for quad boundary panels is the current,
+correct behavior (see README caveat). The blog post used to carry a stale
+"Next Steps" bullet about this with a strikethrough + inline "Done." patched
+onto it, which read as self-contradictory and got flagged by `/graphify` as an
+AMBIGUOUS edge; that bullet was removed rather than reworded, since the item
+wasn't a next step anymore. If you find a similar discrepancy elsewhere,
+`blog-posts/introducing-pylair.md` and `blog-posts/METHOD.md` should agree with
+README, not the other way around — and prefer removing/rewriting a resolved
+"Next Steps" item over strikethrough-patching it in place.
 
 ## Docs stay in sync
 
-`README.md`, `METHOD.md`, `SKILL.md`, and `blog-posts/introducing-pylair.md` all
+`README.md`, `blog-posts/METHOD.md`, `SKILL.md`, and `blog-posts/introducing-pylair.md` all
 describe overlapping behavior. If you change behavior that any of them documents,
 check the others — this has drifted before (a blog "Next Steps" item lingered after
 the feature shipped and the README was updated). `SKILL.md` in particular mirrors
 the CLI flag table in README.md's "Command-line options" section — if you add or
 change a flag, update both.
+
+Also add an entry to `CHANGELOG.md` under `[Unreleased]` (Added/Changed/Fixed,
+per [Keep a Changelog](https://keepachangelog.com/en/1.1.0/)) whenever you ship
+a user-visible change — a new flag, a behavior change, a bug fix. There have been
+no tagged releases yet, so everything accumulates under `[Unreleased]` against
+the `0.1.0` version in `pyproject.toml`; don't invent a version bump.
 
 ## graphify-out/
 
@@ -105,3 +116,10 @@ browsable/queryable without rerunning extraction; `cache/`, `manifest.json`, and
 `cost.json` are local tool state and gitignored. Regenerate with `/graphify --update`
 after a meaningful change if you want the graph to stay current — it isn't
 auto-maintained.
+
+If an agent session isolates work into a git worktree before editing, do not run
+`/graphify --update` there: a fresh worktree branches from `origin/<default-branch>`
+(missing any commits that only exist on the current branch) and lacks gitignored
+local state (`cache/`, `manifest.json`, `.claude/settings.local.json`), so
+incremental detection reports false deletions and misses recently added files.
+Run `/graphify --update` directly in the working checkout instead.
