@@ -46,6 +46,8 @@ lives under `[Unreleased]` against the `0.1.0` version in `pyproject.toml`.
 - Restructured the codebase into a proper `pydome/`-then-`pylair/` package.
 - Split the original README into `README.md` (usage/caveats) and
   `METHOD.md` (the geometric method itself).
+- Moved `METHOD.md` into `blog-posts/METHOD.md` alongside the blog post, and
+  fixed the image links inside it that broke from the move.
 - Generalized elongation and truncation from the Z axis to all three axes,
   including face-aware truncation on X/Y/Z.
 - Made vertex/chord/face indexing consistently 0-indexed throughout.
@@ -64,6 +66,8 @@ lives under `[Unreleased]` against the `0.1.0` version in `pyproject.toml`.
 - Strut the diagonal seam left over from corner-clipped quad panels.
 - Stale MCP tool docstrings for panel data and truncation-artifact flags.
 - Two stale README claims about panel data and the flat-chord error.
+- Stale `METHOD.md` links in `AGENTS.md` and `README.md` still pointing at
+  the pre-move root path instead of `blog-posts/METHOD.md`.
 - Ported the original Python 2-era code to Python 3 and fixed a broken `-h`
   flag.
 

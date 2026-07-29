@@ -2,7 +2,7 @@
 
 Agent-facing guide to working in this repo. For user-facing docs (CLI flags, MCP
 tools, caveats) see [README.md](README.md); for the geometric method itself see
-[METHOD.md](METHOD.md).
+[METHOD.md](blog-posts/METHOD.md).
 
 ## What this is
 
@@ -84,13 +84,13 @@ limitations" and the corresponding "Development" paragraph — several of these
 surface-normal angles) were real historical bugs that passed a naive smoke test.
 
 Known live ambiguity: `truncate()`'s diagonal-seam handling for quad boundary
-panels is the current, correct behavior (see README caveat) — `blog-posts/` and
-`METHOD.md` should agree with README, not the other way around, if you find a
-discrepancy while editing docs.
+panels is the current, correct behavior (see README caveat) —
+`blog-posts/introducing-pylair.md` and `blog-posts/METHOD.md` should agree with
+README, not the other way around, if you find a discrepancy while editing docs.
 
 ## Docs stay in sync
 
-`README.md`, `METHOD.md`, `SKILL.md`, and `blog-posts/introducing-pylair.md` all
+`README.md`, `blog-posts/METHOD.md`, `SKILL.md`, and `blog-posts/introducing-pylair.md` all
 describe overlapping behavior. If you change behavior that any of them documents,
 check the others — this has drifted before (a blog "Next Steps" item lingered after
 the feature shipped and the README was updated). `SKILL.md` in particular mirrors
@@ -111,3 +111,10 @@ browsable/queryable without rerunning extraction; `cache/`, `manifest.json`, and
 `cost.json` are local tool state and gitignored. Regenerate with `/graphify --update`
 after a meaningful change if you want the graph to stay current — it isn't
 auto-maintained.
+
+If an agent session isolates work into a git worktree before editing, do not run
+`/graphify --update` there: a fresh worktree branches from `origin/<default-branch>`
+(missing any commits that only exist on the current branch) and lacks gitignored
+local state (`cache/`, `manifest.json`, `.claude/settings.local.json`), so
+incremental detection reports false deletions and misses recently added files.
+Run `/graphify --update` directly in the working checkout instead.
