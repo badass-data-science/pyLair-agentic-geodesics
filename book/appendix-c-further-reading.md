@@ -1,4 +1,4 @@
-# Appendix C — Further Reading
+# Appendix C: Further Reading
 
 The real sources pyLair's and pyFit's own constructions are drawn from and verified against — not a general bibliography, but the specific material this book's own chapters actually relied on.
 

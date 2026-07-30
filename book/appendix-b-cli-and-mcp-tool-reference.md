@@ -1,4 +1,4 @@
-# Appendix B — CLI and MCP Tool Reference
+# Appendix B: CLI and MCP Tool Reference
 
 Every CLI flag and MCP tool this book actually used, for both toolkits, with a one-line description and the chapter(s) that cover it — a fast lookup once you're designing and nesting your own domes instead of this book's own examples.
 
