@@ -37,7 +37,7 @@ Neither correctness story is weaker than the other; they're honest about two dif
 
 ## Applied One Level Up
 
-The same principle applies to this book itself, not just the two toolkits it teaches: every real number, every error message, and every historical bug in these pages is traceable to an actual commit, a real test, or a real run this book's own drafting process performed — not asserted from memory, and not assumed to still be true just because an earlier chapter said so. An outline that only checked its own internal consistency would have exactly the same blind spot Class III's first implementation, and pyFit's first NFP test case, both had: it would read as complete, pass its own review, and still be wrong in a way nothing internal to it could catch.
+The same principle applies to this book itself, not just the two toolkits it teaches: every real number, every error message, and every historical bug in these pages is traceable to an actual code change, a real test, or a real run this book's own drafting process performed — not asserted from memory, and not assumed to still be true just because an earlier chapter said so. An outline that only checked its own internal consistency would have exactly the same blind spot Class III's first implementation, and pyFit's first NFP test case, both had: it would read as complete, pass its own review, and still be wrong in a way nothing internal to it could catch.
 
 ## What's Next
 
