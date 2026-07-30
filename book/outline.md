@@ -122,11 +122,10 @@ plywood-built Actual Secret Lair's panels aren't — giving pyFit's own
     book is from a *real* `pylair`/`pylair-mcp`/`pyfit`/`pyfit-mcp` run
     against real parameters — not a hand-typed mockup — and that every
     named dome design (the Proof-of-Concept Yurt, the Actual Secret Lair,
-    and the rest) and every named nesting job can be regenerated exactly by
-    running `book/examples/generate_book_domes.py` and
-    `book/examples/generate_book_nests.py` (see `book/examples/README.md`),
-    the same reproducibility convention the Omen book established for its
-    datasets.
+    and the rest) and every named nesting job can be reproduced exactly by
+    running the same real CLI command shown inline in the chapter that
+    produced it — every such command is the literal one actually run, not
+    an illustrative approximation of one.
   - Pointers to pyLair's `README.md`/`AGENTS.md` and pyFit's `README.md`/
     `AGENTS.md` (the full CLI/MCP reference, caveats lists, and each
     toolkit's own agent-facing engineering notes, including the geometry and
@@ -147,20 +146,21 @@ plywood-built Actual Secret Lair's panels aren't — giving pyFit's own
   - **pyFit's own `-P/--preview` renderer** (`pyfit/preview.py`) for every
     sheet-layout figure — boundary plus every placed part's outline, the
     same convention pyLair's own preview uses one dimension down.
-  - **`book/examples/generate_book_images.py`**, a small script that calls
-    both preview renderers with this book's own named examples' exact
-    parameters (never hand-edited afterward) and additionally draws a
-    handful of purpose-built conceptual diagrams neither tool renders on its
-    own — a bare symmetry-triangle grid before it's replicated across a
-    polyhedron, a chiral `(m,n)`/`(n,m)` mirror-pair comparison, a no-fit-
-    polygon (NFP) construction — using the same color palette and figure
-    style as the two tools' own preview output, so a conceptual diagram
-    never looks like a different, less trustworthy kind of image than a
-    real tool render sitting next to it on the same page. Every figure
-    caption in this book names which of the three produced it.
-  - This mirrors `book/examples/generate_book_domes.py`'s own
-    reproducibility promise: run the script, get the exact figure, no
-    exceptions.
+  - **A handful of purpose-built conceptual diagrams**, for the small
+    number of ideas neither tool's own preview renders on its own — a bare
+    symmetry-triangle grid before it's replicated across a polyhedron, a
+    chiral `(m,n)`/`(n,m)` mirror-pair comparison, a no-fit-polygon (NFP)
+    construction — plotted directly from the same real, computed coordinate
+    data the surrounding prose is discussing (never hand-drawn freehand),
+    using a consistent color palette and figure style so a conceptual
+    diagram never looks like a different, less trustworthy kind of image
+    than a real tool render sitting next to it on the same page. Every
+    figure caption in this book names which of the three produced it.
+  - No single script generates every figure in this book; each one was
+    produced directly from the real tool or real data the surrounding
+    prose discusses, and the exact parameters or construction are always
+    shown inline rather than hidden behind a script a reader would have to
+    go find and run separately.
 - **A Word on AI Use** — matches the convention already established in both
   projects' own AI Use Statements: the original pyLair and pyFit
   implementations were hand-written from scratch, then extended
@@ -331,8 +331,10 @@ life for both.
 poc-yurt -f 2 -r 1.0`, a tiny, unremarkable Class I dome, deliberately
 too small and plain to be anyone's actual secret lair, paired with a
 matching **Proof-of-Concept Nesting Job** — a `pyfit` job spec nesting
-nothing more ambitious than three identical unit-square placeholders onto a
-small sheet, deliberately too trivial to represent real fabrication work.
+nothing more ambitious than six identical unit squares onto a 3×2 sheet
+(the same hand-checkable, README-documented "tiles perfectly" case used
+later in the actual chapter), deliberately too trivial to represent real
+fabrication work.
 The point of both isn't the shape or the layout; it's proving the wiring
 works, on both toolkits, before anything ambitious is attempted.
 
@@ -384,7 +386,7 @@ works, on both toolkits, before anything ambitious is attempted.
 - "Confirm both the pyLair and pyFit MCP servers are running and list every
   tool each one exposes."
 - "Run `design_dome` on the smallest, cheapest configuration you can, then
-  run `design_nest` on three placeholder squares, just to prove both
+  run `design_nest` on six placeholder squares, just to prove both
   connections work end to end."
 
 ---
