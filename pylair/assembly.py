@@ -400,3 +400,43 @@ def attach_nest_placements(manifest, nest_report, kind='panels'):
       'mirrored': placement['mirrored'],
     }
   return manifest
+
+
+def bom_template_paths(bom_template_rows, groups, ids_key):
+  """Match get_bill_of_materials' own "Hub Connector Templates"/"Panel
+  Cutting Templates" rows (each carrying 'template_file' and, since
+  bill_of_materials.py's own instance-index enrichment, 'hub_indices'/
+  'face_indices') back to build_assembly_manifest's 'hub_groups'/
+  'panel_groups' entries, keyed by build_pyfit_job_spec_for_panels/
+  _for_hubs' own 'template_group' index.
+
+  Matching is done by comparing the actual set of dome instance indices
+  each group covers, not by list position: get_bill_of_materials skips
+  writing a hub template for any valence<=1 group (there's no angular
+  pattern to draw), so its own template list can have fewer, and
+  differently-numbered, entries than build_assembly_manifest's
+  hub_groups -- position-based matching would silently pair the wrong
+  template with the wrong group the moment that skip ever triggers.
+  Panel groups never get skipped this way, but the same index-set match
+  is used for both, rather than trusting two different pieces of code
+  to iterate group_hub_types/group_face_types' output in lockstep
+  forever.
+
+  ids_key is 'hub_ids' for hub groups (matched against each BOM row's
+  'hub_indices') or 'panel_ids' for panel groups (matched against
+  'face_indices'). Returns {template_group_index: template_file},
+  omitting any group that has no matching BOM row (e.g. a skipped
+  valence<=1 hub group) -- build_pyfit_job_spec_for_panels/_for_hubs
+  would raise a clear KeyError on that template_group if the caller
+  tries to nest it anyway, rather than this function inventing a path
+  that doesn't exist on disk.
+  """
+  indices_key = 'hub_indices' if ids_key == 'hub_ids' else 'face_indices'
+  lookup = {frozenset(row[indices_key]): row['template_file'] for row in bom_template_rows}
+
+  paths = {}
+  for group in groups:
+    instance_indices = frozenset(parse_instance_label(label)[1] for label in group[ids_key])
+    if instance_indices in lookup:
+      paths[group['template_group']] = lookup[instance_indices]
+  return paths

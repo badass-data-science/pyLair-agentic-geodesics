@@ -8,7 +8,16 @@ pytest.importorskip("mcp")
 
 from mcp.shared.memory import create_connected_server_and_client_session
 
-from pylair.mcp_server import mcp, design_dome, preview_dome, get_bill_of_materials, export_dome
+from pylair.mcp_server import (
+    mcp,
+    design_dome,
+    preview_dome,
+    get_bill_of_materials,
+    export_dome,
+    get_assembly_manifest,
+    export_assembly_job_spec,
+    render_assembly_schematic,
+)
 
 
 #
@@ -152,6 +161,59 @@ def test_export_dome_with_preview_and_hub_templates(tmp_path):
         assert Path(f).exists()
 
 
+def test_get_assembly_manifest_returns_a_json_safe_dict():
+    manifest = get_assembly_manifest(frequency=3)
+
+    assert set(manifest.keys()) == {
+        "hubs", "struts", "panels", "hub_groups", "strut_groups", "panel_groups",
+    }
+    assert len(manifest["hubs"]) == 10 * 3 ** 2 + 2
+    assert len(manifest["struts"]) == 30 * 3 ** 2
+    # round-trips through real JSON with no numpy/tuple leakage (see
+    # pylair/assembly.py's own _to_float normalization)
+    assert json.loads(json.dumps(manifest)).keys() == manifest.keys()
+
+
+def test_get_assembly_manifest_reports_bordering_panels_on_a_truncated_dome():
+    manifest = get_assembly_manifest(frequency=6, truncation_z=0.4)
+
+    counts = {len(s["bordering_panels"]) for s in manifest["struts"].values()}
+    assert counts == {1, 2}  # base-ring struts border 1 panel, interior struts border 2
+
+
+def test_export_assembly_job_spec_panels_writes_templates_and_one_part_per_instance(tmp_path):
+    out = str(tmp_path / "dome")
+    result = export_assembly_job_spec(out, kind="panels", frequency=3)
+
+    assert any(f.endswith(".dxf") and "_facetype" in f for f in result["files_written"])
+    for f in result["files_written"]:
+        assert Path(f).exists()
+
+    parts = result["job_spec"]["parts"]
+    assert len(parts) == 20 * 3 ** 2  # one entry per panel instance, not per shape
+    assert all(p["quantity"] == 1 for p in parts)
+    names = [p["name"] for p in parts]
+    assert len(names) == len(set(names))  # every instance is its own part entry
+
+
+def test_export_assembly_job_spec_hubs_writes_templates_and_one_part_per_instance(tmp_path):
+    out = str(tmp_path / "dome")
+    result = export_assembly_job_spec(out, kind="hubs", frequency=3, sheet_width=24, sheet_height=24)
+
+    assert any(f.endswith(".dxf") and "_hubtype" in f for f in result["files_written"])
+    assert result["job_spec"]["sheet"] == {"width": 24, "height": 24}
+    parts = result["job_spec"]["parts"]
+    assert len(parts) == 10 * 3 ** 2 + 2  # one entry per hub instance
+    assert all(p["quantity"] == 1 for p in parts)
+
+
+def test_render_assembly_schematic_returns_summary_and_inline_image():
+    result = render_assembly_schematic(frequency=2)
+
+    assert "hubs" in result[0] and "struts" in result[0] and "panels" in result[0]
+    assert result[1].data[:8] == b"\x89PNG\r\n\x1a\n"
+
+
 #
 # protocol-level: a real MCP client/server session over an in-memory
 # transport (no subprocess), proving the tools are actually reachable as
@@ -163,7 +225,10 @@ def test_tools_are_reachable_over_a_real_mcp_session():
         async with create_connected_server_and_client_session(mcp) as client:
             tools = await client.list_tools()
             names = {t.name for t in tools.tools}
-            assert names == {"design_dome", "preview_dome", "get_bill_of_materials", "export_dome"}
+            assert names == {
+                "design_dome", "preview_dome", "get_bill_of_materials", "export_dome",
+                "get_assembly_manifest", "export_assembly_job_spec", "render_assembly_schematic",
+            }
 
             result = await client.call_tool("design_dome", {"frequency": 2})
             assert result.isError is False

@@ -44,7 +44,7 @@ For agentic use (an LLM assistant interactively designing a dome), install the `
 pip install -e ".[mcp]"
 ```
 
-This provides a `pylair-mcp` console command: an [MCP](https://modelcontextprotocol.io) server (stdio transport) exposing four tools, all sharing one geometry parameter schema (`radius`, `frequency`, `polyhedron`, `dome_class`, `n_frequency`, `truncation_x`/`truncation_y`/`truncation_z`, `elongation_x`/`elongation_y`/`elongation_z`, `vertex_equal_threshold`):
+This provides a `pylair-mcp` console command: an [MCP](https://modelcontextprotocol.io) server (stdio transport) exposing seven tools, all sharing one geometry parameter schema (`radius`, `frequency`, `polyhedron`, `dome_class`, `n_frequency`, `truncation_x`/`truncation_y`/`truncation_z`, `elongation_x`/`elongation_y`/`elongation_z`, `vertex_equal_threshold`):
 
 | Tool | Purpose |
 |---|---|
@@ -52,8 +52,11 @@ This provides a `pylair-mcp` console command: an [MCP](https://modelcontextproto
 | `preview_dome` | Renders the wireframe preview and returns it as an inline image, so the dome can be seen in-conversation before any file is written. |
 | `get_bill_of_materials` | Returns the JSON Bill of Materials (strut lengths/counts, hub angles, total length/cost, and panel shapes/counts with a chirality flag, total panel area/cost/weight, and bevel angles between adjacent panels — panel data is included regardless of truncation, since `truncate()` clips faces correctly on any combination of axes) as structured data, no files. Accepts optional `cost_per_unit_area`/`panel_areal_density`. |
 | `export_dome` | Writes output files to disk (DXF/VRML by default; STL/OBJ/hub-templates/face-templates/preview PNG optionally). Truncation on any combination of axes correctly preserves face data, so all output types work regardless of `truncation_x`/`truncation_y`/`truncation_z`. Returns the paths written plus the Bill of Materials. |
+| `get_assembly_manifest` | Returns a per-instance assembly manifest, no files — every hub, strut, and panel with its own stable label (`H#`/`S#`/`P#`) and its real adjacency to its neighbors, unlike the Bill of Materials' type-grouped counts. |
+| `export_assembly_job_spec` | Writes real cutting-template DXFs and builds a pyFit job spec from them with one part entry per physical instance (`quantity` always 1, named by its own manifest label) instead of one entry per shape with a quantity, so a pyFit nest report becomes addressable back to a specific dome hub/panel. `kind="panels"` (default) or `kind="hubs"`. |
+| `render_assembly_schematic` | Renders the same depth-cued wireframe `preview_dome` uses, with each hub/strut/panel's own label optionally drawn at its position — an annotated assembly schematic rather than just a shape preview. Hub labels on by default; strut/panel labels off, since turning all three on past a low frequency produces an unreadable smear of text. |
 
-Configure it in an MCP client (e.g. Claude Code/Desktop) by pointing at the `pylair-mcp` command. All four tools share the same validation as the CLI (`pylair/api.py:validate_geometry_params`) — an invalid combination (e.g. Class II with an odd frequency) raises a clear error rather than producing bad geometry.
+Configure it in an MCP client (e.g. Claude Code/Desktop) by pointing at the `pylair-mcp` command. All seven tools share the same validation as the CLI (`pylair/api.py:validate_geometry_params`) — an invalid combination (e.g. Class II with an odd frequency) raises a clear error rather than producing bad geometry.
 
 ## OpenClaw interface
 
@@ -135,7 +138,7 @@ A few behaviors are worth understanding before relying on the output for a real 
 | `pylair/__main__.py` | Enables `python -m pylair`; delegates to `cli.main()`. |
 | `pylair/cli.py` | CLI entry point (`pylair` console command → `cli:main`): argument parsing and orchestration via `pylair/api.py`. |
 | `pylair/api.py` | Programmatic entry point shared by the CLI and the MCP server: `build_dome(...)` (validation, symmetry-triangle construction, projection, elongation, sequential X/Y/Z truncation) and the shared `ValueError`-raising validators. |
-| `pylair/mcp_server.py` | MCP server (`pylair-mcp` console command, optional `mcp` extra): `design_dome`/`preview_dome`/`get_bill_of_materials`/`export_dome` tools built on `pylair/api.py`. |
+| `pylair/mcp_server.py` | MCP server (`pylair-mcp` console command, optional `mcp` extra): `design_dome`/`preview_dome`/`get_bill_of_materials`/`export_dome`/`get_assembly_manifest`/`export_assembly_job_spec`/`render_assembly_schematic` tools built on `pylair/api.py`. |
 | `pylair/polyhedral.py` | The base polyhedra (`Icosahedron`, `Octahedron`), the `Vertex`/`Chord`/`Face` primitives, `build_lcd_faces` (splits each face into 6 sub-triangles for Class II), and `compute_face_adjacency` (which face/edge borders which, for Class III's cross-face stitching). |
 | `pylair/symmetry_triangle.py` | Subdivides a single polyhedron face (Class I) or LCD sub-triangle (Class II) into a triangular vertex/chord/face grid. |
 | `pylair/class_three.py` | Builds the Class III (chiral `(m,n)`) grid for a single polyhedron face, plus the combinatorial cross-face vertex-matching data (`cross_face_matches`, `local_priority`) `GeodesicSphere` needs to stitch adjacent faces together correctly. |
@@ -145,6 +148,7 @@ A few behaviors are worth understanding before relying on the output for a real 
 | `pylair/output.py` | DXF, VRML (wireframe or face), STL, OBJ, hub-connector-template, and panel(face)-template file writers. |
 | `pylair/preview.py` | Renders a quick 3D wireframe preview PNG (`-P/--preview`), with equal axis scaling so the plot itself never distorts the dome's proportions. |
 | `pylair/bill_of_materials.py` | Clusters chords into strut-length groups, computes hub tangent-plane and spoke angles (using the true ellipsoid surface normal when elongated), clusters hubs into connector-plate "types" (`-H/--hub-templates`); on the face side, clusters triangular panels into shape "types" with a mirror-image (chirality) flag, computes total panel area/cost/weight and per-strut bevel angles between adjacent panels, and generates panel cutting templates (`-T/--face-templates`); prints the report as JSON. |
+| `pylair/assembly.py` | Turns a dome's vertex/chord/face indices into a per-instance assembly manifest (`--assembly-manifest`) -- every hub/strut/panel keeps its own stable `H#`/`S#`/`P#` label and its real adjacency to its neighbors, rather than being collapsed into `bill_of_materials.py`'s type-grouped counts. Also builds a per-instance (not per-type) pyFit job spec from real cutting templates (`--pyfit-job-spec`), handling a chiral panel group's mirror orientation explicitly rather than trusting pyFit's own packer to flip the correct instances. |
 | `tests/` | pytest suite: unit tests per module (importing from `pylair.*`) plus subprocess-level CLI integration tests (invoked via `python -m pylair`). |
 | `SKILL.md` | [OpenClaw](https://openclaw.ai/) skill definition wrapping the `pylair` CLI, for agentic use through OpenClaw (see "OpenClaw interface" above). |
 | `openclaw.config.snippet.jsonc` | Config snippet to enable the `pylair` skill in `~/.openclaw/openclaw.json`. |

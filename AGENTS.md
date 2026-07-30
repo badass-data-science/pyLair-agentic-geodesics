@@ -58,7 +58,7 @@ you're editing.
 |---|---|
 | `pylair/cli.py` | CLI entry point, arg parsing, orchestration via `api.py`. |
 | `pylair/api.py` | Shared programmatic entry point (`build_dome`, validators) used by both CLI and MCP server. |
-| `pylair/mcp_server.py` | MCP server: `design_dome`/`preview_dome`/`get_bill_of_materials`/`export_dome`, all built on `api.py`. |
+| `pylair/mcp_server.py` | MCP server: `design_dome`/`preview_dome`/`get_bill_of_materials`/`export_dome`/`get_assembly_manifest`/`export_assembly_job_spec`/`render_assembly_schematic`, all built on `api.py`. |
 | `pylair/polyhedral.py` | Base polyhedra, `Vertex`/`Chord`/`Face` primitives, `build_lcd_faces`, `compute_face_adjacency`. |
 | `pylair/symmetry_triangle.py` | Class I/II single-face subdivision. |
 | `pylair/class_three.py` | Class III (chiral) single-face subdivision + cross-face stitching data. |
@@ -68,6 +68,7 @@ you're editing.
 | `pylair/output.py` | DXF/VRML/STL/OBJ/template file writers. |
 | `pylair/preview.py` | Wireframe preview PNG rendering. |
 | `pylair/bill_of_materials.py` | Strut/hub/panel clustering, angles, cost/weight, cutting templates, JSON report. |
+| `pylair/assembly.py` | Per-instance assembly manifest (`H#`/`S#`/`P#` labels + real adjacency, unlike `bill_of_materials.py`'s type-grouped counts) and a per-instance pyFit job spec built from real cutting templates. |
 
 Internally, vertices/chords/faces are referenced by 0-indexed integer position into
 Python lists throughout — don't reintroduce 1-indexing.
