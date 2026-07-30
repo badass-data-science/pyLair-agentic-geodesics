@@ -503,3 +503,76 @@ def test_combined_x_y_z_truncation_still_produces_valid_face_output(tmp_path):
     report = json.loads(result.stdout)["pyLair report"]
     assert "Panel Cutting Templates" in report
     assert len(report["Panel Cutting Templates"]) > 0
+
+
+def test_assembly_manifest_flag_writes_a_valid_manifest_json(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "3", "--assembly-manifest"])
+
+    assert result.returncode == 0
+    manifest_file = Path(str(out) + "_manifest.json")
+    assert manifest_file.exists()
+    manifest = json.loads(manifest_file.read_text())
+    assert set(manifest.keys()) == {
+        "hubs", "struts", "panels", "hub_groups", "strut_groups", "panel_groups",
+    }
+    assert len(manifest["hubs"]) == 10 * 3 ** 2 + 2
+
+
+def test_no_assembly_manifest_flag_means_no_manifest_file(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "3"])
+
+    assert result.returncode == 0
+    assert not Path(str(out) + "_manifest.json").exists()
+
+
+def test_pyfit_job_spec_panels_writes_templates_and_job_spec(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "3", "--pyfit-job-spec=panels",
+                       "--sheet-width=10", "--sheet-height=20"])
+
+    assert result.returncode == 0
+    job_spec_file = Path(str(out) + "_jobspec.json")
+    assert job_spec_file.exists()
+    job_spec = json.loads(job_spec_file.read_text())
+    assert job_spec["sheet"] == {"width": 10.0, "height": 20.0}
+    assert len(job_spec["parts"]) == 20 * 3 ** 2
+    assert all(p["quantity"] == 1 for p in job_spec["parts"])
+    assert any(tmp_path.glob("dome_facetype*.dxf"))
+
+
+def test_pyfit_job_spec_hubs_writes_templates_and_job_spec(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "3", "--pyfit-job-spec=hubs"])
+
+    assert result.returncode == 0
+    job_spec = json.loads(Path(str(out) + "_jobspec.json").read_text())
+    assert len(job_spec["parts"]) == 10 * 3 ** 2 + 2
+    assert any(tmp_path.glob("dome_hubtype*.dxf"))
+
+
+def test_pyfit_job_spec_rejects_an_invalid_kind(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "3", "--pyfit-job-spec=bogus"])
+
+    assert result.returncode != 0
+    assert "panels" in result.stdout and "hubs" in result.stdout
+
+
+def test_assembly_schematic_flag_writes_a_valid_png(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "2", "--assembly-schematic"])
+
+    assert result.returncode == 0
+    schematic_file = Path(str(out) + "_schematic.png")
+    assert schematic_file.exists()
+    assert schematic_file.read_bytes()[:8] == b"\x89PNG\r\n\x1a\n"
+
+
+def test_no_assembly_schematic_flag_means_no_schematic_file(tmp_path):
+    out = tmp_path / "dome"
+    result = run_cli(["-o", str(out), "-f", "2"])
+
+    assert result.returncode == 0
+    assert not Path(str(out) + "_schematic.png").exists()

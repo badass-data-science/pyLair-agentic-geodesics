@@ -31,11 +31,19 @@ import sys
 #
 # load pyLair modules
 #
+import json
+
 from .polyhedral import Icosahedron, Octahedron
 from .output import OutputDXF, OutputWireframeVRML, OutputFaceVRML, OutputSTL, OutputOBJ
 from .bill_of_materials import get_bill_of_materials
-from .preview import save_preview
+from .preview import save_preview, save_assembly_schematic
 from .api import build_dome
+from .assembly import (
+    build_assembly_manifest,
+    build_pyfit_job_spec_for_panels,
+    build_pyfit_job_spec_for_hubs,
+    bom_template_paths,
+)
 
 
 def display_help():
@@ -86,6 +94,20 @@ Options:
 \t-w, --panel-density\tAreal density (mass per unit area, e.g. kg per square meter) of panel material. If given, adds an estimated total panel weight to the Bill of Materials. Must be a positive floating point number.
 
 \t-e, --elongation\tStretches the dome along all three axes by independent factors "fx,fy,fz", applied before truncation, turning the sphere into a general axis-aligned ellipsoid -- values > 1 stretch that axis, values < 1 squash it (e.g. "1.0,1.0,1.8" raises the ceiling height without touching the footprint; "1.3,1.0,1.0" widens the footprint along X only). All angle-based output (Bill of Materials angles, hub connector templates) correctly accounts for the resulting ellipsoid's true surface normal, not just the sphere approximation. All three factors must be positive floating point numbers. Default "1.0,1.0,1.0" (no elongation).
+
+\t--assembly-manifest\tAlso save a per-instance assembly manifest ("<output>_manifest.json") -- every hub, strut, and panel with its own stable label (H#/S#/P#) and its real adjacency to its neighbors (which struts meet at a hub and at what angle, which hubs bound a panel, which panel(s) border a strut, the bevel angle at each panel edge). Unlike the Bill of Materials, which groups instances into cutting-template types and counts, this keeps every individual instance addressable -- for building a real assembly diagram, or feeding --pyfit-job-spec below.
+
+\t--pyfit-job-spec=\tAlso write real cutting-template DXFs and a pyFit job spec built from them ("<output>_jobspec.json"), with one part entry PER PHYSICAL INSTANCE (quantity always 1, named by its own assembly-manifest H#/P# label) rather than one entry per shape with a quantity -- so pyFit's own nest report becomes addressable back to a specific dome hub/panel. Value must be "panels" or "hubs". A chiral panel group's mirror-orientation instances get an inline pre-mirrored polygon rather than trusting pyFit's own packer to flip the correct ones.
+
+\t--sheet-width=\tSheet width used in the pyFit job spec written by --pyfit-job-spec. Must be a positive floating point number. Default 48.0.
+
+\t--sheet-height=\tSheet height used in the pyFit job spec written by --pyfit-job-spec. Must be a positive floating point number. Default 96.0.
+
+\t--assembly-schematic\tAlso save an annotated assembly schematic ("<output>_schematic.png") -- the same depth-cued wireframe -P/--preview produces, with each hub's own H# label drawn at its position. Combine with --schematic-strut-labels/--schematic-panel-labels to add those too; a real dome has far more struts than hubs and far more panels than either, so turning all three on past a low frequency produces an unreadable smear of text rather than a usable diagram.
+
+\t--schematic-strut-labels\tAlso draw each strut's own S# label at its midpoint on the --assembly-schematic image. No effect without --assembly-schematic.
+
+\t--schematic-panel-labels\tAlso draw each panel's own P# label at its centroid on the --assembly-schematic image. No effect without --assembly-schematic.
 """
   print(help_text)
 
@@ -115,6 +137,13 @@ def main():
   elongation_factors = (1.0, 1.0, 1.0)
   output_path = None
   n_frequency = None
+  assembly_manifest_output = False
+  pyfit_job_spec_kind = None
+  sheet_width = 48.0
+  sheet_height = 96.0
+  assembly_schematic_output = False
+  schematic_strut_labels = False
+  schematic_panel_labels = False
 
   #
   # no input arguments
@@ -127,7 +156,7 @@ def main():
   # parse command line
   #
   try:
-    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:c:m:e:n:a:w:x:y:FPsOHTho:', ['truncation=', 'truncation-x=', 'truncation-y=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'class=', 'material-cost=', 'elongation=', 'n-frequency=', 'area-cost=', 'panel-density=', 'face', 'preview', 'stl', 'obj', 'hub-templates', 'face-templates', 'output='])
+    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:c:m:e:n:a:w:x:y:FPsOHTho:', ['truncation=', 'truncation-x=', 'truncation-y=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'class=', 'material-cost=', 'elongation=', 'n-frequency=', 'area-cost=', 'panel-density=', 'face', 'preview', 'stl', 'obj', 'hub-templates', 'face-templates', 'output=', 'assembly-manifest', 'pyfit-job-spec=', 'sheet-width=', 'sheet-height=', 'assembly-schematic', 'schematic-strut-labels', 'schematic-panel-labels'])
   except getopt.error as msg:
     print(str(msg) + ' (for help use --help)')
     sys.exit(-1)
@@ -209,6 +238,37 @@ def main():
       hub_templates_output = True
     if o in ('-T', '--face-templates'):
       face_templates_output = True
+    if o == '--assembly-manifest':
+      assembly_manifest_output = True
+    if o == '--pyfit-job-spec':
+      if a not in ('panels', 'hubs'):
+        print('--pyfit-job-spec argument must be "panels" or "hubs". Exiting.')
+        sys.exit(-1)
+      pyfit_job_spec_kind = a
+    if o == '--sheet-width':
+      try:
+        sheet_width = float(a)
+      except ValueError:
+        print('--sheet-width argument must be a floating point number. Exiting.')
+        sys.exit(-1)
+      if sheet_width <= 0:
+        print('--sheet-width argument must be greater than zero. Exiting.')
+        sys.exit(-1)
+    if o == '--sheet-height':
+      try:
+        sheet_height = float(a)
+      except ValueError:
+        print('--sheet-height argument must be a floating point number. Exiting.')
+        sys.exit(-1)
+      if sheet_height <= 0:
+        print('--sheet-height argument must be greater than zero. Exiting.')
+        sys.exit(-1)
+    if o == '--assembly-schematic':
+      assembly_schematic_output = True
+    if o == '--schematic-strut-labels':
+      schematic_strut_labels = True
+    if o == '--schematic-panel-labels':
+      schematic_panel_labels = True
     if o in ('-r', '--radius'):
       try:
         a = float(a)
@@ -297,12 +357,45 @@ def main():
   #
   # bill of materials
   #
-  hub_template_output_path = output_path if hub_templates_output else None
-  face_template_output_path = output_path if face_templates_output else None
-  get_bill_of_materials(V, C, bom_rounding_precision, cost_per_unit_length, hub_template_output_path, elongation_factors,
-                         faces=F_sphere, cost_per_unit_area=cost_per_unit_area,
-                         panel_areal_density=panel_areal_density,
-                         face_template_output_path=face_template_output_path)
+  # hub/face template paths are also forced on (even without -H/-T) when
+  # --pyfit-job-spec needs real template DXFs to build a job spec from
+  hub_template_output_path = output_path if (hub_templates_output or pyfit_job_spec_kind == 'hubs') else None
+  face_template_output_path = output_path if (face_templates_output or pyfit_job_spec_kind == 'panels') else None
+  report = get_bill_of_materials(V, C, bom_rounding_precision, cost_per_unit_length, hub_template_output_path, elongation_factors,
+                                  faces=F_sphere, cost_per_unit_area=cost_per_unit_area,
+                                  panel_areal_density=panel_areal_density,
+                                  face_template_output_path=face_template_output_path)
+
+  #
+  # per-instance assembly manifest, pyFit job spec, and/or annotated
+  # schematic -- all built from the same manifest, computed once
+  #
+  need_manifest = assembly_manifest_output or pyfit_job_spec_kind is not None or assembly_schematic_output
+  if need_manifest:
+    manifest = build_assembly_manifest(V, C, faces=F_sphere, elongation_factors=elongation_factors,
+                                        rounding_precision=bom_rounding_precision)
+
+  if assembly_manifest_output:
+    with open(output_path + '_manifest.json', 'w') as f:
+      json.dump(manifest, f, indent=2)
+
+  if pyfit_job_spec_kind == 'hubs':
+    template_rows = report['pyLair report'].get('Hub Connector Templates', [])
+    template_paths = bom_template_paths(template_rows, manifest['hub_groups'], 'hub_ids')
+    job_spec = build_pyfit_job_spec_for_hubs(manifest, sheet_width, sheet_height, template_paths)
+    with open(output_path + '_jobspec.json', 'w') as f:
+      json.dump(job_spec, f, indent=2)
+  elif pyfit_job_spec_kind == 'panels':
+    template_rows = report['pyLair report'].get('Panel Cutting Templates', [])
+    template_paths = bom_template_paths(template_rows, manifest['panel_groups'], 'panel_ids')
+    job_spec = build_pyfit_job_spec_for_panels(manifest, sheet_width, sheet_height, template_paths)
+    with open(output_path + '_jobspec.json', 'w') as f:
+      json.dump(job_spec, f, indent=2)
+
+  if assembly_schematic_output:
+    save_assembly_schematic(V, C, manifest, output_path + '_schematic.png',
+                             show_hub_labels=True, show_strut_labels=schematic_strut_labels,
+                             show_panel_labels=schematic_panel_labels)
 
 #
 # run the main function
