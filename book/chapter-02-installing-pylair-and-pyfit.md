@@ -156,12 +156,12 @@ A second, smaller gotcha worth knowing before you build a CI matrix or reach for
 
 ## Proof of Life
 
-Installation isn't actually finished until you've watched real tool calls succeed — "the install command didn't error" is not the same claim as "the connection works," and this book isn't going to let the distinction slide even in the setup chapter. Here's the smoke test for both toolkits, using configurations too small to be anyone's actual secret lair: **the Proof-of-Concept Yurt** for pyLair, and **the Proof-of-Concept Nesting Job** for pyFit.
+Installation isn't actually finished until you've watched real tool calls succeed — "the install command didn't error" is not the same claim as "the connection works," and this book isn't going to let the distinction slide even in the setup chapter. No competent supervillain commissions a circumpolar fortress from a contractor who has never once been asked to build a shed, and our heroine isn't about to either: here's the smoke test for both toolkits, using configurations too small to be anyone's actual secret lair, deliberately unimpressive so that nothing about impressing anyone gets in the way of just watching the wiring work — **the Proof-of-Concept Yurt** for pyLair, and **the Proof-of-Concept Nesting Job** for pyFit.
 
 **Prompt:**
 > Confirm the pyLair MCP server is running and list every tool it exposes. Then run `design_dome` on the smallest, cheapest configuration you can, just to prove the connection works end to end.
 
-**What Comes Back** (a real result, from a real running server — `pylair -o poc-yurt -f 2 -r 1.0`'s equivalent, the same Class I icosahedral sphere at frequency 2 and radius 1.0 this book calls the Proof-of-Concept Yurt):
+**What Comes Back** (a real result, from a real running server — a Class I icosahedral sphere at frequency 2 and radius 1.0, the smallest, plainest configuration this book has a name for: the Proof-of-Concept Yurt):
 
 ```
 Tools exposed: design_dome, preview_dome, get_bill_of_materials, export_dome
@@ -192,11 +192,11 @@ design_dome result:
 }
 ```
 
-**What It Means:** Four real tools came back from a real subprocess, and `vertex_count`/`edge_count`/`face_count` — 42, 120, 80 — match Chapter 4's own golden-value formula for a Class I icosahedral sphere exactly (`10f²+2 = 10(4)+2 = 42`; `30f² = 120`; `20f² = 80`, at `f=2`). Nothing here is dome-shaped enough to build — a frequency-2 sphere is about as coarse as this construction gets — and that's entirely the point: this proves the wiring works, not that the design is good.
+**What It Means:** Four real tools came back from a real subprocess, and `vertex_count`/`edge_count`/`face_count` — 42, 120, 80 — match Chapter 4's own golden-value formula for a Class I icosahedral sphere exactly (`10f²+2 = 10(4)+2 = 42`; `30f² = 120`; `20f² = 80`, at `f=2`). Nothing here is dome-shaped enough to build — a frequency-2 sphere is about as coarse as this construction gets, structurally closer to a yurt than a fortress, which is the whole reason it earned that name — and that's entirely the point: this proves the wiring works, not that the design is good.
 
 Look at the shape directly rather than only trusting the summary:
 
-*(Figure 2-1: The Proof-of-Concept Yurt, a real `preview_dome`/`-P` render — a frequency-2 Class I icosahedral sphere, unremarkable on purpose.)*
+*(Figure 2-1: The Proof-of-Concept Yurt, a real `preview_dome` render — a frequency-2 Class I icosahedral sphere, unremarkable on purpose.)*
 
 ![The Proof-of-Concept Yurt wireframe preview](examples/images/poc-yurt.png)
 
@@ -217,18 +217,22 @@ design_nest result:
 
 **What It Means:** Four more real tools, from a second real subprocess — and a result that's genuinely checkable by hand: six unit squares have a combined area of 6, a 3×2 sheet has an area of exactly 6, and pyFit's own README states this exact case tiles perfectly. `utilization_by_sheet: [1.0]` — 100% — confirms it did, on the very first sheet, with none left over. This is this book's version of Chapter 1's own promise: a boring, hand-verifiable result, shown here specifically because there's nowhere for a packing mistake to hide in it.
 
-*(Figure 2-2: The Proof-of-Concept Nesting Job, a real `preview_nest`/`-P` render — six unit squares tiling a 3×2 sheet at exactly 100% utilization.)*
+*(Figure 2-2: The Proof-of-Concept Nesting Job, a real `preview_nest` render — six unit squares tiling a 3×2 sheet at exactly 100% utilization.)*
 
 ![Six unit squares perfectly tiling a 3x2 sheet](examples/images/poc-nest_sheet1.png)
 
-One more thing worth confirming while you're here, since Chapter 1 made a point of it: both servers enforce the *exact same* validation as their CLIs, because one engine underlies both interfaces in each project (`pylair/api.py`, `pyfit/api.py`). Trigger a real error through each:
+One more thing worth confirming while you're here, since Chapter 1 made a point of it: the MCP tools enforce validation, not just convenience — nothing about calling `design_dome` instead of a command line lets an invalid configuration slip through.
+
+**Prompt:**
+> Ask `design_dome` for a Class II (Triacon) dome at frequency 3 — deliberately invalid, since Class II needs an even frequency. What comes back?
+
+**What Comes Back** (a real tool error, not a crash):
 
 ```
-$ pylair -o bad -f 3 -c 2 -r 1.0
 -c 2 (Class II / Triacon) requires an even --frequency. Exiting.
 ```
 
-Ask `design_dome` for the same invalid combination — Class II (Triacon) at an odd frequency of 3 — and you get the identical message back, not a different one an agent might interpret differently on a bad day. This isn't a coincidence; it's the whole reason both projects keep validation in one shared module instead of duplicating it per interface.
+**What It Means:** That's the identical message the `pylair` CLI's own `-c 2 -f 3` would give — not a coincidence, and not a looser or differently-worded approximation for the agentic side. One shared engine (`pylair/api.py`, and `pyfit/api.py` on the nesting side) validates every request regardless of which interface it arrived through, which is the whole reason this book trusts an agent's tool calls as much as it trusts a terminal.
 
 ## What's Next
 

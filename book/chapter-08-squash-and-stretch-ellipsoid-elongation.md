@@ -2,9 +2,9 @@
 
 Part II built a sphere. Part III turns that sphere into a building. This chapter is the first of three shaping tools — elongation here, truncation in Chapter 9, both together producing the specific quad-panel case Chapter 10 exists to handle — and it introduces this book's second running example properly: **the Under-the-Ocean Prototype**, whose entire design philosophy is the opposite of the Actual Secret Lair's.
 
-## One Flag, Three Independent Axes
+## One Setting, Three Independent Axes
 
-`-e/--elongation` takes three numbers — `fx,fy,fz` — and scales every vertex on the finished sphere by those factors independently, one axis at a time. The implementation (`pylair/elongation.py`) is about as simple as a geometric operation gets:
+`design_dome`/`preview_dome`/`export_dome` all take three elongation factors — `elongation_x`, `elongation_y`, `elongation_z` — and scale every vertex on the finished sphere by those factors independently, one axis at a time. The implementation (`pylair/elongation.py`) is about as simple as a geometric operation gets:
 
 ```python
 def elongate(vertices, factors):
@@ -14,7 +14,12 @@ def elongate(vertices, factors):
 
 A per-vertex multiply, nothing more — chord and face connectivity are completely unaffected, since scaling never changes which vertices are connected to which, only where those vertices sit. A factor greater than 1 stretches that axis outward; a factor less than 1 squashes it inward; `1.0` leaves it untouched. The result, once more than one axis differs from `1.0`, is a general **triaxial ellipsoid** — three independent semi-axes, no two of which need match.
 
-*(Figure 8-1: Three real `-P` renders of the same frequency-6 Class I sphere, differing only in `-e`. Left: unelongated. Center: the Under-the-Ocean Prototype's gentle inward squash, `"1.0,1.0,0.9"`. Right: the Actual Secret Lair's upward stretch, `"1.0,1.0,1.8"`. Notice how subtle the center shape's difference from the sphere actually looks — that's not an error in the render, it's the honest visual size of a 10% squash next to an 80% stretch.)*
+**Prompt:**
+> Preview the same frequency-6 Class I sphere three ways: unelongated, squashed to `(1.0, 1.0, 0.9)`, and stretched to `(1.0, 1.0, 1.8)`.
+
+**What Comes Back** (three real `preview_dome` renders):
+
+*(Figure 8-1: Left: unelongated. Center: the Under-the-Ocean Prototype's gentle inward squash, `elongation_z=0.9`. Right: the Actual Secret Lair's upward stretch, `elongation_z=1.8`. Notice how subtle the center shape's difference from the sphere actually looks — that's not an error in the render, it's the honest visual size of a 10% squash next to an 80% stretch.)*
 
 ![Three domes at the same frequency: unelongated, gently squashed, and dramatically stretched](examples/images/elongation_triptych.png)
 
@@ -71,10 +76,14 @@ The Actual Secret Lair's own frequency-6 sphere makes this concrete rather than 
 
 ## The Other Way to Get This Wrong: A Zero Factor
 
-Elongation factors must each be strictly greater than zero — a reader reaching for `0` hoping to flatten an axis into a two-dimensional disc gets a clear refusal instead of a degenerate, zero-thickness dome:
+Elongation factors must each be strictly greater than zero — a reader reaching for `0` hoping to flatten an axis into a two-dimensional disc gets a clear refusal instead of a degenerate, zero-thickness dome.
+
+**Prompt:**
+> Try elongating this dome with a Z factor of `0.0` — I want to see what happens if I try to flatten it completely.
+
+**What Comes Back** (a real tool error):
 
 ```
-$ pylair -o bad -f 4 -e "1.0,1.0,0.0" -r 1.0
 -e or --elongation arguments must each be greater than zero. Exiting.
 ```
 

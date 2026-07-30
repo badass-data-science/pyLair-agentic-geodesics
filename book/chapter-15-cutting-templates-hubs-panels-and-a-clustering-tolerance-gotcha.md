@@ -1,6 +1,6 @@
 # Chapter 15: Cutting Templates — Hubs, Panels, and a Clustering-Tolerance Gotcha
 
-Four chapters of geometry work — subdivision, projection, shaping, and now hub angles, strut clustering, and panel shapes — all converge here, on the two file types a fabricator actually needs: one cutting template per genuinely distinct hub connector shape, and one per genuinely distinct panel shape. This chapter is also this book's bridge into Part VI: every panel-template DXF file `-T` writes is exactly the kind of file a pyFit nesting job (Chapter 20) expects as input.
+Four chapters of geometry work — subdivision, projection, shaping, and now hub angles, strut clustering, and panel shapes — all converge here, on the two file types a fabricator actually needs: one cutting template per genuinely distinct hub connector shape, and one per genuinely distinct panel shape. This chapter is also this book's bridge into Part VI: every panel-template DXF file `export_dome`'s `face_templates=True` writes is exactly the kind of file a pyFit nesting job (Chapter 20) expects as input.
 
 ## Rotation-Invariant Clustering: What "Same Shape" Actually Means Here
 
@@ -8,16 +8,12 @@ A geodesic dome has far more physical hubs and panels than genuinely distinct *s
 
 ## Generating Real Templates for the Actual Secret Lair
 
-Here's the payoff, run for real on the Actual Secret Lair — Class III `(4,1)`, elongated `1.8`× on Z, truncated at `0.499999`:
-
-```
-pylair -o lair -f 4 -n 1 -c 3 -p icosahedron -r 1.0 -e "1.0,1.0,1.8" -t 0.499999 -F -T -H
-```
+Here's the payoff, run for real on the Actual Secret Lair — Class III `(4,1)`, elongated `1.8`× on Z, truncated at `0.499999`.
 
 **Prompt:**
-> Generate hub connector templates for this dome. How many genuinely distinct hub shapes are there, versus the total number of hubs?
+> Export this dome with hub and panel templates — `hub_templates=True`, `face_templates=True`. How many genuinely distinct hub shapes are there, versus the total number of hubs?
 
-**What Comes Back:** This dome has `156` total hubs. `group_hub_types` finds `28` genuinely distinct shape groups among them — but only `27` `_hubtype*.dxf` files actually get written. The missing one is deliberate, not a bug: `25` of those `156` hubs share a single-strut (`valence: 1`) shape — the truncated dome's own base row, where the cutoff left a stub with only one remaining chord — and a connector plate with only one strut socket has no angular pattern to draw a template for at all, so `get_bill_of_materials` explicitly skips any group with `valence <= 1` before writing files.
+**What Comes Back** (a real `export_dome` result): This dome has `156` total hubs. `group_hub_types` finds `28` genuinely distinct shape groups among them — but only `27` `_hubtype*.dxf` files actually get written. The missing one is deliberate, not a bug: `25` of those `156` hubs share a single-strut (`valence: 1`) shape — the truncated dome's own base row, where the cutoff left a stub with only one remaining chord — and a connector plate with only one strut socket has no angular pattern to draw a template for at all, so `get_bill_of_materials` explicitly skips any group with `valence <= 1` before writing files.
 
 **What It Means:** `156` physical hubs collapse to `27` real, distinct connector templates — not `156` separate files, and not naively `28` either, once you account for the one shape that genuinely doesn't need a cutting template because there's nothing to cut. A builder ordering connector plates needs 27 distinct part numbers, cut in the quantities each group's `count` reports, not one custom plate per physical joint.
 
@@ -54,7 +50,7 @@ Precision 1 through 4 all agree on the identical, stable count — a genuine pla
 
 ## Panel Templates and Chirality, Paid Off
 
-Chapter 14 raised the chirality flag and promised this chapter would show what it means for template count specifically. Here's the payoff: `-T` writes **one file per shape group, never per orientation** — a chiral group's `240` panels split `120`/`120` between two true mirror images still produces exactly one `_facetypeN.dxf` file, not two. This isn't an oversight; a physical template can always be flipped over on the material itself, so one file genuinely covers both orientations. The chirality flag stays useful precisely because template *count* doesn't reflect it at all — a builder still needs to know, separately, that half of a given group's panels need that template used flipped, which is exactly the awareness Chapter 14 taught, not something the file count alone would ever reveal.
+Chapter 14 raised the chirality flag and promised this chapter would show what it means for template count specifically. Here's the payoff: `face_templates=True` writes **one file per shape group, never per orientation** — a chiral group's `240` panels split `120`/`120` between two true mirror images still produces exactly one `_facetypeN.dxf` file, not two. This isn't an oversight; a physical template can always be flipped over on the material itself, so one file genuinely covers both orientations. The chirality flag stays useful precisely because template *count* doesn't reflect it at all — a builder still needs to know, separately, that half of a given group's panels need that template used flipped, which is exactly the awareness Chapter 14 taught, not something the file count alone would ever reveal.
 
 ## What This Chapter's Numbers Don't Yet Answer
 

@@ -1,6 +1,6 @@
 # Chapter 3: Picking a Polyhedron
 
-Every geodesic dome pyLair will ever build starts the same way: not with a sphere, but with something that merely *resembles* one — a plain, flat-faced polyhedron, subdivided later into something rounder. This chapter is about that first, easy-to-skip decision, and about the first of this book's two smaller running examples: **the Under-the-Ocean Prototype**, our heroine's contingency plan for the day the San Diego lease finally, definitively falls through and the secret laboratory relocates somewhere the neighbors can't file noise complaints about it. A pressure hull doesn't forgive a shape chosen carelessly, and neither, properly, should you.
+Every geodesic dome pyLair will ever build starts the same way: not with a sphere, but with something that merely *resembles* one — a plain, flat-faced polyhedron, subdivided later into something rounder. This chapter is about that first, easy-to-skip decision, and about the first of this book's two smaller running examples: **the Under-the-Ocean Prototype**, our heroine's contingency plan for the day the San Diego lease finally, definitively falls through and the secret laboratory relocates somewhere the neighbors can't file noise complaints about it. A homeowners' association has opinions and a strongly worded letterhead; the Pacific Ocean has neither, and settles every disagreement with several tons of ambient pressure per square foot of hull instead. That's precisely why this design gets to go first: it's the stop in this book with the least patience for a shape chosen carelessly, which makes it the right place to insist, from the very first decision, that "which polyhedron" is a decision at all, and not a default nobody bothered to question.
 
 ## Why Start From a Polyhedron At All
 
@@ -10,21 +10,23 @@ The geometric logic for *why* the starting shape matters is straightforward once
 
 ## Two Starting Points: Icosahedron and Octahedron
 
-pyLair's default, and the shape nearly every geodesic dome you've ever seen a photo of actually uses, is the **icosahedron**: 20 triangular faces, 12 vertices, 30 edges. Selected explicitly:
+pyLair's default, and the shape nearly every geodesic dome you've ever seen a photo of actually uses, is the **icosahedron**: 20 triangular faces, 12 vertices, 30 edges.
 
-```
-pylair -o base-icosahedron -f 1 -p icosahedron -r 1.0 -P
-```
+**Prompt:**
+> Preview a bare, frequency-1 icosahedron for me — no subdivision yet, just the base shape — so I can see what pyLair's default polyhedron actually looks like.
 
-*(Figure 3-1: A bare, unsubdivided icosahedron — `pylair`'s default base polyhedron, real `-P` output at frequency 1, before any subdivision is applied.)*
+**What Comes Back** (a real `preview_dome` render, `polyhedron="icosahedron"`, `frequency=1`, `radius=1.0`):
+
+*(Figure 3-1: A bare, unsubdivided icosahedron — pyLair's default base polyhedron, before any subdivision is applied.)*
 
 ![A bare icosahedron, 12 vertices and 20 triangular faces](examples/images/base-icosahedron.png)
 
-pyLair's other option is the **octahedron**: 8 triangular faces, 6 vertices, 12 edges — a coarser starting point, selected with `-p octahedron`:
+pyLair's other option is the **octahedron**: 8 triangular faces, 6 vertices, 12 edges — a coarser starting point, selected with `polyhedron="octahedron"`.
 
-```
-pylair -o base-octahedron -f 1 -p octahedron -r 1.0 -P
-```
+**Prompt:**
+> Now preview the same thing with the octahedron instead — same frequency and radius, just the other base polyhedron.
+
+**What Comes Back** (a real `preview_dome` render, `polyhedron="octahedron"`, `frequency=1`, `radius=1.0`):
 
 *(Figure 3-2: A bare octahedron — pyLair's other base polyhedron, at the same frequency and radius as Figure 3-1 for a direct comparison.)*
 
@@ -53,7 +55,7 @@ These aren't folklore or a rule of thumb — they're the same identities pyLair'
 
 ## Choosing Deliberately, Not by Habit
 
-Reaching for the icosahedron by default (which is also what happens if you don't pass `-p` at all) is the right call most of the time — more faces at the same frequency means a gentler grid per face, which generally means a rounder-looking result and less strut-length variety for a given amount of subdivision effort. But "the default is usually right" is a different claim from "the default is always right," and this chapter's actual job is teaching you to notice the one case where it isn't.
+Reaching for the icosahedron by default (which is also what happens if you don't specify `polyhedron` at all) is the right call most of the time — more faces at the same frequency means a gentler grid per face, which generally means a rounder-looking result and less strut-length variety for a given amount of subdivision effort. But "the default is usually right" is a different claim from "the default is always right," and this chapter's actual job is teaching you to notice the one case where it isn't.
 
 Look again at Figure 3-2's octahedron. Two of its six vertices sit at the poles — directly "above" and "below" the shape along Z — and the other four sit in an exact ring around the middle, all at `Z=0`: `(±1,0,0)` and `(0,±1,0)`, in pyLair's own coordinate construction (`pylair/polyhedral.py`'s `Octahedron` class). That's not an approximate equator — it's an exact one, present in the base shape before any subdivision or truncation has touched it at all.
 
@@ -71,7 +73,7 @@ This is exactly the distinction **the Under-the-Ocean Prototype** cares about. A
 {"polyhedron": "octahedron",  "vertex_count": 66,  "edge_count": 192, "face_count": 128}
 ```
 
-**What It Means:** `320` faces against `128`, at the identical frequency — a ratio of exactly `20:8`, i.e. `5:2`, unchanged from frequency 1, because both counts scale by the same `f²` factor. Neither number is wrong; they're answering "how many faces does *this* base shape have at this frequency," and the two base shapes never had the same number of faces to begin with. A reader who swaps `-p` expecting "the same dome, just from a different starting point" will instead get a meaningfully coarser (octahedron) or finer (icosahedron) structure at that same frequency number — worth knowing before comparing two designs that only look like they should match.
+**What It Means:** `320` faces against `128`, at the identical frequency — a ratio of exactly `20:8`, i.e. `5:2`, unchanged from frequency 1, because both counts scale by the same `f²` factor. Neither number is wrong; they're answering "how many faces does *this* base shape have at this frequency," and the two base shapes never had the same number of faces to begin with. A reader who swaps `polyhedron` expecting "the same dome, just from a different starting point" will instead get a meaningfully coarser (octahedron) or finer (icosahedron) structure at that same frequency number — worth knowing before comparing two designs that only look like they should match.
 
 **Prompt:**
 > I want a natural flat ring near the equator before any truncation happens — which base polyhedron gets me closer to that for free?

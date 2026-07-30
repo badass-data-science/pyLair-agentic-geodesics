@@ -4,13 +4,12 @@ Every dome this book has built has an answer now: what shape, subdivided which w
 
 ## A Standalone Tool That Happens to Read pyLair's Files
 
-pyFit has no code dependency on pyLair at all. It reads DXF files — pyLair's panel templates, or any other tool's, or a hand-drawn shape — and arranges however many copies of each you need onto rectangular sheet stock, minimizing wasted material. Before this chapter ever touches a dome panel, here's pyFit doing exactly that on something that has nothing to do with any dome:
+pyFit has no code dependency on pyLair at all. It reads DXF files — pyLair's panel templates, or any other tool's, or a hand-drawn shape — and arranges however many copies of each you need onto rectangular sheet stock, minimizing wasted material. A henchman payroll generates its own steady stream of 2D cutting problems that have nothing whatsoever to do with a dome — uniform patches need cutting in bulk before morale gets any worse, and a proper throwing-star stencil doesn't nest itself — and pyFit doesn't care in the slightest which kind of shape it's asked to arrange. Before this chapter ever touches a dome panel, here's pyFit doing exactly that on something that has nothing to do with any dome.
 
-```
-pyfit -j standalone_job.json -o standalone -P
-```
+**Prompt:**
+> Nest a batch of henchman-uniform patch blanks and throwing-star stencils — two shapes, ten total parts — on a 12×8 sheet, and preview the result.
 
-with a job spec nesting a batch of henchman-uniform patch blanks and throwing-star stencils — two shapes, ten total parts, on a single sheet:
+**What Comes Back** (a real `preview_nest` render):
 
 *(Figure 19-1: A real pyFit nesting result — henchman-uniform patches and throwing-star stencils, nothing to do with any geodesic dome, at `23.7%` real utilization on a `12×8` sheet. Proof, before this chapter ever nests a single pyLair panel, that pyFit owes nothing to pyLair's own geometry.)*
 
@@ -40,7 +39,12 @@ no_fit_polygon([(0,0),(1,0),(1,1),(0,1)], [(0,0),(1,0),(1,1),(0,1)])
 
 ## Bottom-Left-Fill, Watched in Action
 
-On top of the NFP, pyFit runs a **bottom-left-fill heuristic**: place the largest remaining part first, try a range of rotation angles (and mirrored orientations, unless a part's `allow_mirror` is `false`), compute every legal candidate position against everything already placed, and pick whichever legal candidate sits furthest left, then furthest down. Here's that loop, watched directly rather than described — five identical unit squares, nested on a `3×2` sheet:
+On top of the NFP, pyFit runs a **bottom-left-fill heuristic**: place the largest remaining part first, try a range of rotation angles (and mirrored orientations, unless a part's `allow_mirror` is `false`), compute every legal candidate position against everything already placed, and pick whichever legal candidate sits furthest left, then furthest down. Here's that loop, watched directly rather than described.
+
+**Prompt:**
+> Nest five identical unit squares on a 3×2 sheet, and give me the full placement report so I can see the order they were placed in.
+
+**What Comes Back** (a real `get_nest_report` result, plotted in placement order):
 
 *(Figure 19-3: A real placement sequence — five unit squares, numbered in the actual order pyFit placed them, each red dot marking that part's chosen reference point. Notice the pattern: fill the bottom row left to right, then the next row up, exactly "leftmost, then bottommost.")*
 
@@ -67,8 +71,8 @@ One more thing worth stating as a scope decision, not a shortcoming to apologize
 **Prompt:**
 > Nest this batch of patch/stencil blanks — nothing to do with any dome — just to see pyFit work on its own terms first.
 
-**What Comes Back:** Figure 19-1, above — a real, legal, if not perfectly tight, layout. Nothing about that result depended on pyLair, a geodesic dome, or anything this book has built in its first eighteen chapters. That's deliberate: pyFit's next chapter is where it finally meets pyLair's own output, but this one exists to prove, first, that it doesn't need to.
+**What Comes Back:** Figure 19-1, above, from `preview_nest` — a real, legal, if not perfectly tight, layout. Nothing about that result depended on pyLair, a geodesic dome, or anything this book has built in its first eighteen chapters. That's deliberate: pyFit's next chapter is where it finally meets pyLair's own output, but this one exists to prove, first, that it doesn't need to.
 
 ## What's Next
 
-Chapter 20 builds a real job spec directly from a real bill of materials — pyLair's own `-T` panel templates and their reported `panel_count`s, becoming a pyFit job spec's `"dxf"` and `"quantity"` fields with zero hand-typing — and nests the Actual Secret Lair's own panels for the first time.
+Chapter 20 builds a real job spec directly from a real bill of materials — pyLair's own panel templates (from `export_dome`'s `face_templates=True`) and their reported `panel_count`s, becoming a pyFit job spec's `"dxf"` and `"quantity"` fields with zero hand-typing — and nests the Actual Secret Lair's own panels for the first time.

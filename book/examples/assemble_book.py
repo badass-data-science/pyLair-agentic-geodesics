@@ -12,15 +12,17 @@ edition. The EPUB gets the same title/author metadata and that same
 image as its cover (if present), but not the PDF's seven-part \\part{}
 divider structure -- see render_epub()'s docstring for why.
 
-Reading order is: title_page.md, dedication.md, about_the_series.md,
-how_to_use_this_book.md, ai_use_statement.md, chapter-01 through
-chapter-24 (sorted by filename, which sorts correctly since every
-chapter number is zero-padded), then appendix-a, appendix-b, appendix-c
-(alphabetical, which is also their intended reading order). This mirrors
-the identical script (and identical reasoning) in this series' companion
-volume, `omen-agentic-time-series-forecasting/book/examples/assemble_book.py`
--- adapted here for this book's own title, 24-chapter/7-part structure,
-and lack of a separate about_the_author.md.
+Reading order is: title_page.md, dedication.md, about_the_author.md,
+about_the_series.md, how_to_use_this_book.md, ai_use_statement.md,
+chapter-01 through chapter-24 (sorted by filename, which sorts correctly
+since every chapter number is zero-padded), then appendix-a, appendix-b,
+appendix-c (alphabetical, which is also their intended reading order).
+This mirrors the identical script (and identical reasoning) in this
+series' companion volume,
+`omen-agentic-time-series-forecasting/book/examples/assemble_book.py`
+-- adapted here for this book's own title and 24-chapter/7-part
+structure; about_the_author.md sits in the same relative position
+(right after dedication.md) that the companion book uses.
 
 Every chapter links its images with a path relative to this directory's
 parent (e.g. `examples/images/class3-secret-lair.png`, written as if the
@@ -207,11 +209,11 @@ def _custom_title_page_header() -> str:
 
 
 def _ordered_source_files():
-    """title_page -> dedication -> about_the_series -> how_to_use_this_book
-    -> ai_use_statement -> chapter-01..24 (sorted, zero-padded so this is
-    also numeric order) -> the three appendices, alphabetically.
-    outline.md is excluded on purpose -- see module docstring. Unlike the
-    companion Omen book, there's no separate about_the_author.md here."""
+    """title_page -> dedication -> about_the_author -> about_the_series ->
+    how_to_use_this_book -> ai_use_statement -> chapter-01..24 (sorted,
+    zero-padded so this is also numeric order) -> the three appendices,
+    alphabetically. outline.md is excluded on purpose -- see module
+    docstring."""
     chapters = sorted(
         f for f in os.listdir(BOOK_DIR)
         if f.startswith("chapter-") and f.endswith(".md")
@@ -221,8 +223,8 @@ def _ordered_source_files():
         if f.startswith("appendix-") and f.endswith(".md")
     )
     return (
-        ["title_page.md", "dedication.md", "about_the_series.md",
-         "how_to_use_this_book.md", "ai_use_statement.md"]
+        ["title_page.md", "dedication.md", "about_the_author.md",
+         "about_the_series.md", "how_to_use_this_book.md", "ai_use_statement.md"]
         + chapters
         + appendices
     )

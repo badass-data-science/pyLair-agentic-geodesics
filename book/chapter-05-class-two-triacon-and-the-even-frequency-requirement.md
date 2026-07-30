@@ -12,7 +12,7 @@ Class I subdivides a polyhedron face directly. Class II does something else firs
 
 Look closely at what each of those 6 wedges actually is: a right triangle, with legs running from a face vertex to an adjacent edge's midpoint, and from that midpoint to the face's centroid. (The right angle sits at the midpoint precisely because a triangle's median is also its altitude — a fact about equilateral triangles specifically, not a coincidence.) pyLair's own `build_lcd_faces` builds exactly these 6 triangles per face; `ClassTwoMethodOneSymmetryTriangle` then computes a frequency-`m` grid for **one** of them, the same "compute one, replicate the rest" principle Chapter 4 introduced — except now there are 6 replicated copies per original polyhedron face instead of 1.
 
-This is why Class II's own frequency parameter behaves differently from Class I's, and why it has to: **each original polyhedron edge is already implicitly split once — at its own midpoint — by the LCD construction itself**, before the frequency-`m` grid ever subdivides anything further. Ask for the same nominal frequency `f` in both classes, and Class II is quietly starting from a construction that's already one subdivision step ahead. pyLair accounts for this by treating the requested `-f/--frequency` as `2m` internally for Class II — which is also exactly why Class II frequencies must be even.
+This is why Class II's own frequency parameter behaves differently from Class I's, and why it has to: **each original polyhedron edge is already implicitly split once — at its own midpoint — by the LCD construction itself**, before the frequency-`m` grid ever subdivides anything further. Ask for the same nominal frequency `f` in both classes, and Class II is quietly starting from a construction that's already one subdivision step ahead. pyLair accounts for this by treating the requested `frequency` as `2m` internally for Class II — which is also exactly why Class II frequencies must be even.
 
 ## Why Frequency Must Be Even, and What Happens If It Isn't
 
@@ -68,11 +68,12 @@ The fix, visible in the real code above, replaces the naive orthonormal assumpti
 
 ## Continuing the Actual Secret Lair
 
-The dome Chapter 4 introduced gets rebuilt here, at the identical nominal frequency, under Class II instead:
+The dome Chapter 4 introduced gets rebuilt here, at the identical nominal frequency, under Class II instead.
 
-```
-pylair -o class2-secret-lair -f 6 -p icosahedron -c 2 -r 1.0 -P
-```
+**Prompt:**
+> Rebuild that same dome — frequency 6, icosahedron, radius 1.0 — but switch it to Class II and preview it.
+
+**What Comes Back** (a real `preview_dome` render, `dome_class=2`, `frequency=6`):
 
 *(Figure 5-2: The Actual Secret Lair, same nominal frequency as Figure 4-2, rebuilt under Class II. Visibly denser than its Class I counterpart — 1080 faces against 720 — which is exactly the "same frequency number, more detail" surprise this chapter's golden-value table predicts.)*
 
