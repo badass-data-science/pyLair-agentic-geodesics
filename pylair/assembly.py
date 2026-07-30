@@ -67,6 +67,18 @@ def panel_label(idx):
   return f'{PANEL_PREFIX}{idx}'
 
 
+def _to_float(x):
+  # numpy.float64 happens to be a subclass of Python's built-in float,
+  # so json.dumps silently accepts it today -- but relying on that
+  # implementation detail rather than normalizing to a plain float
+  # would leave the manifest one numpy version (or json backend) away
+  # from breaking. None passes through unchanged (an angle/bevel that
+  # genuinely has no value -- e.g. a hub's own zero-degree spoke
+  # reference, or a panel edge bordering fewer than 2 panels -- stays
+  # None, not 0.0).
+  return None if x is None else float(x)
+
+
 def parse_instance_label(label):
   # Inverse of hub_label/strut_label/panel_label: returns (kind, index)
   # where kind is 'hub', 'strut', or 'panel'. Raises ValueError on
@@ -100,8 +112,8 @@ def _mirrored_triangle_polygon(edge_lengths):
   angle_a = np.arccos(np.clip(cos_a, -1., 1.))
 
   A = (0., 0.)
-  B = (ab, 0.)
-  C = (ca * np.cos(angle_a), -ca * np.sin(angle_a))
+  B = (float(ab), 0.)
+  C = (float(ca * np.cos(angle_a)), float(-ca * np.sin(angle_a)))
   return [A, B, C]
 
 
@@ -156,8 +168,8 @@ def build_assembly_manifest(vertices, chords, faces=None, elongation_factors=(1.
       connections.append({
         'to_hub': hub_label(c),
         'strut': strut_label(strut_idx),
-        'tangential_angle_degrees': cdata['tangential_angle'],
-        'spoke_angle_degrees': spoke_angles.get(c),
+        'tangential_angle_degrees': _to_float(cdata['tangential_angle']),
+        'spoke_angle_degrees': _to_float(spoke_angles.get(c)),
       })
     hubs_out[hub_label(h)] = {
       'index': h,
@@ -196,7 +208,7 @@ def build_assembly_manifest(vertices, chords, faces=None, elongation_factors=(1.
   strut_groups = [
     {
       'template_group': gi,
-      'length': g['length'],
+      'length': _to_float(g['length']),
       'count': g['count'],
       'strut_ids': [strut_label(idx) for idx in g['chord_indices']],
     }
@@ -251,8 +263,8 @@ def build_assembly_manifest(vertices, chords, faces=None, elongation_factors=(1.
         edges.append({
           'hub_pair': [hub_label(u), hub_label(v)],
           'strut': strut_label(strut_idx) if strut_idx is not None else None,
-          'dihedral_angle_degrees': dr['dihedral angle (degrees)'] if dr is not None else None,
-          'bevel_angle_degrees': dr['bevel angle (degrees)'] if dr is not None else None,
+          'dihedral_angle_degrees': _to_float(dr['dihedral angle (degrees)']) if dr is not None else None,
+          'bevel_angle_degrees': _to_float(dr['bevel angle (degrees)']) if dr is not None else None,
           'note': '' if dr is not None else
                   'boundary edge (borders fewer than 2 panels) -- no dihedral to bevel, '
                   'expected at a truncated dome\'s cut edge',
@@ -262,7 +274,7 @@ def build_assembly_manifest(vertices, chords, faces=None, elongation_factors=(1.
         'index': idx,
         'hub_ids': [hub_label(a), hub_label(b), hub_label(c)],
         'centroid': fd['centroid'].tolist(),
-        'area': fd['area'],
+        'area': _to_float(fd['area']),
         'template_group': gi,
         'chiral': face_groups_raw[gi]['chiral'] if gi is not None else False,
         'orientation_bucket': orientation_of.get(idx),
@@ -272,7 +284,7 @@ def build_assembly_manifest(vertices, chords, faces=None, elongation_factors=(1.
     for gi, g in enumerate(face_groups_raw):
       entry = {
         'template_group': gi,
-        'edge_lengths': g['edge_lengths'],
+        'edge_lengths': [_to_float(l) for l in g['edge_lengths']],
         'count': g['count'],
         'chiral': g['chiral'],
         'panel_ids': [panel_label(idx) for idx in g['face_indices']],
