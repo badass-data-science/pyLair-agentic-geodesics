@@ -16,7 +16,7 @@ Two things worth reading precisely here. First, the tolerance floors out at a ti
 
 ## Seeing Both Roles at Once, on a Real Dome
 
-Here's the Actual Secret Lair — Class III `(4,1)`, elongated, truncated at `0.499999` — at four different `bom_rounding_precision` values, all describing the exact same 365 physical struts.
+Here's the Actual Secret Lair — Class III `(4,1)`, elongated, truncated at `0.499999` — at four different `bom_rounding_precision` values, all describing the exact same 415 physical struts.
 
 **Prompt:**
 > Get this dome's bill of materials at `bom_rounding_precision` 9, 3, 2, and 1. How many distinct strut-length rows does each one report?
@@ -24,15 +24,15 @@ Here's the Actual Secret Lair — Class III `(4,1)`, elongated, truncated at `0.
 **What Comes Back** (four real `get_bill_of_materials` results):
 
 ```json
-{"bom_rounding_precision": 9, "distinct_rows": 69}
-{"bom_rounding_precision": 3, "distinct_rows": 56}
-{"bom_rounding_precision": 2, "distinct_rows": 16}
-{"bom_rounding_precision": 1, "distinct_rows": 3}
+{"bom_rounding_precision": 9, "distinct_rows": 79}
+{"bom_rounding_precision": 3, "distinct_rows": 61}
+{"bom_rounding_precision": 2, "distinct_rows": 20}
+{"bom_rounding_precision": 1, "distinct_rows": 2}
 ```
 
-*(Figure 13-1: The same 365 struts on the same dome, clustered at the default `bom_rounding_precision=9` (left, 69 distinct rows — mostly groups of 5, matching this dome's own local symmetry) versus a deliberately coarse `bom_rounding_precision=2` (right, 16 distinct rows, several groups now 50–60 struts wide). Nothing changed about the dome itself between the two charts — only how aggressively nearby lengths get treated as "the same.")*
+*(Figure 13-1: The same 415 struts on the same dome, clustered at the default `bom_rounding_precision=9` (left, 79 distinct rows — mostly groups of 5, matching this dome's own local symmetry) versus a deliberately coarse `bom_rounding_precision=2` (right, 20 distinct rows, several groups now 50–60 struts wide). Nothing changed about the dome itself between the two charts — only how aggressively nearby lengths get treated as "the same.")*
 
-![Two bar charts showing the same 365 struts clustered into 69 rows at b=9 versus 16 rows at b=2](examples/images/strut_clustering_comparison.png)
+![Two bar charts showing the same 415 struts clustered into 79 rows at b=9 versus 20 rows at b=2](examples/images/strut_clustering_comparison.png)
 
 **Prompt:**
 > Generate the bill of materials at the default rounding, then again at `bom_rounding_precision=2`. Do any distinct strut lengths get merged together at the coarser setting?
@@ -43,7 +43,7 @@ Here's the Actual Secret Lair — Class III `(4,1)`, elongated, truncated at `0.
 
 ## When Coarser Is Useful, and When It's Dangerous
 
-The documented default, `bom_rounding_precision=9`, stays exact — no unintended merging at all — at any dome frequency this book or pyLair's own test suite has exercised; the minimum gap between two genuinely distinct strut lengths on the dome above is about `2.6×10⁻⁵`, comfortably larger than `bom_rounding_precision=9`'s own cluster tolerance. A coarser value is worth reaching for specifically when your actual fabrication tools can't reliably distinguish lengths as close as the default would report them separately — a laser cutter or hand saw that can't tell two struts `0.5mm` apart isn't served by a bill of materials insisting they're different, and merging them into one row is a genuine, useful simplification in that case.
+The documented default, `bom_rounding_precision=9`, stays exact — no unintended merging at all — at any dome frequency this book or pyLair's own test suite has exercised; the minimum gap between two genuinely distinct strut lengths on the dome above is about `4.7×10⁻⁶`, comfortably larger than `bom_rounding_precision=9`'s own cluster tolerance (about `9,400`× larger, in fact). A coarser value is worth reaching for specifically when your actual fabrication tools can't reliably distinguish lengths as close as the default would report them separately — a laser cutter or hand saw that can't tell two struts `0.5mm` apart isn't served by a bill of materials insisting they're different, and merging them into one row is a genuine, useful simplification in that case.
 
 It's dangerous for exactly the same reason it's useful, applied to the wrong case: if you lower `bom_rounding_precision` far enough to merge lengths that *do* matter for your build — the `0.047485003`/`0.051270148` pair above, on a build where that 4mm difference is structurally meaningful — you've told the bill of materials to lie to you, cheaply and silently. Nothing about a merged row looks wrong; it just no longer describes two different things that used to be two different things.
 

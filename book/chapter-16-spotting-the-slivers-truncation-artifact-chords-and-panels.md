@@ -15,7 +15,7 @@ That threshold — anything under `0.1%` (`SMALL_CHORD_ARTIFACT_RATIO = 1e-3`) o
 Here's the exact case from the comment above, reproduced for real on a frequency-6 Class I icosahedral sphere — the same construction Chapter 9 already showed has a genuine vertex ring exactly at the equator:
 
 ```json
-{"truncation": 0.4999999, "artifact_chords": 4, "artifact_panels": 3}
+{"truncation": 0.4999999, "artifact_chords": 6, "artifact_panels": 3}
 {"truncation": 0.45,      "artifact_chords": 0, "artifact_panels": 0}
 ```
 
@@ -25,8 +25,10 @@ Here's the exact case from the comment above, reproduced for real on a frequency
 **What Comes Back:** Yes — real, verified flagged entries, not a hypothetical case. Here's one of the actual flagged chord rows:
 
 ```json
-{"length": 2.363e-07, "count": 10}
+{"length": 2.36e-07, "count": 10}
 ```
+
+Two of these six rows are new since pyLair's own base-ring-strut fix (see Chapter 15's own note about it): the struts now closing this dome's base ring are, at a cutoff this close to a genuine vertex ring, themselves near-zero length — the same near-degenerate ring that produces the classic sliver artifacts also collapses the struts that stitch that ring together. That's not a new failure mode, just the same one showing up in one more place now that the base ring is actually strutted at all.
 
 And two real flagged panel shapes, both genuinely degenerate in different ways:
 
@@ -46,8 +48,8 @@ And two real flagged panel shapes, both genuinely degenerate in different ways:
 This is worth stating plainly, because it's a stronger and more honest claim than "always use `0.499999` and you're covered": on this *exact* frequency-6 dome, the documented safe cutoff itself still produces flagged artifacts, just smaller ones than the unsafe cutoff does:
 
 ```json
-{"truncation": 0.499999,  "artifact_chords": 6, "artifact_panels": 3}
-{"truncation": 0.4999999, "artifact_chords": 4, "artifact_panels": 3}
+{"truncation": 0.499999,  "artifact_chords": 8, "artifact_panels": 3}
+{"truncation": 0.4999999, "artifact_chords": 6, "artifact_panels": 3}
 ```
 
 **Prompt:**

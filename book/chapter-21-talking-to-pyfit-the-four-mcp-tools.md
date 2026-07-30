@@ -1,6 +1,6 @@
 # Chapter 21: Talking to pyFit — The Four MCP Tools, Progress Notifications, and a Combined Workflow
 
-Chapter 18 taught pyLair's four-tool iterate-then-commit pattern. pyFit has the identical shape — `design_nest`, `preview_nest`, `get_nest_report`, `export_nest` — for exactly the same reason: cheap sanity check, visual check, full report, commitment, in that order. This chapter teaches that pattern's pyFit version, one genuinely new idea neither dome design ever needed, and then closes Part VI with one continuous session spanning both toolkits.
+Chapter 18 taught pyLair's four-tool iterate-then-commit pattern. pyFit has the identical shape — `design_nest`, `preview_nest`, `get_nest_report`, `export_nest` — for exactly the same reason: cheap sanity check, visual check, full report, commitment, in that order. This chapter teaches that pattern's pyFit version, one genuinely new idea neither dome design ever needed, and then walks through one continuous session spanning both toolkits before Part VI's own final chapter.
 
 ## The Same Four-Tool Shape, on the Nesting Side
 
@@ -66,10 +66,10 @@ Part spec is missing required field "name".
 
 Here, narrated as one transcript, is the complete arc this book has been building since Chapter 1's cold open — every number below is one this book has already shown you, real, from the chapter that first produced it:
 
-1. **`design_dome`**, several times (Chapter 18): comparing Class III `(3,1)`/`(4,1)`/`(5,1)` — `91.79`/`114.85`/`137.77` total strut length — settling on `(4,1)` against a strut budget, no files written.
+1. **`design_dome`**, several times (Chapter 18): comparing Class III `(3,1)`/`(4,1)`/`(5,1)` — `97.99`/`121.08`/`144.02` total strut length — settling on `(4,1)` against a strut budget, no files written.
 2. **`preview_dome`** (Chapter 18): one inline check confirming the shape.
 3. **`get_bill_of_materials`** (Chapters 12–16, 18): hub angles, strut clustering, panel shapes, chirality flags, zero flagged artifacts — the full cost and buildability interrogation, still no files written.
-4. **`export_dome`** with `face_templates=True` (Chapters 15, 17, 18): the only file-writing pyLair call in the whole session — `52` real panel cutting templates, `27` real hub connector templates, a DXF, a VRML, an STL, an OBJ.
+4. **`export_dome`** with `face_templates=True` (Chapters 15, 17, 18): the only file-writing pyLair call in the whole session — `52` real panel cutting templates, `32` real hub connector templates, a DXF, a VRML, an STL, an OBJ.
 5. **A real job spec, built with zero hand-typing** (Chapter 20): every one of those `52` templates' own file paths and panel counts, straight from pyLair's own `"Panel Cutting Templates"` report, into a pyFit job spec's `"dxf"`/`"quantity"` fields.
 6. **`design_nest`**, several times (this chapter): trying rotation steps and sheet sizes, no files written, until the layout looks worth committing to.
 7. **`preview_nest`** and **`get_nest_report`** (this chapter): one visual check, one full placement interrogation.
@@ -84,4 +84,6 @@ Here, narrated as one transcript, is the complete arc this book has been buildin
 
 ## What's Next
 
-Part VII closes the book. Chapter 22 is a prompting clinic spanning both toolkits at once — real flawed prompts, rewritten, including one that looks like a single question but actually needs both pyLair and pyFit to answer honestly. Chapter 23 is the retrospective this whole book has been setting up since its very first gotcha, and Chapter 24 sends the Actual Secret Lair off to be built.
+That eight-tool session leaves one real question deliberately unanswered: a pyFit nest report tells you which sheet and position each *shape type* landed at, never which specific dome hub or panel a given physical, cut piece actually is. Chapter 22 closes Part VI by answering exactly that — a per-instance assembly manifest, a job spec that survives the trip through pyFit with its identity intact, and a real historical bug this exact work caught along the way.
+
+Part VII closes the book after that. Chapter 23 is a prompting clinic spanning both toolkits at once — real flawed prompts, rewritten, including one that looks like a single question but actually needs both pyLair and pyFit to answer honestly. Chapter 24 is the retrospective this whole book has been setting up since its very first gotcha, and Chapter 25 sends the Actual Secret Lair off to be built.

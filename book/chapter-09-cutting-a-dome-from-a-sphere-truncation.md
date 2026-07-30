@@ -67,8 +67,8 @@ For a second, independently-produced reference showing the same kind of result �
 Most of the time, this ordering is invisible, because a moderate cutoff on one axis doesn't happen to remove the vertices that define another axis's range. But it's a real effect, not a hypothetical one, and it's worth seeing it actually matter rather than trusting that it's always harmless. Take the same frequency-6 sphere and truncate it two different ways — X first at a *deliberately aggressive* cutoff (`0.9`, keeping only the top 10% of the X range, aggressive enough to remove the pole vertex that would otherwise define Z's own maximum), then Z at `0.4` on whatever remains — against the reverse order:
 
 ```json
-{"order": "X (0.9) then Z (0.4)", "vertex_count": 60,  "edge_count": 99,  "z_range": [-0.1157, 0.6031]}
-{"order": "Z (0.4) then X (0.9)", "vertex_count": 72,  "edge_count": 125, "z_range": [-0.2000, 0.6031]}
+{"order": "X (0.9) then Z (0.4)", "vertex_count": 60,  "edge_count": 138, "z_range": [-0.1157, 0.6031]}
+{"order": "Z (0.4) then X (0.9)", "vertex_count": 72,  "edge_count": 169, "z_range": [-0.2000, 0.6031]}
 ```
 
 These are genuinely different shapes — different vertex counts, different edge counts, and a different Z range on the low end (`-0.1157` versus `-0.2000`) — computed from the exact same two cutoff fractions, differing only in which axis was cut first. Cutting X first removed the very vertex (the pole) that used to anchor Z's own minimum-defining point, so Z's subsequent cutoff computed its own range against a shape that no longer included it; cutting Z first left that vertex in place for the X cut to remove afterward instead. Because pyLair always resolves this by applying X, then Y, then Z internally — never in whatever order you typed the flags — this specific ambiguity never actually reaches you as a user; it's resolved, consistently, before you ever see a result. But it's worth understanding *why* that fixed order is a real, load-bearing engineering decision rather than an arbitrary convention, precisely because the numbers above show what would happen if it weren't fixed at all.

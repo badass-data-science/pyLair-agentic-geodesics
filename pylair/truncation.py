@@ -79,7 +79,17 @@ def _clip_face(face, V_sphere, register_crossing, axis, cutoff):
   if n_above == 1:
     i = above.index(True)
     j, k = (i + 1) % 3, (i + 2) % 3
-    return [[verts[i], crossing(i, j), crossing(k, i)]], []
+    Pa, Pb = crossing(i, j), crossing(k, i)
+    # Pa-Pb is the kept triangle's own third edge -- the one lying
+    # exactly on the cutoff plane, i.e. this triangle's own segment of
+    # the dome's base ring. Every other edge of every clipped face is
+    # already covered by the general chord-clipping loop above (an
+    # original chord with one endpoint below cutoff gets shortened to
+    # its own crossing point there), but that loop only ever touches
+    # *existing* chords -- it has no way to know a face-only edge like
+    # this one needs a chord at all, so without reporting it back here
+    # a truncated dome's base ring ends up with no closing struts.
+    return [[verts[i], Pa, Pb]], [[Pa, Pb]]
 
   # n_above == 2: cutting off the single discarded corner leaves a
   # (necessarily convex, since a straight line can only cut a triangle
@@ -90,16 +100,20 @@ def _clip_face(face, V_sphere, register_crossing, axis, cutoff):
   # edge -- it is reported back as a new chord so it gets a strut length
   # in the Bill of Materials and a (necessarily flat, ~180 degree) bevel
   # angle from compute_dihedral_angles, same as any other chord bordering
-  # exactly 2 faces.
+  # exactly 2 faces. Pa-Pb (the quad's own remaining cutoff-plane edge,
+  # bordering only the second sub-triangle) is this same face's own
+  # base-ring segment, and needs reporting back for exactly the same
+  # reason the n_above==1 case's Pa-Pb does, above.
   disc = above.index(False)
   kept1, kept2 = (disc + 1) % 3, (disc + 2) % 3
   Pa = crossing(disc, kept1)
   Pb = crossing(kept2, disc)
   diagonal = [Pa, verts[kept2]]
+  base_ring_edge = [Pa, Pb]
   return [
     [Pa, verts[kept1], verts[kept2]],
     [Pa, verts[kept2], Pb],
-  ], [diagonal]
+  ], [diagonal, base_ring_edge]
 
 
 def truncate(V_sphere, C_sphere, cutoff_from_bottom, axis=2, F_sphere=None):

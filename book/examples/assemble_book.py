@@ -2,7 +2,7 @@
 assemble_book.py
 
 Concatenates "Agentic Geodesic Lair Design for Supervillains" -- front
-matter, all 24 chapters, and the three appendices, in reading order --
+matter, all 25 chapters, and the three appendices, in reading order --
 into a single Markdown file, then (by default) renders that file to PDF
 AND EPUB via pandoc. `outline.md` is deliberately excluded: it's this
 project's internal planning document, never reader-facing, and was never
@@ -14,13 +14,13 @@ divider structure -- see render_epub()'s docstring for why.
 
 Reading order is: title_page.md, dedication.md, about_the_author.md,
 about_the_series.md, how_to_use_this_book.md, ai_use_statement.md,
-chapter-01 through chapter-24 (sorted by filename, which sorts correctly
+chapter-01 through chapter-25 (sorted by filename, which sorts correctly
 since every chapter number is zero-padded), then appendix-a, appendix-b,
 appendix-c (alphabetical, which is also their intended reading order).
 This mirrors the identical script (and identical reasoning) in this
 series' companion volume,
 `omen-agentic-time-series-forecasting/book/examples/assemble_book.py`
--- adapted here for this book's own title and 24-chapter/7-part
+-- adapted here for this book's own title and 25-chapter/7-part
 structure; about_the_author.md sits in the same relative position
 (right after dedication.md) that the companion book uses.
 
@@ -78,7 +78,7 @@ PART_OPENERS = {
     "chapter-12-hub-angles-tangent-deflection-and-spoke-angles.md": "Part IV — The Bill of Materials",
     "chapter-17-getting-it-out-the-door.md": "Part V — Output, Interfaces, and Agentic Use",
     "chapter-19-introducing-pyfit-nesting-as-a-second-geometry-problem.md": "Part VI — From Panels to Sheets: Nesting with pyFit",
-    "chapter-22-prompting-pylair-and-pyfit-like-you-mean-it.md": "Part VII — Becoming a Better Design Villain",
+    "chapter-23-prompting-pylair-and-pyfit-like-you-mean-it.md": "Part VII — Becoming a Better Design Villain",
 }
 
 # Pandoc's code blocks (Shaded/Highlighting, via fancyvrb) don't wrap long
@@ -106,7 +106,7 @@ _CODE_WRAP_HEADER = (
     # the page number.
     #
     # \thechapter is NOT usable here to reconstruct a short "Chapter N"
-    # label -- every H1 in this book (front matter, all 24 chapters, all
+    # label -- every H1 in this book (front matter, all 25 chapters, all
     # 3 appendices) maps to \chapter{} equally under
     # --top-level-division=chapter, so LaTeX's own chapter COUNTER doesn't
     # match the "Chapter N" text that's actually just plain words baked
@@ -210,7 +210,7 @@ def _custom_title_page_header() -> str:
 
 def _ordered_source_files():
     """title_page -> dedication -> about_the_author -> about_the_series ->
-    how_to_use_this_book -> ai_use_statement -> chapter-01..24 (sorted,
+    how_to_use_this_book -> ai_use_statement -> chapter-01..25 (sorted,
     zero-padded so this is also numeric order) -> the three appendices,
     alphabetically. outline.md is excluded on purpose -- see module
     docstring."""

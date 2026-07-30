@@ -33,8 +33,14 @@ from mcp.server.fastmcp import FastMCP, Image
 
 from .api import build_dome
 from .bill_of_materials import get_bill_of_materials as compute_bom
-from .preview import render_preview_png_bytes, save_preview
+from .preview import render_preview_png_bytes, save_preview, render_assembly_schematic_png_bytes
 from .output import OutputDXF, OutputWireframeVRML, OutputFaceVRML, OutputSTL, OutputOBJ
+from .assembly import (
+    build_assembly_manifest,
+    build_pyfit_job_spec_for_panels,
+    build_pyfit_job_spec_for_hubs,
+    bom_template_paths,
+)
 
 mcp = FastMCP("pylair")
 
@@ -187,6 +193,136 @@ def export_dome(output_path: str, radius: float = 1.0, frequency: int = 4,
     files.extend(t['template_file'] for t in report['pyLair report'].get('Panel Cutting Templates', []))
 
   return {"files_written": files, "bill_of_materials": report}
+
+
+@mcp.tool()
+def get_assembly_manifest(radius: float = 1.0, frequency: int = 4, polyhedron: Polyhedron = "icosahedron",
+                           dome_class: DomeClass = 1, n_frequency: Optional[int] = None,
+                           truncation_x: Optional[float] = None, truncation_y: Optional[float] = None,
+                           truncation_z: Optional[float] = None, elongation_x: float = 1.0,
+                           elongation_y: float = 1.0, elongation_z: float = 1.0,
+                           vertex_equal_threshold: float = 1e-7,
+                           rounding_precision: int = 9, angle_precision: int = 3,
+                           length_precision: int = 3) -> dict:
+  """Compute the dome and return a per-instance assembly manifest, without
+  writing any files -- every hub, strut, and panel gets its own stable
+  label (H#/S#/P#, e.g. "H12"/"S77"/"P42") plus its real adjacency to its
+  neighbors: which struts meet at a hub and at what tangential/spoke
+  angle, which two hubs a strut connects and which panel(s) border it,
+  which three hubs bound a panel and the bevel angle at each of its
+  edges. This is a different cut of the same geometry
+  get_bill_of_materials reports: that tool groups instances into
+  cutting-template types and counts (how many to cut); this one keeps
+  every individual instance addressable (which specific one goes where),
+  which is what an assembly schematic or a per-instance pyFit nesting
+  job (see export_assembly_job_spec) needs. Every value is a native
+  JSON-safe type (plain float/int/str/bool/None), so the result is
+  always a clean JSON document once serialized."""
+  dome = build_dome(radius=radius, frequency=frequency, polyhedron=polyhedron,
+                     dome_class=dome_class, n_frequency=n_frequency,
+                     truncation_x=truncation_x, truncation_y=truncation_y, truncation_z=truncation_z,
+                     elongation_factors=(elongation_x, elongation_y, elongation_z),
+                     vertex_equal_threshold=vertex_equal_threshold)
+  return build_assembly_manifest(dome.V, dome.C, faces=dome.F_sphere,
+                                  elongation_factors=dome.elongation_factors,
+                                  rounding_precision=rounding_precision,
+                                  angle_precision=angle_precision,
+                                  length_precision=length_precision)
+
+
+@mcp.tool()
+def export_assembly_job_spec(output_path: str, kind: Literal["panels", "hubs"] = "panels",
+                              sheet_width: float = 48.0, sheet_height: float = 96.0,
+                              radius: float = 1.0, frequency: int = 4,
+                              polyhedron: Polyhedron = "icosahedron", dome_class: DomeClass = 1,
+                              n_frequency: Optional[int] = None, truncation_x: Optional[float] = None,
+                              truncation_y: Optional[float] = None, truncation_z: Optional[float] = None,
+                              elongation_x: float = 1.0, elongation_y: float = 1.0,
+                              elongation_z: float = 1.0, vertex_equal_threshold: float = 1e-7,
+                              rounding_precision: int = 9, angle_precision: int = 3,
+                              length_precision: int = 3) -> dict:
+  """Write real cutting-template DXFs (one per distinct hub or panel
+  shape -- the same files export_dome's hub_templates/face_templates=True
+  write) and build a pyFit job spec from them with one part entry PER
+  PHYSICAL INSTANCE, quantity always 1, named by its own assembly-manifest
+  label (H#/P#) -- instead of one entry per shape with a quantity=N --
+  so pyFit's own nest report (part_name on every placement) becomes
+  addressable back to a specific dome hub/panel, not just "some copy of
+  shape type X". A chiral panel group's "other" mirror-orientation
+  instances get an inline pre-mirrored polygon rather than trusting
+  pyFit's own packer to flip the correct ones (see
+  pylair/assembly.py's build_pyfit_job_spec_for_panels docstring for
+  why letting the packer decide would risk cutting the wrong-handed
+  piece). kind="hubs" does the equivalent for hub connector plates
+  instead of panels (no chirality model for those -- pyLair doesn't
+  compute one). Returns {"files_written": [...template dxf paths...],
+  "job_spec": {...}}; write job_spec to disk yourself (e.g. json.dump)
+  to hand it to pyFit's own design_nest/run_nest/export_nest."""
+  dome = build_dome(radius=radius, frequency=frequency, polyhedron=polyhedron,
+                     dome_class=dome_class, n_frequency=n_frequency,
+                     truncation_x=truncation_x, truncation_y=truncation_y, truncation_z=truncation_z,
+                     elongation_factors=(elongation_x, elongation_y, elongation_z),
+                     vertex_equal_threshold=vertex_equal_threshold)
+  manifest = build_assembly_manifest(dome.V, dome.C, faces=dome.F_sphere,
+                                      elongation_factors=dome.elongation_factors,
+                                      rounding_precision=rounding_precision,
+                                      angle_precision=angle_precision,
+                                      length_precision=length_precision)
+
+  if kind == "hubs":
+    report = compute_bom(dome.V, dome.C, rounding_precision,
+                          hub_template_output_path=output_path,
+                          elongation_factors=dome.elongation_factors,
+                          print_report=False, faces=dome.F_sphere)
+    template_rows = report['pyLair report'].get('Hub Connector Templates', [])
+    template_paths = bom_template_paths(template_rows, manifest['hub_groups'], 'hub_ids')
+    job_spec = build_pyfit_job_spec_for_hubs(manifest, sheet_width, sheet_height, template_paths)
+  else:
+    report = compute_bom(dome.V, dome.C, rounding_precision,
+                          elongation_factors=dome.elongation_factors,
+                          print_report=False, faces=dome.F_sphere,
+                          face_template_output_path=output_path)
+    template_rows = report['pyLair report'].get('Panel Cutting Templates', [])
+    template_paths = bom_template_paths(template_rows, manifest['panel_groups'], 'panel_ids')
+    job_spec = build_pyfit_job_spec_for_panels(manifest, sheet_width, sheet_height, template_paths)
+
+  files_written = [row['template_file'] for row in template_rows]
+  return {"files_written": files_written, "job_spec": job_spec}
+
+
+@mcp.tool()
+def render_assembly_schematic(radius: float = 1.0, frequency: int = 4,
+                               polyhedron: Polyhedron = "icosahedron", dome_class: DomeClass = 1,
+                               n_frequency: Optional[int] = None, truncation_x: Optional[float] = None,
+                               truncation_y: Optional[float] = None, truncation_z: Optional[float] = None,
+                               elongation_x: float = 1.0, elongation_y: float = 1.0,
+                               elongation_z: float = 1.0, vertex_equal_threshold: float = 1e-7,
+                               show_hub_labels: bool = True, show_strut_labels: bool = False,
+                               show_panel_labels: bool = False) -> List:
+  """Render the dome's depth-cued wireframe (same rendering preview_dome
+  uses) with each hub/strut/panel's own assembly-manifest label (H#/S#/P#)
+  optionally drawn at its hub position / strut midpoint / panel centroid,
+  and return it inline as an image -- an annotated assembly schematic
+  rather than just a shape preview. Labels default to hubs on, since
+  that's usually the single most useful view for wiring up connector
+  plates; struts and panels default off, since a real dome has far more
+  of either and turning all three on past a low frequency produces an
+  unreadable smear of text rather than a usable diagram -- turn on only
+  the label kind relevant to whatever's being documented."""
+  dome = build_dome(radius=radius, frequency=frequency, polyhedron=polyhedron,
+                     dome_class=dome_class, n_frequency=n_frequency,
+                     truncation_x=truncation_x, truncation_y=truncation_y, truncation_z=truncation_z,
+                     elongation_factors=(elongation_x, elongation_y, elongation_z),
+                     vertex_equal_threshold=vertex_equal_threshold)
+  manifest = build_assembly_manifest(dome.V, dome.C, faces=dome.F_sphere,
+                                      elongation_factors=dome.elongation_factors)
+  png_bytes = render_assembly_schematic_png_bytes(
+      dome.V, dome.C, manifest, show_hub_labels=show_hub_labels,
+      show_strut_labels=show_strut_labels, show_panel_labels=show_panel_labels)
+  summary = "%d hubs, %d struts, %d panels%s" % (
+      len(manifest['hubs']), len(manifest['struts']), len(manifest['panels']),
+      " (truncated)" if dome.truncated else "")
+  return [summary, Image(data=png_bytes, format="png")]
 
 
 def _design_summary(dome) -> dict:

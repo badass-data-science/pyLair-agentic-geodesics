@@ -105,3 +105,62 @@ def render_preview_png_bytes(V, C):
 def save_preview(V, C, the_filename):
   with open(the_filename, 'wb') as outfile:
     outfile.write(render_preview_png_bytes(V, C))
+
+
+def render_assembly_schematic_png_bytes(V, C, manifest, show_hub_labels=False,
+                                         show_strut_labels=False, show_panel_labels=False,
+                                         fontsize=6):
+  """Same depth-cued wireframe as render_preview_png_bytes, with each
+  instance's own pylair.assembly label (see build_assembly_manifest)
+  optionally drawn at its hub position / strut midpoint / panel
+  centroid. Every show_*_labels flag defaults to False -- calling this
+  with only V, C, manifest renders identically to render_preview_png_bytes,
+  and this function is never called by anything that generates the
+  book's own preview images, so existing images are unaffected either
+  way. Labels are opt-in per kind because a real dome has far more
+  struts than hubs and far more panels than either -- turning all three
+  on at once past a low frequency produces an unreadable smear of text,
+  not a usable schematic; a caller building a real assembly diagram
+  should turn on only the label kind relevant to whatever's being
+  documented (e.g. hub labels for a connector-wiring diagram, panel
+  labels for a skin-panel layout diagram), or pass a manifest that's
+  already been filtered down to one ring/subassembly.
+  """
+  fig = plt.figure()
+  ax = fig.add_subplot(projection='3d')
+
+  xlim, ylim, zlim = equal_axis_limits(V)
+  ax.set_xlim(*xlim)
+  ax.set_ylim(*ylim)
+  ax.set_zlim(*zlim)
+  ax.set_box_aspect((1, 1, 1))
+
+  add_depth_cued_wireframe(ax, V, C)
+
+  if show_hub_labels:
+    for label, hub in manifest['hubs'].items():
+      x, y, z = hub['position']
+      ax.text(x, y, z, label, fontsize=fontsize, color='black')
+
+  if show_strut_labels:
+    for label, strut in manifest['struts'].items():
+      a = np.array(manifest['hubs'][strut['hub_1']]['position'])
+      b = np.array(manifest['hubs'][strut['hub_2']]['position'])
+      midpoint = (a + b) / 2.
+      ax.text(*midpoint, label, fontsize=fontsize, color='darkgreen')
+
+  if show_panel_labels:
+    for label, panel in manifest['panels'].items():
+      x, y, z = panel['centroid']
+      ax.text(x, y, z, label, fontsize=fontsize, color='darkred')
+
+  ax.set_title('pyLair assembly schematic')
+  buf = io.BytesIO()
+  fig.savefig(buf, format='png', dpi=130)
+  plt.close(fig)
+  return buf.getvalue()
+
+
+def save_assembly_schematic(V, C, manifest, the_filename, **kwargs):
+  with open(the_filename, 'wb') as outfile:
+    outfile.write(render_assembly_schematic_png_bytes(V, C, manifest, **kwargs))

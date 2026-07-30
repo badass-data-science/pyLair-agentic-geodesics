@@ -13,9 +13,11 @@ Here's the payoff, run for real on the Actual Secret Lair — Class III `(4,1)`,
 **Prompt:**
 > Export this dome with hub and panel templates — `hub_templates=True`, `face_templates=True`. How many genuinely distinct hub shapes are there, versus the total number of hubs?
 
-**What Comes Back** (a real `export_dome` result): This dome has `156` total hubs. `group_hub_types` finds `28` genuinely distinct shape groups among them — but only `27` `_hubtype*.dxf` files actually get written. The missing one is deliberate, not a bug: `25` of those `156` hubs share a single-strut (`valence: 1`) shape — the truncated dome's own base row, where the cutoff left a stub with only one remaining chord — and a connector plate with only one strut socket has no angular pattern to draw a template for at all, so `get_bill_of_materials` explicitly skips any group with `valence <= 1` before writing files.
+**What Comes Back** (a real `export_dome` result): This dome has `156` total hubs. `group_hub_types` finds `32` genuinely distinct shape groups among them, and all `32` actually get a `_hubtype*.dxf` file written — every hub on this dome has at least 2 struts meeting there, and therefore a real angular pattern to draw a template for.
 
-**What It Means:** `156` physical hubs collapse to `27` real, distinct connector templates — not `156` separate files, and not naively `28` either, once you account for the one shape that genuinely doesn't need a cutting template because there's nothing to cut. A builder ordering connector plates needs 27 distinct part numbers, cut in the quantities each group's `count` reports, not one custom plate per physical joint.
+That "all of them" is itself worth a footnote, because it wasn't always true of this exact dome. `get_bill_of_materials` explicitly skips any hub-shape group with `valence <= 1` before writing files — a connector plate with only one strut socket has no angular pattern to draw a template for at all, so that skip is still real, correct, defensive code. It used to actually trigger here: an earlier version of `truncate()` never gave a boundary triangle's own cut-plane edge a chord at all, so the `50` hubs sitting on this dome's cut base ring only ever connected *upward*, never to their own ring-neighbors — `25` of them stuck at a stub valence of `1`, with no defined angle to report. Once that base-ring-strut fix shipped, those same `50` hubs split into two entirely ordinary, template-needing shapes instead: `25` at valence `3`, `25` at valence `4` — the two new struts closing each hub into its ring neighbors on either side.
+
+**What It Means:** `156` physical hubs collapse to `32` real, distinct connector templates — not `156` separate files, and every single one of them a genuine, buildable connector, unlike the earlier, buggier version of this exact dome. A builder ordering connector plates needs 32 distinct part numbers, cut in the quantities each group's `count` reports, not one custom plate per physical joint.
 
 Panel templates follow the identical logic on the shape side: this same dome's `260` total panels collapse to `52` distinct `_facetype*.dxf` files.
 
@@ -32,12 +34,12 @@ Two hubs from the *exact same symmetry orbit* — physically identical positions
 This isn't a one-off observation; it was checked empirically across a real range, and this book's own testing confirms the same pattern directly on the Actual Secret Lair:
 
 ```json
-{"angle_precision": 1, "distinct_hub_groups": 28}
-{"angle_precision": 2, "distinct_hub_groups": 28}
-{"angle_precision": 3, "distinct_hub_groups": 28}
-{"angle_precision": 4, "distinct_hub_groups": 28}
-{"angle_precision": 5, "distinct_hub_groups": 31}
-{"angle_precision": 6, "distinct_hub_groups": 36}
+{"angle_precision": 1, "distinct_hub_groups": 32}
+{"angle_precision": 2, "distinct_hub_groups": 32}
+{"angle_precision": 3, "distinct_hub_groups": 32}
+{"angle_precision": 4, "distinct_hub_groups": 32}
+{"angle_precision": 5, "distinct_hub_groups": 35}
+{"angle_precision": 6, "distinct_hub_groups": 40}
 ```
 
 Precision 1 through 4 all agree on the identical, stable count — a genuine plateau, not a coincidence — while precision 5 and 6 start reporting spurious extra groups, purely from noise that a coarser tolerance correctly treats as "the same." `3` is deliberately chosen as a safety margin comfortably inside that stable plateau, not the loosest value that happened to pass a single test.

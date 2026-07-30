@@ -25,18 +25,26 @@ Every CLI flag and MCP tool this book actually used, for both toolkits, with a o
 | `-O` | `--obj` | Save an OBJ surface mesh. | 17 |
 | `-H` | `--hub-templates` | Save one DXF per distinct hub connector shape. | 15 |
 | `-T` | `--face-templates` | Save one DXF per distinct panel shape. | 15, 20 |
-| `-a` | `--area-cost` | Price per unit panel area. | 11, 22 |
+| `-a` | `--area-cost` | Price per unit panel area. | 11, 23 |
 | `-w` | `--panel-density` | Areal density for panel weight estimates. | 11 |
+| — | `--assembly-manifest` | Save a per-instance assembly manifest (every hub/strut/panel with its own stable label and real adjacency). | 22 |
+| — | `--pyfit-job-spec=panels\|hubs` | Write real cutting templates and a per-instance pyFit job spec built from them. | 22 |
+| — | `--sheet-width`, `--sheet-height` | Sheet dimensions used in the `--pyfit-job-spec` output; default `48`/`96`. | 22 |
+| — | `--assembly-schematic` | Save an annotated wireframe with each hub's label drawn at its position. | 22 |
+| — | `--schematic-strut-labels`, `--schematic-panel-labels` | Also label struts/panels on the `--assembly-schematic` image. | 22 |
 | `-h` | `--help` | Show usage and exit. | — |
 
 ## pyLair MCP Tools (`pylair-mcp`)
 
 | Tool | Purpose | Writes files? | Chapter(s) |
 |---|---|---|---|
-| `design_dome` | Cheap summary (counts, footprint, height, strut length) for comparing configurations. | No | 2, 18, 22 |
+| `design_dome` | Cheap summary (counts, footprint, height, strut length) for comparing configurations. | No | 2, 18, 23 |
 | `preview_dome` | Inline wireframe render. | No | 18 |
-| `get_bill_of_materials` | Full BOM as structured data (struts, hub angles, panels, chirality flags, artifact warnings). | No | 18, 22 |
+| `get_bill_of_materials` | Full BOM as structured data (struts, hub angles, panels, chirality flags, artifact warnings). | No | 18, 23 |
 | `export_dome` | Writes DXF/VRML/STL/OBJ/templates to disk; the only file-writing tool of the four. | Yes | 17, 18, 21 |
+| `get_assembly_manifest` | Per-instance assembly manifest, no files — every hub/strut/panel with its own stable label and real adjacency, unlike the BOM's type-grouped counts. | No | 22 |
+| `export_assembly_job_spec` | Writes real cutting templates and a per-instance pyFit job spec built from them (`kind="panels"` or `"hubs"`). | Yes | 22 |
+| `render_assembly_schematic` | Inline depth-cued wireframe with optional per-hub/strut/panel labels drawn at their positions. | No | 22 |
 
 ## pyFit CLI (`pyfit`)
 
@@ -52,7 +60,7 @@ Every CLI flag and MCP tool this book actually used, for both toolkits, with a o
 
 | Tool | Purpose | Writes files? | Chapter(s) |
 |---|---|---|---|
-| `design_nest` | Cheap summary (sheets used, per-sheet utilization). | No | 21, 22 |
+| `design_nest` | Cheap summary (sheets used, per-sheet utilization). | No | 21, 23 |
 | `preview_nest` | Inline per-sheet layout render. | No | 21 |
 | `get_nest_report` | Full placement report as structured data (sheet index, position, rotation, mirror flag per part instance). | No | 21 |
 | `export_nest` | Writes one DXF (and optionally PNG) per sheet actually used; the only file-writing tool of the four. | Yes | 21 |
