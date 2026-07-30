@@ -16,12 +16,12 @@ Here's that whole session, narrated as it actually happened rather than assumed 
 **What Comes Back** (three real `design_dome` results, all Class III on an icosahedron, elongated `1.8`× on Z, truncated at `0.499999`, differing only in `(m,n)`):
 
 ```json
-{"m": 3, "n": 1, "vertex_count": 106, "face_count": 170, "total_strut_length": 91.79}
-{"m": 4, "n": 1, "vertex_count": 156, "face_count": 260, "total_strut_length": 114.85}
-{"m": 5, "n": 1, "vertex_count": 216, "face_count": 370, "total_strut_length": 137.77}
+{"m": 3, "n": 1, "vertex_count": 106, "face_count": 170, "total_strut_length": 97.99}
+{"m": 4, "n": 1, "vertex_count": 156, "face_count": 260, "total_strut_length": 121.08}
+{"m": 5, "n": 1, "vertex_count": 216, "face_count": 370, "total_strut_length": 144.02}
 ```
 
-**What It Means:** Nothing was written to disk for any of these three — just three cheap summary calls, exactly the kind of comparison-shopping `design_dome` exists for. Against a strut-length budget in the neighborhood of `110`–`120` units, `(m,n)=(4,1)` is the clear fit — not coincidentally the same configuration this book settled on back in Chapter 6, but arrived at here through the tool this chapter is actually teaching, not assumed from memory.
+**What It Means:** Nothing was written to disk for any of these three — just three cheap summary calls, exactly the kind of comparison-shopping `design_dome` exists for. Against a strut-length budget in the neighborhood of `115`–`125` units, `(m,n)=(4,1)` is the clear fit — not coincidentally the same configuration this book settled on back in Chapter 6, but arrived at here through the tool this chapter is actually teaching, not assumed from memory.
 
 **Prompt:**
 > Now preview the one you picked, then check its bill of materials before we export anything for real.
@@ -32,16 +32,16 @@ The preview matches Figure 9-2 from several chapters back — the same elongated
 
 ```json
 {
-  "Total material": {"Total strut length": 114.848689744},
+  "Total material": {"Total strut length": 121.081470138},
   "Total panel material": {"Total panel area": 9.676572145},
-  "strut_length_rows": 69,
+  "strut_length_rows": 79,
   "panel_shape_groups": 52,
   "artifact_chords": 0,
   "artifact_panels": 0
 }
 ```
 
-**What It Means:** `114.85` matches the `design_dome` estimate from the first prompt almost exactly (small differences in later decimal places are expected — `design_dome`'s own strut-length figure and `get_bill_of_materials`'s are computed the same way, just packaged differently). Zero flagged artifact chords or panels confirms Chapter 16's own check comes back clean on this specific configuration — worth actually seeing in this session rather than assumed from that earlier chapter's own finding. Only now, with a shape chosen, previewed, and cost-checked, does exporting for real make sense.
+**What It Means:** `121.08` matches the `design_dome` estimate from the first prompt almost exactly (small differences in later decimal places are expected — `design_dome`'s own strut-length figure and `get_bill_of_materials`'s are computed the same way, just packaged differently). Zero flagged artifact chords or panels confirms Chapter 16's own check comes back clean on this specific configuration — worth actually seeing in this session rather than assumed from that earlier chapter's own finding. Only now, with a shape chosen, previewed, and cost-checked, does exporting for real make sense.
 
 **Prompt:**
 > Export this configuration for real — DXF, face data, STL, hub and panel templates, all of it.
@@ -53,7 +53,7 @@ The preview matches Figure 9-2 from several chapters back — the same elongated
   "files_written": [
     "lair.wrl", "lair.stl", "lair.obj", "lair.png",
     "lair_facetype1.dxf", "... 51 more facetype files (52 total, matching the panel_shape_groups above) ...",
-    "lair_hubtype1.dxf", "... 26 more hubtype files (27 total, per Chapter 15's own count for this exact dome) ..."
+    "lair_hubtype1.dxf", "... 31 more hubtype files (32 total, per Chapter 15's own count for this exact dome) ..."
   ],
   "bill_of_materials": { "...": "the same report just interrogated above" }
 }

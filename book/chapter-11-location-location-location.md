@@ -50,8 +50,8 @@ A panopticon only earns the name if it can actually see everything, which is pre
 These two share one design logic for two opposite reasons: keep most of the structure buried, expose only a small cap. A volcano's caldera and a glacier's ice sheet don't have much in common as building sites, but they agree on one thing that matters enormously to anyone trying not to be noticed from a satellite: the surrounding rock or ice does the hiding for free, so the only part of the budget that has to go toward stealth is whatever small fraction can't be buried. pyLair's own truncation only ever describes what to keep *above* a cutoff, so an aggressive, close-to-1 cutoff (`0.85` for both stops here) keeps just the small top fraction this chapter's own images show — the physically buried remainder isn't part of either model at all, an important scope boundary this chapter returns to below.
 
 ```json
-{"stop": "Magma Redoubt",     "elongation": "1.0,1.0,1.0", "truncation_z": 0.85, "height": 0.3000, "footprint_diameter": 1.4135, "total_strut_length": 34.8225}
-{"stop": "Permafrost Cache",  "elongation": "1.2,1.2,1.0", "truncation_z": 0.85, "height": 0.3000, "footprint_diameter": 1.6962, "total_strut_length": 40.8807}
+{"stop": "Magma Redoubt",     "elongation": "1.0,1.0,1.0", "truncation_z": 0.85, "height": 0.3000, "footprint_diameter": 1.4135, "total_strut_length": 39.2628}
+{"stop": "Permafrost Cache",  "elongation": "1.2,1.2,1.0", "truncation_z": 0.85, "height": 0.3000, "footprint_diameter": 1.6962, "total_strut_length": 46.2090}
 ```
 
 The Permafrost Cache's slightly wider `1.2,1.2` footprint reflects a real, different structural argument: even load distribution under accumulating snow weight matters more here than under the Magma Redoubt's heat exposure, and a shallower, wider cap distributes that load over more area for the same cap height — the same "geodesic domes distribute stress evenly" pitch this book's own companion blog post opens with, applied here to one specific, real load direction instead of stated as an abstract selling point.
@@ -61,7 +61,7 @@ The Permafrost Cache's slightly wider `1.2,1.2` footprint reflects a real, diffe
 Every other stop in this chapter reaches for a flattened, low-profile shape. This one deliberately doesn't, because the design goal here is the opposite of every other stop's: a supervillain who *wants* to be seen, not hidden — a mesa-top spire visible from the highway specifically so every driver who sees it understands, instantly and correctly, that someone with resources and a point to prove lives up there. Concealment was never the brief; the brief was a skyline. Aggressive vertical elongation (`"0.6,0.6,3.0"`), moderate truncation for a real floor (`0.4`):
 
 ```json
-{"footprint_diameter": 1.2000, "height": 3.6000, "total_strut_length": 220.0035}
+{"footprint_diameter": 1.2000, "height": 3.6000, "total_strut_length": 223.6843}
 ```
 
 *(Figure 11-2: Footprint diameter versus total strut length across all six stops — real `design_dome` output, not estimated. Notice the Mesa Spire's bar pair: the smallest footprint of any stop in this chapter, paired with the second-highest strut total. A compact footprint and a cheap build are not the same claim.)*
@@ -80,7 +80,7 @@ One last stop, purely for the joke, and to make one final point honestly: the sa
 **What Comes Back** (a real `design_dome` result):
 
 ```json
-{"footprint_diameter": 0.3000, "height": 0.1500, "total_strut_length": 17.5946}
+{"footprint_diameter": 0.3000, "height": 0.1500, "total_strut_length": 18.5354}
 ```
 
 Every parameter this chapter has used at volcano-lair and orbital-station scale — frequency, class, elongation, truncation — is exactly as usable for a closet-sized home addition. Nothing about pyLair's geometry engine cares whether the number passed as `radius` describes a modest renovation or a circumpolar fortress.

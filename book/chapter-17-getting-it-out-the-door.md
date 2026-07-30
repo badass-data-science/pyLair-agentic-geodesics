@@ -34,7 +34,7 @@ Chapter 10 fixed a real historical gap: face-aware export used to only work corr
   "files_written": [
     "lair.wrl", "lair.stl", "lair.obj", "lair.png",
     "lair_facetype1.dxf", "... 91 total facetype files",
-    "lair_hubtype1.dxf", "... 54 total hubtype files"
+    "lair_hubtype1.dxf", "... 71 total hubtype files"
   ]
 }
 ```
@@ -43,10 +43,10 @@ Chapter 10 fixed a real historical gap: face-aware export used to only work corr
 lair.wrl              11,448 bytes   (face-inclusive VRML)
 lair.stl              60,129 bytes   (3D-printable surface mesh)
 lair.obj              10,321 bytes   (3D-printable surface mesh)
-lair.png             171,503 bytes   (preview image)
+lair.png             180,646 bytes   (preview image)
 ```
 
-**What It Means:** Every one of these files needed correctly-clipped face data surviving *two* sequential truncation passes (Chapters 9 and 10's own subject) to even exist — `.wrl`, `.stl`, `.obj`, and every `facetype`/`hubtype` template all require face data (`face_output`, `stl`, `obj`, `face_templates`, `cost_per_unit_area`, `panel_areal_density`, per `export_dome`'s own parameter list), and none of them errored or produced a visibly broken shape despite two axes of truncation both clipping through real triangles along the way. This is Chapter 10's fix, demonstrated rather than just claimed: 91 distinct panel shapes and 54 distinct hub shapes, from a dome cut on two axes at once, exported without incident.
+**What It Means:** Every one of these files needed correctly-clipped face data surviving *two* sequential truncation passes (Chapters 9 and 10's own subject) to even exist — `.wrl`, `.stl`, `.obj`, and every `facetype`/`hubtype` template all require face data (`face_output`, `stl`, `obj`, `face_templates`, `cost_per_unit_area`, `panel_areal_density`, per `export_dome`'s own parameter list), and none of them errored or produced a visibly broken shape despite two axes of truncation both clipping through real triangles along the way. This is Chapter 10's fix, demonstrated rather than just claimed: 91 distinct panel shapes and 71 distinct hub shapes, from a dome cut on two axes at once, exported without incident.
 
 The plain wireframe DXF, by contrast, needs a *separate* call with `face_output=False` (or simply omitted):
 
@@ -56,8 +56,8 @@ The plain wireframe DXF, by contrast, needs a *separate* call with `face_output=
 **What Comes Back** (a real `export_dome` result):
 
 ```
-lair-wireframe.dxf   41,457 bytes
-lair-wireframe.wrl   10,945 bytes   (wireframe, not face-inclusive)
+lair-wireframe.dxf   50,545 bytes
+lair-wireframe.wrl   11,587 bytes   (wireframe, not face-inclusive)
 ```
 
 ## What STL and OBJ Actually Print
