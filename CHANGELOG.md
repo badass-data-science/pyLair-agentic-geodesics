@@ -10,6 +10,15 @@ lives under `[Unreleased]` against the `0.1.0` version in `pyproject.toml`.
 
 ### Added
 
+- `pylair/assembly.py`: a per-instance assembly manifest (`H#`/`S#`/`P#`
+  labels, real hub/strut/panel adjacency) and a per-instance pyFit job spec
+  built from real cutting templates, so a nesting result can be traced back
+  to a specific dome hub/panel rather than just "some copy of shape type X".
+  Exposed via three new MCP tools (`get_assembly_manifest`,
+  `export_assembly_job_spec`, `render_assembly_schematic`) and matching CLI
+  flags (`--assembly-manifest`, `--pyfit-job-spec`, `--sheet-width`/
+  `--sheet-height`, `--assembly-schematic`,
+  `--schematic-strut-labels`/`--schematic-panel-labels`).
 - OpenClaw skill (`SKILL.md` + `openclaw.config.snippet.jsonc`) so an
   [OpenClaw](https://openclaw.ai/) agent can drive the `pylair` CLI directly,
   since OpenClaw has no MCP client of its own.
@@ -64,6 +73,16 @@ lives under `[Unreleased]` against the `0.1.0` version in `pyproject.toml`.
   instead of producing silently wrong geometry.
 - Validate frequency/radius CLI arguments and narrow bare `except` clauses.
 - Strut the diagonal seam left over from corner-clipped quad panels.
+- Strut a truncated dome's own base ring: a clipped boundary triangle's
+  cut-plane edge was never reported back as a chord, so every truncated
+  dome's base ring was missing its closing struts entirely (invisible in
+  the vertex/edge/face counts, since no new vertices were involved --
+  only a real, previously-uncounted strut per boundary triangle).
+- Normalized the assembly manifest to native `float`/`list` values
+  throughout (angles, panel area, strut-group/panel-group lengths, and
+  `edge_lengths`) instead of raw `numpy.float64`/`tuple` -- `json.dumps()`
+  happened to accept the old values too, but only because `numpy.float64`
+  is coincidentally a `float` subclass.
 - Stale MCP tool docstrings for panel data and truncation-artifact flags.
 - Two stale README claims about panel data and the flat-chord error.
 - Stale `METHOD.md` links in `AGENTS.md` and `README.md` still pointing at

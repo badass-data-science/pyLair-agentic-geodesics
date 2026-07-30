@@ -294,13 +294,21 @@ def group_face_types(faces_data, length_precision=3):
 
     chiral = is_scalene and len(chirality_buckets) > 1
     orientations = None
+    # chirality_buckets.values() and orientations are built from the same
+    # dict in the same iteration order, so orientations[i]['count'] ==
+    # len(chirality_bucket_face_indices[i]) for every i -- a consumer
+    # that needs to know which physical mirror orientation a specific
+    # face instance belongs to (e.g. to cut it from a pre-mirrored
+    # polygon rather than trusting a nesting tool to flip it correctly)
+    # can zip the two together.
+    chirality_bucket_face_indices = list(chirality_buckets.values())
     if chiral:
       orientations = [
         {
           'edge_lengths': faces_data[idxs[0]]['edge_lengths'],
           'count': len(idxs),
         }
-        for idxs in chirality_buckets.values()
+        for idxs in chirality_bucket_face_indices
       ]
 
     representative_face = face_indices[0]
@@ -312,6 +320,7 @@ def group_face_types(faces_data, length_precision=3):
       'area': round(faces_data[representative_face]['area'], length_precision),
       'chiral': chiral,
       'orientations': orientations,
+      'chirality_bucket_face_indices': chirality_bucket_face_indices,
     })
   result.sort(key=lambda g: -g['count'])
   return result
@@ -357,13 +366,7 @@ def compute_dihedral_angles(face_data, chords):
   return results
 
 
-def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_length=None, hub_template_output_path=None, elongation_factors=(1.0, 1.0, 1.0), print_report=True, faces=None, cost_per_unit_area=None, panel_areal_density=None, face_template_output_path=None):
-
-  report = {'pyLair report' : {}}
-  
-  #
-  # compute Bill of Materials
-  #
+def cluster_chord_lengths(vertices, chords, rounding_precision):
   # Chords belonging to the same strut class can differ by tiny amounts of
   # floating-point noise from the geometry pipeline. Group them by sorting
   # and splitting on gaps larger than a tolerance, rather than
@@ -379,6 +382,11 @@ def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_le
   # floating-point noise rather than reporting spurious near-duplicate
   # lengths as distinct struts.
   #
+  # Each returned row's 'chord_indices' is the list of positions into
+  # `chords` (i.e. into DomeResult.C) belonging to that length cluster --
+  # the dome-level strut instance identity a cutting/assembly manifest
+  # needs, which independently rounding each length to a display value
+  # would otherwise discard. Groups are sorted longest-first.
   raw_lengths = [np.linalg.norm(vertices[c[0]] - vertices[c[1]]) for c in chords]
 
   list_bom = []
@@ -398,14 +406,28 @@ def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_le
       list_bom.append({
         'length': round(sum(cluster_lengths) / len(cluster_lengths), rounding_precision),
         'count': len(cluster),
+        'chord_indices': sorted(cluster),
       })
-  df_bom = pd.DataFrame(list_bom).sort_values(by = ['length'], ascending = False).reset_index(drop = True)
+
+  return sorted(list_bom, key=lambda row: row['length'], reverse=True)
+
+
+def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_length=None, hub_template_output_path=None, elongation_factors=(1.0, 1.0, 1.0), print_report=True, faces=None, cost_per_unit_area=None, panel_areal_density=None, face_template_output_path=None):
+
+  report = {'pyLair report' : {}}
+
+  #
+  # compute Bill of Materials
+  #
+  raw_lengths = [np.linalg.norm(vertices[c[0]] - vertices[c[1]]) for c in chords]
+  scale = max(raw_lengths) if raw_lengths else 0.
+
+  chord_lengths_and_counts = cluster_chord_lengths(vertices, chords, rounding_precision)
 
   # a chord under SMALL_CHORD_ARTIFACT_RATIO of the dome's largest strut
   # is almost certainly a truncation-boundary sliver (e.g. from a cutoff
   # landing extremely close to, but not exactly on, a vertex ring) --
   # see module docstring for why this ratio was chosen
-  chord_lengths_and_counts = df_bom.to_dict(orient = 'records')
   artifact_length_threshold = scale * SMALL_CHORD_ARTIFACT_RATIO
   artifact_chords = [row for row in chord_lengths_and_counts if row['length'] < artifact_length_threshold]
 
@@ -467,6 +489,7 @@ def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_le
         'template_file': template_filename,
         'struts_per_hub': group['valence'],
         'hub_count': group['count'],
+        'hub_indices': group['hub_indices'],
         })
     report['pyLair report']['Hub Connector Templates'] = list_hub_templates
 
@@ -532,6 +555,7 @@ def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_le
         'count': g['count'],
         'chiral': g['chiral'],
         'orientations': g['orientations'],
+        'face_indices': g['face_indices'],
       }
       for g in face_groups
     ]
@@ -570,6 +594,9 @@ def get_bill_of_materials(vertices, chords, rounding_precision, cost_per_unit_le
           'template_file': template_filename,
           'edge_lengths': group['edge_lengths'],
           'panel_count': group['count'],
+          'face_indices': group['face_indices'],
+          'chiral': group['chiral'],
+          'orientations': group['orientations'],
         })
       report['pyLair report']['Panel Cutting Templates'] = list_face_templates
 
