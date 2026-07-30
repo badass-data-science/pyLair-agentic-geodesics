@@ -4,7 +4,7 @@ Before Chapter 3 can pick a polyhedron for real, something more tedious has to h
 
 ## What You're Actually Installing
 
-Both pyLair and pyFit are ordinary, installable Python packages — as of this writing, neither has been published to PyPI yet (pyLair's own blog post lists that under "Next Steps," and pyFit's `AGENTS.md` is explicit that "nothing has been published to PyPI yet; publishing is a separate, deliberate step"). So for now, both are installed the same way: clone the repository, then install it editable, optionally with the `mcp` extra:
+Both pyLair and pyFit are ordinary, installable **Python** packages — Python being the general-purpose programming language both are actually written in, if that word is new to you — as of this writing, neither has been published to PyPI yet (pyLair's own blog post lists that under "Next Steps," and pyFit's `AGENTS.md` is explicit that "nothing has been published to PyPI yet; publishing is a separate, deliberate step"). So for now, both are installed the same way: clone the repository — pyLair's own source lives at [github.com/badass-data-science/pyLair-agentic-geodesics](https://github.com/badass-data-science/pyLair-agentic-geodesics), pyFit's at [github.com/badass-data-science/pyFit-agentic-polygon-nesting](https://github.com/badass-data-science/pyFit-agentic-polygon-nesting) — then install it editable, optionally with the `mcp` extra:
 
 ```bash
 git clone https://github.com/badass-data-science/pyLair-agentic-geodesics.git
