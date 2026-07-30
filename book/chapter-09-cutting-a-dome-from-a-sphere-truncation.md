@@ -4,7 +4,7 @@ Every dome this book has built so far has been a complete sphere or ellipsoid �
 
 ## What a Cutoff Fraction Actually Measures
 
-`-t/--truncation` (and its per-axis siblings `-x`/`-y`, both covered later in this chapter) take a single number between 0 and 1: the fraction of that axis's own range, measured from the bottom, above which everything is kept. `truncate()`'s own logic makes this precise — for a chosen axis, find that axis's minimum and maximum vertex coordinate across the whole shape, and compute:
+`truncation_z` (and its per-axis siblings `truncation_x`/`truncation_y`, both covered later in this chapter) each take a single number between 0 and 1: the fraction of that axis's own range, measured from the bottom, above which everything is kept. `truncate()`'s own logic makes this precise — for a chosen axis, find that axis's minimum and maximum vertex coordinate across the whole shape, and compute:
 
 ```python
 cutoff = min_value + cutoff_from_bottom * (max_value - min_value)
@@ -14,10 +14,14 @@ Everything at or above `cutoff` survives; everything below it is discarded, and 
 
 ## The Flat-Chord Failure, Reproduced Live
 
-Here's the danger this chapter exists to teach you to recognize and avoid, demonstrated exactly as it actually happens rather than described in the abstract. Take a plain, unelongated Class I icosahedral sphere at frequency 6, and truncate it at exactly `0.5`:
+Here's the danger this chapter exists to teach you to recognize and avoid, demonstrated exactly as it actually happens rather than described in the abstract. Take a plain, unelongated Class I icosahedral sphere at frequency 6.
+
+**Prompt:**
+> Truncate this dome at exactly `truncation_z=0.5`.
+
+**What Comes Back** (a real tool error, not a crash):
 
 ```
-$ pylair -o bad -f 6 -t 0.5 -r 1.0
 Truncation cutoff plane lies exactly on a chord that is flat along
 the cutoff axis. Choose a slightly different truncation value to
 avoid this degenerate case.
@@ -29,7 +33,7 @@ This isn't a bug — it's `truncate()` refusing to do something it can't do safe
 
 ![30 vertices sitting exactly on Z=0, with an unsafe 0.5 cutoff landing on all of them and a safe 0.499999 cutoff clearing them by a tiny margin](examples/images/truncation_safe_vs_unsafe.png)
 
-Why does frequency 6 specifically produce a vertex ring exactly at the equator? A quick sweep across frequencies shows the pattern plainly: `-t 0.5` fails at every *even* frequency (2, 4, 6, 8, 10...) and succeeds at every *odd* one, for this base construction — an even frequency's grid happens to land a full ring of vertices exactly on the midplane, where an odd one doesn't. This is exactly why the CLI's own `-t/--truncation` help text recommends `0.499999` or `0.333333` over rounder-looking numbers: both are chosen specifically to avoid landing exactly on a vertex ring at the frequencies this construction typically produces one at.
+Why does frequency 6 specifically produce a vertex ring exactly at the equator? A quick sweep across frequencies shows the pattern plainly: `truncation_z=0.5` fails at every *even* frequency (2, 4, 6, 8, 10...) and succeeds at every *odd* one, for this base construction — an even frequency's grid happens to land a full ring of vertices exactly on the midplane, where an odd one doesn't. This is exactly why pyLair's own documentation recommends `0.499999` or `0.333333` over rounder-looking numbers: both are chosen specifically to avoid landing exactly on a vertex ring at the frequencies this construction typically produces one at.
 
 **Prompt:**
 > Truncate this dome at the equator on Z only, using the documented safe cutoff. Then try `0.5` exactly — what happens, and why?
@@ -40,11 +44,12 @@ Why does frequency 6 specifically produce a vertex ring exactly at the equator? 
 
 ## Truncating the Actual Secret Lair
 
-The dome this book has been building — Class III at `(m,n)=(4,1)` (Chapter 6), stretched `1.8`× on Z for headroom (Chapter 8) — finally gets a floor here, sliced at exactly the documented safe value:
+The dome this book has been building — Class III at `(m,n)=(4,1)` (Chapter 6), stretched `1.8`× on Z for headroom (Chapter 8) — finally gets a floor here, sliced at exactly the documented safe value.
 
-```
-pylair -o truncated-secret-lair -f 4 -n 1 -c 3 -r 1.0 -e "1.0,1.0,1.8" -t 0.499999 -P
-```
+**Prompt:**
+> Truncate our running dome at `truncation_z=0.499999` and preview it.
+
+**What Comes Back** (a real `preview_dome` render):
 
 *(Figure 9-2: The Actual Secret Lair, finally ground-flush — Class III, elongated, and now truncated at the documented safe cutoff. This is the first time in the book this shape has looked like a building rather than a suspended shape.)*
 
@@ -57,7 +62,7 @@ For a second, independently-produced reference showing the same kind of result �
 
 ## Combining Axes: Order Is Fixed, and It Matters
 
-`-t`/`-x`/`-y` can be combined — truncating on 2 or all 3 axes at once — and pyLair applies them in a specific, fixed internal order every time: **X, then Y, then Z**, regardless of what order you happen to type those flags on the command line. This isn't cosmetic. Each axis's cutoff fraction is computed against *that axis's own range at the moment its `truncate()` call runs* — and if an earlier axis's cut has already removed the vertices that used to define a later axis's extreme values, the later axis's own range genuinely changes as a result.
+`truncation_x`/`truncation_y`/`truncation_z` can be combined — truncating on 2 or all 3 axes at once — and pyLair applies them in a specific, fixed internal order every time: **X, then Y, then Z**, regardless of what order you happen to list those parameters in a tool call. This isn't cosmetic. Each axis's cutoff fraction is computed against *that axis's own range at the moment its `truncate()` call runs* — and if an earlier axis's cut has already removed the vertices that used to define a later axis's extreme values, the later axis's own range genuinely changes as a result.
 
 Most of the time, this ordering is invisible, because a moderate cutoff on one axis doesn't happen to remove the vertices that define another axis's range. But it's a real effect, not a hypothetical one, and it's worth seeing it actually matter rather than trusting that it's always harmless. Take the same frequency-6 sphere and truncate it two different ways — X first at a *deliberately aggressive* cutoff (`0.9`, keeping only the top 10% of the X range, aggressive enough to remove the pole vertex that would otherwise define Z's own maximum), then Z at `0.4` on whatever remains — against the reverse order:
 
@@ -69,12 +74,12 @@ Most of the time, this ordering is invisible, because a moderate cutoff on one a
 These are genuinely different shapes — different vertex counts, different edge counts, and a different Z range on the low end (`-0.1157` versus `-0.2000`) — computed from the exact same two cutoff fractions, differing only in which axis was cut first. Cutting X first removed the very vertex (the pole) that used to anchor Z's own minimum-defining point, so Z's subsequent cutoff computed its own range against a shape that no longer included it; cutting Z first left that vertex in place for the X cut to remove afterward instead. Because pyLair always resolves this by applying X, then Y, then Z internally — never in whatever order you typed the flags — this specific ambiguity never actually reaches you as a user; it's resolved, consistently, before you ever see a result. But it's worth understanding *why* that fixed order is a real, load-bearing engineering decision rather than an arbitrary convention, precisely because the numbers above show what would happen if it weren't fixed at all.
 
 **Prompt:**
-> Now truncate on X and Z together. Does the order I specify the flags in change the resulting shape?
+> Now truncate on X and Z together. Does the order I list `truncation_x` and `truncation_z` in my tool call change the resulting shape?
 
 **What Comes Back:**
-> No — pyLair always applies truncation in a fixed X, then Y, then Z order internally, regardless of the order `-x`/`-y`/`-t` appear on the command line or in an MCP call's parameters. What *would* change the shape is which axis's cutoff is computed first, which is exactly why that internal order is fixed rather than left to whatever sequence a caller happens to type: each later axis's cutoff is computed against whatever range the earlier axis's cut already left behind, and reversing that internal order can produce a measurably different dome from the identical two cutoff fractions.
+> No — pyLair always applies truncation in a fixed X, then Y, then Z order internally, regardless of the order those parameters appear in your request. What *would* change the shape is which axis's cutoff is computed first, which is exactly why that internal order is fixed rather than left to whatever order a caller happens to supply parameters in: each later axis's cutoff is computed against whatever range the earlier axis's cut already left behind, and reversing that internal order can produce a measurably different dome from the identical two cutoff fractions.
 
-**What It Means:** "Does flag order matter" and "does truncation order matter" are two different questions with two different answers — the first is no, by design; the second is genuinely yes, which is exactly why the first question's answer had to be designed rather than left to chance.
+**What It Means:** "Does parameter order matter" and "does truncation order matter" are two different questions with two different answers — the first is no, by design; the second is genuinely yes, which is exactly why the first question's answer had to be designed rather than left to chance.
 
 ## What's Next
 

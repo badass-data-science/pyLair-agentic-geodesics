@@ -34,7 +34,7 @@ pyLair answers one question: *given a base shape, a subdivision scheme, and some
 
 pyFit answers a different question, one dimension down: *given a pile of flat 2D shapes, how many of each you need, and the size of your sheet stock, where does each one go, and how many sheets does it actually take?* It hands back a placement report (sheet index, position, rotation, and mirror flag for every part instance) and, once you're satisfied, one ready-to-cut DXF file per sheet actually used. It has no opinion about where those shapes came from — feed it a pyLair panel-template DXF, or a stencil for a henchman's uniform patch, and it treats both identically.
 
-Neither tool will design the other's job for you. pyLair has nothing to say about how many sheets of plywood your dome's panels will actually consume — its own `-a/--area-cost` flag computes a *theoretical* material cost assuming zero waste, a number Chapter 22 will show you is reliably, honestly wrong once real sheet layout is accounted for. And pyFit has no idea what a geodesic dome even is; it just sees triangles. This book spends Parts II through V entirely inside pyLair's half of the problem, and Part VI entirely inside pyFit's, precisely because pretending they're one seamless product would hide a real, useful fact: they're not, and the DXF file sitting between them is the whole handoff.
+Neither tool will design the other's job for you. pyLair has nothing to say about how many sheets of plywood your dome's panels will actually consume — its own `cost_per_unit_area` parameter computes a *theoretical* material cost assuming zero waste, a number Chapter 22 will show you is reliably, honestly wrong once real sheet layout is accounted for. And pyFit has no idea what a geodesic dome even is; it just sees triangles. This book spends Parts II through V entirely inside pyLair's half of the problem, and Part VI entirely inside pyFit's, precisely because pretending they're one seamless product would hide a real, useful fact: they're not, and the DXF file sitting between them is the whole handoff.
 
 ## Why Every Answer Comes Back as JSON, Not Prose
 
@@ -113,7 +113,7 @@ Chapter 2 gets both pyLair and pyFit actually installed and connected to a real 
 
 The homeowners' association, for what it's worth, never did send that third letter. By the time it would have arrived, the sub-basement was empty, the particle accelerator was in transit, and the "decorative atmospheric processing equipment" had found a much more spacious new home.
 
-*(Figure 1-1: The Actual Secret Lair, fully truncated and exported — the shape this book spends Parts II–V earning the right to build. Real pyLair `-P` output.)*
+*(Figure 1-1: The Actual Secret Lair, fully truncated and exported — the shape this book spends Parts II–V earning the right to build. Real pyLair `preview_dome` output.)*
 
 ![A truncated geodesic dome, exported and rendered by pyLair](../blog-posts/edited_truncated.png)
 

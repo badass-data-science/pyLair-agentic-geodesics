@@ -72,17 +72,18 @@ That comparison is this stop's own real lesson, worth stating plainly: the Mesa 
 
 ## A Callback to the Studio Apartment
 
-One last stop, purely for the joke, and to make one final point honestly: the same tool, the same flags, work exactly as well at a scale that matters to no one but our heroine's original studio-apartment ambitions.
+One last stop, purely for the joke, and to make one final point honestly: the same agent, the same parameters, work exactly as well at a scale that matters to no one but our heroine's original studio-apartment ambitions.
 
-```
-pylair -o env-studio -f 6 -p icosahedron -c 1 -r 0.15 -t 0.499999 -P
-```
+**Prompt:**
+> Design a Class I icosahedral dome, frequency 6, radius 0.15, truncated at `truncation_z=0.499999`. Yes, radius 0.15. It's for a closet.
+
+**What Comes Back** (a real `design_dome` result):
 
 ```json
 {"footprint_diameter": 0.3000, "height": 0.1500, "total_strut_length": 17.5946}
 ```
 
-Every parameter this chapter has used at volcano-lair and orbital-station scale — frequency, class, elongation, truncation — is exactly as usable for a closet-sized home addition. Nothing about pyLair's geometry engine cares whether the number after `-r` describes a modest renovation or a circumpolar fortress.
+Every parameter this chapter has used at volcano-lair and orbital-station scale — frequency, class, elongation, truncation — is exactly as usable for a closet-sized home addition. Nothing about pyLair's geometry engine cares whether the number passed as `radius` describes a modest renovation or a circumpolar fortress.
 
 ## What pyLair Actually Checked, and What It Flatly Didn't
 
@@ -90,14 +91,14 @@ Every one of this chapter's six stops built cleanly, reported sensible numbers, 
 
 - **pyLair's truncation is always an axis-aligned plane, never a terrain-conforming surface.** The Magma Redoubt's caldera rim, in reality, is not a flat plane at a fixed Z — it's an irregular, surveyed rock edge. `truncate()` gives a flat cut at a chosen fraction of an axis, full stop; reconciling that flat cut against an actual site survey is entirely outside pyLair's scope and stays the reader's own problem, the same honest boundary Chapter 1 drew around "pyLair reports geometry, not a validated build."
 - **Elongation is one uniform `(fx, fy, fz)` triple applied to the whole dome — pyLair has no notion of regional or local deformation.** A design that wants, say, a bulging equatorial ring for a spin-gravity station (a more ambitious version of the Orbital Panopticon) can only get pyLair's general-ellipsoid approximation as a starting silhouette; anything more locally shaped than a single ellipsoid is beyond what `elongate()` computes, full stop, not a missing flag waiting to be discovered.
-- **`-w/--panel-density` and `-a/--area-cost` are one plain number each, supplied by the reader — pyLair has no per-environment materials database.** Figuring out what areal density and unit cost actually apply to an underwater-rated composite versus an orbital-rated alloy versus volcanic-heat-rated ceramic is real research the tool has no opinion on; it will multiply whatever number it's given with complete indifference to whether that number was researched or guessed.
+- **`panel_areal_density` and `cost_per_unit_area` are one plain number each, supplied by the reader — pyLair has no per-environment materials database.** Figuring out what areal density and unit cost actually apply to an underwater-rated composite versus an orbital-rated alloy versus volcanic-heat-rated ceramic is real research the tool has no opinion on; it will multiply whatever number it's given with complete indifference to whether that number was researched or guessed.
 - **The chapter's central, load-bearing caveat, stated as plainly as the rest of this book states its others:** every check this book has taught so far — Euler's formula, the golden-value formulas, the antitile/trimesh/ezdxf oracles, the flat-chord `ValueError`, the truncation-artifact sliver flags Chapter 16 covers next — validates that pyLair's own geometry is *internally* correct. None of them, individually or together, validate that a design survives real water pressure, orbital debris, magma heat, or snow load. A `preview_dome` image that looks plausible is a sanity check on the shape, not engineering sign-off on the environment — and a reader who conflates the two is making the one mistake this entire chapter exists to head off.
 
 **Prompt:**
 > Design a dome meant to sit mostly below a caldera rim, using a single Z truncation. What has pyLair actually checked for you here, and what hasn't it checked at all before I try to fit this into an actual volcano?
 
 **What Comes Back:**
-> pyLair has checked that the resulting shape is internally consistent — the vertex/edge/face counts satisfy the correct golden-value formula and Euler's identity, the truncation cutoff didn't land on a degenerate flat chord, and every reported strut length and hub angle is geometrically self-consistent with the requested radius, elongation, and cutoff. It has checked none of the following: whether the actual caldera rim is flat (it almost certainly isn't), whether the panel material or thickness specified through `-a`/`-w` is actually rated for volcanic heat, or whether the real site's geology can support a structure of this footprint at all. Those are every bit as real questions as the ones pyLair does answer — they're just not this tool's questions to answer.
+> pyLair has checked that the resulting shape is internally consistent — the vertex/edge/face counts satisfy the correct golden-value formula and Euler's identity, the truncation cutoff didn't land on a degenerate flat chord, and every reported strut length and hub angle is geometrically self-consistent with the requested radius, elongation, and cutoff. It has checked none of the following: whether the actual caldera rim is flat (it almost certainly isn't), whether the panel material or thickness specified through `cost_per_unit_area`/`panel_areal_density` is actually rated for volcanic heat, or whether the real site's geology can support a structure of this footprint at all. Those are every bit as real questions as the ones pyLair does answer — they're just not this tool's questions to answer.
 
 ## What's Next
 

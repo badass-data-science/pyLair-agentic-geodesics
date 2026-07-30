@@ -14,7 +14,7 @@ Notice what has to happen *before* that final push, not after: **chord and face 
 
 ## Why Deduplication Needs a Spatial Index
 
-The merging step itself — `locate_duplicate_vertices()` — has an obvious naive implementation: compare every vertex against every other vertex, and merge any pair closer than `-v/--vthreshold`. That's an `O(n²)` comparison, and at any frequency worth actually building, it's slow enough to notice. Here's a real, timed comparison, run on the Actual Secret Lair's own construction at frequency 16 — the highest frequency this book (and pyLair's own test suite) actually exercises:
+The merging step itself — `locate_duplicate_vertices()` — has an obvious naive implementation: compare every vertex against every other vertex, and merge any pair closer than `vertex_equal_threshold`. That's an `O(n²)` comparison, and at any frequency worth actually building, it's slow enough to notice. Here's a real, timed comparison, run on the Actual Secret Lair's own construction at frequency 16 — the highest frequency this book (and pyLair's own test suite) actually exercises:
 
 ```
 raw (unprojected) vertex count: 3060
@@ -33,14 +33,19 @@ Both approaches find the exact same 570 duplicate pairs — this isn't a case of
 
 ## The Safe Zone Narrows as Frequency Rises
 
-Chapter 4 showed `-v/--vthreshold`'s two failure extremes at frequency 6: too tight (`0.0`) leaves seams cracked; too loose (`0.2`) collapses the entire dome to one point. The same two failures exist at frequency 16 — but the safe range between them is narrower, and it's worth seeing exactly how much narrower, because it's a real consequence of higher frequency packing vertices more tightly together:
+Chapter 4 showed `vertex_equal_threshold`'s two failure extremes at frequency 6: too tight (`0.0`) leaves seams cracked; too loose (`0.2`) collapses the entire dome to one point. The same two failures exist at frequency 16 — but the safe range between them is narrower, and it's worth seeing exactly how much narrower, because it's a real consequence of higher frequency packing vertices more tightly together.
+
+**Prompt:**
+> Set `vertex_equal_threshold=0.1` on both a frequency-6 and a frequency-16 dome. Does it stay safe at both?
+
+**What Comes Back** (two real `design_dome` results):
 
 ```json
-{"frequency": 6,  "v": 0.10, "vertex_count": 362,  "golden": 362}
-{"frequency": 16, "v": 0.10, "vertex_count": 1,     "golden": 2562}
+{"frequency": 6,  "vertex_equal_threshold": 0.10, "vertex_count": 362,  "golden": 362}
+{"frequency": 16, "vertex_equal_threshold": 0.10, "vertex_count": 1,     "golden": 2562}
 ```
 
-The identical threshold, `0.1`, is comfortably safe at frequency 6 and catastrophic at frequency 16 — collapsing the whole sphere to a single vertex, the same total-collapse failure Chapter 4 first showed at a *looser* setting (`0.2`) on the coarser dome. At frequency 16, that same collapse already happens somewhere between `0.05` (still correct) and `0.08` (already collapsed). The documented default, `1e-7`, sits so far below either boundary at any frequency this book or pyLair's own test suite has tried that it never needs to move — but "the safe zone exists and is wide" is a different, weaker claim than "the safe zone is infinitely wide," and a reader who's deliberately widened `-v` for some other reason (there isn't a good one, but this book won't assume you'll never try) should know the margin shrinks as frequency grows, not stays fixed.
+The identical threshold, `0.1`, is comfortably safe at frequency 6 and catastrophic at frequency 16 — collapsing the whole sphere to a single vertex, the same total-collapse failure Chapter 4 first showed at a *looser* setting (`0.2`) on the coarser dome. At frequency 16, that same collapse already happens somewhere between `0.05` (still correct) and `0.08` (already collapsed). The documented default, `1e-7`, sits so far below either boundary at any frequency this book or pyLair's own test suite has tried that it never needs to move — but "the safe zone exists and is wide" is a different, weaker claim than "the safe zone is infinitely wide," and a reader who's deliberately widened `vertex_equal_threshold` for some other reason (there isn't a good one, but this book won't assume you'll never try) should know the margin shrinks as frequency grows, not stays fixed.
 
 ## Diagnosing a Cracked Seam: Two Different Root Causes, One Symptom
 
@@ -50,11 +55,11 @@ Here's a genuinely practical skill this chapter's own content makes possible: if
 > If two hubs that should be identical show up as separate points in the output, what's the first setting you'd check?
 
 **What Comes Back:**
-> First, check which subdivision class the dome uses. If it's Class I or Class II, this is almost certainly an ordinary `-v/--vthreshold` problem — the threshold is too tight for the two points' actual floating-point separation, and Chapter 4's "too tight" failure (real seam duplicates left unmerged) is the direct cause. Widen `-v` slightly and re-check the golden-value vertex count.
+> First, check which subdivision class the dome uses. If it's Class I or Class II, this is almost certainly an ordinary `vertex_equal_threshold` problem — the threshold is too tight for the two points' actual floating-point separation, and Chapter 4's "too tight" failure (real seam duplicates left unmerged) is the direct cause. Widen `vertex_equal_threshold` slightly and re-check the golden-value vertex count.
 >
-> If it's Class III, don't reach for `-v` first. A chiral lattice's cross-face points generally don't land near each other in 3D at all — that's the entire premise of Chapter 6's own historical bug — so `-v` was never going to be the mechanism responsible for stitching them correctly in the first place. A cracked Class III seam more likely means the combinatorial `cross_face_matches` themselves are missing or wrong for this specific `(m,n)` pair, which is a construction bug in `class_three.py`, not a threshold-tuning problem in `geodesic_sphere.py`.
+> If it's Class III, don't reach for `vertex_equal_threshold` first. A chiral lattice's cross-face points generally don't land near each other in 3D at all — that's the entire premise of Chapter 6's own historical bug — so `vertex_equal_threshold` was never going to be the mechanism responsible for stitching them correctly in the first place. A cracked Class III seam more likely means the combinatorial `cross_face_matches` themselves are missing or wrong for this specific `(m,n)` pair, which is a construction bug in `class_three.py`, not a threshold-tuning problem in `geodesic_sphere.py`.
 
-**What It Means:** The same visible symptom — a gap where a seam should be seamless — has two structurally different causes depending on which subdivision class produced it, and only one of them is a `-v` problem at all. Confusing the two wastes time nudging a threshold that was never going to fix a Class III construction gap, or, worse, nudging it far enough to cause the opposite failure this chapter just demonstrated.
+**What It Means:** The same visible symptom — a gap where a seam should be seamless — has two structurally different causes depending on which subdivision class produced it, and only one of them is a `vertex_equal_threshold` problem at all. Confusing the two wastes time nudging a threshold that was never going to fix a Class III construction gap, or, worse, nudging it far enough to cause the opposite failure this chapter just demonstrated.
 
 ## What's Next
 

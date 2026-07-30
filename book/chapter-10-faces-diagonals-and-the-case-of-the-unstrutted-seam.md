@@ -1,6 +1,6 @@
 # Chapter 10: Faces, Diagonals, and the Case of the Un-strutted Seam
 
-Chapter 9 taught truncation as a chord-clipping operation — a strut running through the cutoff plane gets shortened to the crossing point, and that's the whole story for a wireframe dome. But pyLair's face-aware output formats (`-F`, `-s`, `-O`, `-T`, `-a`, `-w`) need more than that: they need every clipped *panel* to still be a valid, correctly-accounted-for shape too, not just a wireframe that happens to stop at the right place. This chapter is about the one specific, easy-to-get-wrong case that requirement creates — and a real piece of this project's own history about getting it wrong the first time.
+Chapter 9 taught truncation as a chord-clipping operation — a strut running through the cutoff plane gets shortened to the crossing point, and that's the whole story for a wireframe dome. But pyLair's face-aware output formats (`face_output`, `stl`, `obj`, `hub_templates`/`face_templates`, `cost_per_unit_area`, `panel_areal_density`) need more than that: they need every clipped *panel* to still be a valid, correctly-accounted-for shape too, not just a wireframe that happens to stop at the right place. This chapter is about the one specific, easy-to-get-wrong case that requirement creates — and a real piece of this project's own history about getting it wrong the first time.
 
 ## When a Triangle's Corner Gets Clipped
 
@@ -22,14 +22,10 @@ The fix (commit `26de45e`, "Strut the diagonal seam left over from corner-clippe
 
 ## Seeing It for Real: Truncating on Two Axes Through the Same Triangle
 
-The clearest way to produce this exact case honestly, rather than construct a contrived one, is to truncate on two axes aggressively enough that at least one original triangle gets a corner clipped by *both* cuts. Here's a real result, truncating a frequency-6 Class I sphere on X (`0.9`) and Z (`0.4`) together, with face data requested:
-
-```
-pylair -o two-axis-truncated -f 6 -x 0.9 -t 0.4 -F -r 1.0
-```
+The clearest way to produce this exact case honestly, rather than construct a contrived one, is to truncate on two axes aggressively enough that at least one original triangle gets a corner clipped by *both* cuts: a frequency-6 Class I sphere, truncated on X (`0.9`) and Z (`0.4`) together.
 
 **Prompt:**
-> Truncate this dome on two axes through the same triangle. Does the resulting diagonal seam show up in the bill of materials as a real strut?
+> Truncate this dome on two axes through the same triangle — `truncation_x=0.9`, `truncation_z=0.4` — and check its bill of materials. Does the resulting diagonal seam show up as a real strut?
 
 **What Comes Back** (real, from the bevel-angle section of a real `get_bill_of_materials` report on this exact dome):
 

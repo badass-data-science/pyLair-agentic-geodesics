@@ -42,7 +42,7 @@ This single sentence maps onto at least three different real questions, each ans
 
 > "How much material will this dome actually cost me?"
 
-This is the sharpest trap in this chapter, because the prompt sounds perfectly answerable by a single tool, and isn't. `-a/--area-cost` gives a real number — but it's a *theoretical* one: total panel area times unit price, assuming every panel is cut with zero wasted material anywhere on the sheet. Real sheet stock doesn't work that way, and this book has the real numbers to prove exactly how far apart the two figures actually are.
+This is the sharpest trap in this chapter, because the prompt sounds perfectly answerable by a single tool, and isn't. `cost_per_unit_area` gives a real number — but it's a *theoretical* one: total panel area times unit price, assuming every panel is cut with zero wasted material anywhere on the sheet. Real sheet stock doesn't work that way, and this book has the real numbers to prove exactly how far apart the two figures actually are.
 
 Take four of the Actual Secret Lair's own real panel shapes — 20 panels, the same subset Chapter 21 nested for real:
 
@@ -55,7 +55,7 @@ Take four of the Actual Secret Lair's own real panel shapes — 20 panels, the s
 **Rewritten:**
 > "Give me pyLair's theoretical panel-area cost first. Then nest the actual templates with `design_nest` and tell me the real sheet count and utilization. How far apart are the two cost figures?"
 
-What changed: the fix isn't a cleverer single prompt — it's recognizing the question needs both toolkits' tools, in sequence, to answer honestly at all. A prompt that only ever reaches for `-a/--area-cost` will always underestimate, confidently, and never say so unless asked to check.
+What changed: the fix isn't a cleverer single prompt — it's recognizing the question needs both toolkits' tools, in sequence, to answer honestly at all. A prompt that only ever reaches for `cost_per_unit_area` will always underestimate, confidently, and never say so unless asked to check.
 
 ## What's Next
 

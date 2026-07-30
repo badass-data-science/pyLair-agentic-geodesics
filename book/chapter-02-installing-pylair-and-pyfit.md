@@ -161,7 +161,7 @@ Installation isn't actually finished until you've watched real tool calls succee
 **Prompt:**
 > Confirm the pyLair MCP server is running and list every tool it exposes. Then run `design_dome` on the smallest, cheapest configuration you can, just to prove the connection works end to end.
 
-**What Comes Back** (a real result, from a real running server — `pylair -o poc-yurt -f 2 -r 1.0`'s equivalent, the same Class I icosahedral sphere at frequency 2 and radius 1.0 this book calls the Proof-of-Concept Yurt):
+**What Comes Back** (a real result, from a real running server — a Class I icosahedral sphere at frequency 2 and radius 1.0, the smallest, plainest configuration this book has a name for: the Proof-of-Concept Yurt):
 
 ```
 Tools exposed: design_dome, preview_dome, get_bill_of_materials, export_dome
@@ -196,7 +196,7 @@ design_dome result:
 
 Look at the shape directly rather than only trusting the summary:
 
-*(Figure 2-1: The Proof-of-Concept Yurt, a real `preview_dome`/`-P` render — a frequency-2 Class I icosahedral sphere, unremarkable on purpose.)*
+*(Figure 2-1: The Proof-of-Concept Yurt, a real `preview_dome` render — a frequency-2 Class I icosahedral sphere, unremarkable on purpose.)*
 
 ![The Proof-of-Concept Yurt wireframe preview](examples/images/poc-yurt.png)
 
@@ -217,18 +217,22 @@ design_nest result:
 
 **What It Means:** Four more real tools, from a second real subprocess — and a result that's genuinely checkable by hand: six unit squares have a combined area of 6, a 3×2 sheet has an area of exactly 6, and pyFit's own README states this exact case tiles perfectly. `utilization_by_sheet: [1.0]` — 100% — confirms it did, on the very first sheet, with none left over. This is this book's version of Chapter 1's own promise: a boring, hand-verifiable result, shown here specifically because there's nowhere for a packing mistake to hide in it.
 
-*(Figure 2-2: The Proof-of-Concept Nesting Job, a real `preview_nest`/`-P` render — six unit squares tiling a 3×2 sheet at exactly 100% utilization.)*
+*(Figure 2-2: The Proof-of-Concept Nesting Job, a real `preview_nest` render — six unit squares tiling a 3×2 sheet at exactly 100% utilization.)*
 
 ![Six unit squares perfectly tiling a 3x2 sheet](examples/images/poc-nest_sheet1.png)
 
-One more thing worth confirming while you're here, since Chapter 1 made a point of it: both servers enforce the *exact same* validation as their CLIs, because one engine underlies both interfaces in each project (`pylair/api.py`, `pyfit/api.py`). Trigger a real error through each:
+One more thing worth confirming while you're here, since Chapter 1 made a point of it: the MCP tools enforce validation, not just convenience — nothing about calling `design_dome` instead of a command line lets an invalid configuration slip through.
+
+**Prompt:**
+> Ask `design_dome` for a Class II (Triacon) dome at frequency 3 — deliberately invalid, since Class II needs an even frequency. What comes back?
+
+**What Comes Back** (a real tool error, not a crash):
 
 ```
-$ pylair -o bad -f 3 -c 2 -r 1.0
 -c 2 (Class II / Triacon) requires an even --frequency. Exiting.
 ```
 
-Ask `design_dome` for the same invalid combination — Class II (Triacon) at an odd frequency of 3 — and you get the identical message back, not a different one an agent might interpret differently on a bad day. This isn't a coincidence; it's the whole reason both projects keep validation in one shared module instead of duplicating it per interface.
+**What It Means:** That's the identical message the `pylair` CLI's own `-c 2 -f 3` would give — not a coincidence, and not a looser or differently-worded approximation for the agentic side. One shared engine (`pylair/api.py`, and `pyfit/api.py` on the nesting side) validates every request regardless of which interface it arrived through, which is the whole reason this book trusts an agent's tool calls as much as it trusts a terminal.
 
 ## What's Next
 

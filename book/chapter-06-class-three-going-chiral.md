@@ -10,7 +10,7 @@ Class I and Class II domes are both achiral, and it's worth understanding precis
 
 ## The (m,n) Construction, and Why It Breaks That Symmetry
 
-Class III — historically the "Skew" method — lays its grid down at an angle instead, and it's parameterized by two positive integers, `m` and `n` (pyLair's `-f`/`-n` flags), rather than the single frequency Class I and II each use. Both classes turn out to be special cases of a single more general formula, the **Caspar-Klug/Goldberg-Coxeter triangulation number**:
+Class III — historically the "Skew" method — lays its grid down at an angle instead, and it's parameterized by two positive integers, `m` and `n` (pyLair's `frequency`/`n_frequency` parameters), rather than the single frequency Class I and II each use. Both classes turn out to be special cases of a single more general formula, the **Caspar-Klug/Goldberg-Coxeter triangulation number**:
 
 ```
 T = m² + mn + n²
@@ -64,13 +64,23 @@ Fixing the bug and merely believing it was fixed are two different claims, and t
 
 ## Confirming Class III's Own Guardrails
 
-Two of Class III's own validation rules are worth triggering once, live, the same way Chapter 5 did for Class II's even-frequency requirement:
+Two of Class III's own validation rules are worth triggering once, live, the same way Chapter 5 did for Class II's even-frequency requirement.
+
+**Prompt:**
+> Ask `design_dome` for a Class III dome at frequency 3 without giving it an `n_frequency`. What happens?
+
+**What Comes Back** (a real tool error):
 
 ```
-$ pylair -o bad -f 3 -c 3 -r 1.0
 -c 3 (Class III / Skew) requires -n or --n-frequency. Exiting.
+```
 
-$ pylair -o bad -f 3 -n 3 -c 3 -r 1.0
+**Prompt:**
+> Now give it `n_frequency=3` too — the same as the frequency.
+
+**What Comes Back** (a real tool error):
+
+```
 -c 3 (Class III / Skew) requires --n-frequency to differ from --frequency
 (equal values are Class II -- use -c 2 instead). Exiting.
 ```
@@ -79,11 +89,12 @@ The second message is worth reading carefully: it isn't just refusing an edge ca
 
 ## The Actual Secret Lair, Finally Chiral
 
-The dome this book has been building toward gets its real subdivision choice here — Class III, `(4,1)` rather than its mirror `(1,4)`, chosen deliberately for a specific strut-pattern aesthetic rather than picked arbitrarily, precisely because this chapter just demonstrated that the two are not interchangeable:
+The dome this book has been building toward gets its real subdivision choice here — Class III, `(4,1)` rather than its mirror `(1,4)`, chosen deliberately for a specific strut-pattern aesthetic rather than picked arbitrarily, precisely because this chapter just demonstrated that the two are not interchangeable.
 
-```
-pylair -o class3-secret-lair -f 4 -n 1 -p icosahedron -c 3 -r 1.0 -P
-```
+**Prompt:**
+> Switch our running dome to Class III with `(m,n)=(4,1)` — frequency 4, n_frequency 1, icosahedron, radius 1.0 — and preview it.
+
+**What Comes Back** (a real `preview_dome` render, `dome_class=3`, `frequency=4`, `n_frequency=1`):
 
 *(Figure 6-3: The Actual Secret Lair's final subdivision — Class III, `(m,n)=(4,1)` — the flagship shape Chapters 8 through 21 spend the rest of this book elongating, truncating, accounting for, exporting, and finally nesting onto real sheet stock.)*
 

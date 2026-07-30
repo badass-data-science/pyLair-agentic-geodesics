@@ -10,7 +10,7 @@ This matters for more than just efficiency. It means that whatever is *true* of 
 
 ## Class I: The Simplest Grid There Is
 
-pyLair's default subdivision — the one you get if you don't pass `-c` at all, or pass `-c 1` explicitly — is called **Class I**, historically also known as the "Alternate" method. Its symmetry triangle is built the most straightforward way imaginable: draw a grid of lines parallel to the face's own three edges, evenly spaced according to the requested frequency. Here is exactly that grid, computed by pyLair's own `ClassOneMethodOneSymmetryTriangle` for one face at frequency 4 — not a hand-drawn approximation, but the real internal vertex/chord data plotted flat, before it's ever replicated or projected onto anything:
+pyLair's default subdivision — the one you get if you don't specify `dome_class` at all, or pass `dome_class=1` explicitly — is called **Class I**, historically also known as the "Alternate" method. Its symmetry triangle is built the most straightforward way imaginable: draw a grid of lines parallel to the face's own three edges, evenly spaced according to the requested frequency. Here is exactly that grid, computed by pyLair's own `ClassOneMethodOneSymmetryTriangle` for one face at frequency 4 — not a hand-drawn approximation, but the real internal vertex/chord data plotted flat, before it's ever replicated or projected onto anything:
 
 *(Figure 4-1: One bare Class I symmetry triangle, frequency 4 — the single piece of geometry pyLair computes directly. Chapters 5 and 6 each get their own version of this same figure, so the three classes' grids can be compared side by side.)*
 
@@ -48,13 +48,14 @@ Unlike the other two classes this book teaches — Class II, which Chapter 5 sho
 
 ## Introducing the Actual Secret Lair
 
-Every dome this book builds toward in earnest — the one Part V finally exports for real, and the one Part VI finally nests onto actual plywood — starts, right here, as an unremarkable Class I icosahedral sphere:
+Every dome this book builds toward in earnest — the one Part V finally exports for real, and the one Part VI finally nests onto actual plywood — starts, right here, as an unremarkable Class I icosahedral sphere.
 
-```
-pylair -o class1-secret-lair -f 6 -p icosahedron -c 1 -r 1.0 -P
-```
+**Prompt:**
+> Preview a Class I icosahedral dome at frequency 6, radius 1.0 — no elongation or truncation yet. This is going to be our running example.
 
-*(Figure 4-2: The Actual Secret Lair's first appearance — a plain Class I icosahedral sphere at frequency 6, real `-P` output. Nothing about this shape is final yet: Chapter 5 will show the same nominal frequency rebuilt entirely differently under Class II, Chapter 6 will replace this subdivision with a genuinely chiral one, and Chapters 8 through 10 will elongate and truncate whatever subdivision survives that choice.)*
+**What Comes Back** (a real `preview_dome` render, `dome_class=1`, `frequency=6`, `polyhedron="icosahedron"`, `radius=1.0`):
+
+*(Figure 4-2: The Actual Secret Lair's first appearance — a plain Class I icosahedral sphere at frequency 6. Nothing about this shape is final yet: Chapter 5 will show the same nominal frequency rebuilt entirely differently under Class II, Chapter 6 will replace this subdivision with a genuinely chiral one, and Chapters 8 through 10 will elongate and truncate whatever subdivision survives that choice.)*
 
 ![A frequency-6 Class I icosahedral sphere](examples/images/class1-secret-lair.png)
 
@@ -72,27 +73,33 @@ Nothing here is the final design — that's rather the point of introducing it t
 
 **What It Means:** `1280 / 320 = 4`, not 2. Doubling the frequency quadruples the face count, because face count scales with `f²`, not `f` — a direct consequence of the symmetry triangle being a two-dimensional grid, not a one-dimensional list. A reader expecting "twice the frequency, roughly twice the detail" is off by a factor of two in the wrong direction, with real consequences once that same growth rate reaches strut counts (this chapter), file sizes (Chapter 17), and — new to this book's own pipeline — the size of a nesting job Part VI eventually has to pack onto actual sheet stock.
 
-## What `-v/--vthreshold` Is Actually Measuring
+## What `vertex_equal_threshold` Is Actually Measuring
 
-One flag deserves a closer look here rather than being left for a footnote, because getting it wrong silently produces a dome that looks fine in a summary and is actually broken at the seams. `-v/--vthreshold` (default `1e-7`) sets the distance below which two computed vertices are treated as the same point during the deduplication step Chapter 7 covers in full. What's worth understanding now, precisely, is *what coordinate space* that distance is measured in: it's checked against the dome's flat, unprojected construction — the symmetry triangle replicated across the base polyhedron's own faces, at that polyhedron's natural unit scale — **before** the final projection step multiplies everything out to the requested `-r/--radius`. Practically, that means `-v` is comparing against a fixed, small-scale coordinate system every time, regardless of how large or small a radius you actually asked for.
+One parameter deserves a closer look here rather than being left for a footnote, because getting it wrong silently produces a dome that looks fine in a summary and is actually broken at the seams. `design_dome`'s `vertex_equal_threshold` (default `1e-7`) sets the distance below which two computed vertices are treated as the same point during the deduplication step Chapter 7 covers in full. What's worth understanding now, precisely, is *what coordinate space* that distance is measured in: it's checked against the dome's flat, unprojected construction — the symmetry triangle replicated across the base polyhedron's own faces, at that polyhedron's natural unit scale — **before** the final projection step multiplies everything out to the requested `radius`. Practically, that means this threshold is comparing against a fixed, small-scale coordinate system every time, regardless of how large or small a radius you actually asked for.
 
-What it's built to catch is a specific, narrow situation: two vertices that are supposed to be the *same* physical point — one edge, computed independently by each of the two polyhedron faces that share it — landing at very slightly different floating-point positions instead of exactly coincident ones. Nudge the threshold too far in either direction from the documented default, and two different failures appear, both real and both worth seeing once:
+What it's built to catch is a specific, narrow situation: two vertices that are supposed to be the *same* physical point — one edge, computed independently by each of the two polyhedron faces that share it — landing at very slightly different floating-point positions instead of exactly coincident ones.
 
-**Too tight** (`-v 0.0`, at frequency 6): the seam-duplicate points, which really do differ by a tiny amount of floating-point roundoff, no longer count as "close enough" to merge at all.
+**Prompt:**
+> Set `vertex_equal_threshold` to `0.0` on this frequency-6 dome and tell me the resulting vertex count.
+
+**What Comes Back** (a real `design_dome` result):
 
 ```json
 {"vertex_count": 552}
 ```
 
-Instead of the golden `362`, the dome comes back with `552` vertices — every shared-edge seam left cracked open, each side of the seam keeping its own, separately-computed copy of what should be one point.
+**What It Means:** Too tight. The seam-duplicate points, which really do differ by a tiny amount of floating-point roundoff, no longer count as "close enough" to merge at all. Instead of the golden `362`, the dome comes back with `552` vertices — every shared-edge seam left cracked open, each side of the seam keeping its own, separately-computed copy of what should be one point.
 
-**Too loose** (`-v 0.2`, same dome): now the threshold is wide enough to catch far more than just seam duplicates.
+**Prompt:**
+> Now try `vertex_equal_threshold=0.2` on the same dome instead.
+
+**What Comes Back** (a real `design_dome` result):
 
 ```json
 {"vertex_count": 1}
 ```
 
-Every vertex on the entire sphere collapses into one — the dome doesn't just lose a little precision, it stops existing as a shape at all. Between these two extremes sits a wide, comfortable range (this exact dome stays correctly at `362` vertices anywhere from roughly `1e-15` up through `0.1`) that the documented default sits safely inside — which is exactly why `-v` almost never needs to be touched in practice, and exactly why it's worth knowing what actually happens on the rare occasion you're tempted to.
+**What It Means:** Too loose, in the opposite direction. The threshold is now wide enough to catch far more than just seam duplicates — every vertex on the entire sphere collapses into one, and the dome doesn't just lose a little precision, it stops existing as a shape at all. Between these two extremes sits a wide, comfortable range (this exact dome stays correctly at `362` vertices anywhere from roughly `1e-15` up through `0.1`) that the documented default sits safely inside — which is exactly why this parameter almost never needs to be touched in practice, and exactly why it's worth knowing what actually happens on the rare occasion you're tempted to.
 
 ## What's Next
 
