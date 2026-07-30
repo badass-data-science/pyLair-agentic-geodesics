@@ -9,7 +9,7 @@ Every CLI flag and MCP tool this book actually used, for both toolkits, with a o
 | `-o` | `--output` | Output file path; required. | 2 |
 | `-r` | `--radius` | Dome radius; must be > 0. | 3 |
 | `-f` | `--frequency` | Subdivision frequency; positive integer. | 4 |
-| `-p` | `--polyhedron` | Base polyhedron: `icosahedron` or `octahedron`. | 3 |
+| `-p` | `--polyhedron` | Base polyhedron: icosahedron, octahedron, or tetrahedron. | 3 |
 | `-c` | `--class` | Subdivision class: `1`, `2`, or `3`. | 4, 5, 6 |
 | `-n` | `--n-frequency` | Second frequency for `-c 3`'s `(m,n)` pair. | 6 |
 | `-t` | `--truncation` | Z-axis truncation cutoff fraction. | 9 |
