@@ -26,7 +26,13 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import proj3d
 from mpl_toolkits.mplot3d.art3d import Line3DCollection
+
+# Depth-cue colors: near struts render close to the original opaque
+# steelblue, far struts fade toward a pale, low-contrast gray-blue.
+_NEAR_RGB = np.array([0.07, 0.25, 0.45])
+_FAR_RGB = np.array([0.75, 0.82, 0.88])
 
 
 def equal_axis_limits(vertices):
@@ -48,18 +54,46 @@ def equal_axis_limits(vertices):
   return tuple((mids[i] - half_range, mids[i] + half_range) for i in range(3))
 
 
+def add_depth_cued_wireframe(ax, V, C):
+  # get_proj() bakes in the current view and axis limits, so this must be
+  # called only after the axes' limits/aspect are already set. Lower
+  # projected z is nearer the camera in this view (verified empirically,
+  # not assumed) -- without this cue, front and back struts are the same
+  # color and the wireframe reads as a flat net instead of a sphere.
+  segments = [[V[c[0]], V[c[1]]] for c in C]
+
+  proj = ax.get_proj()
+  midpoints = np.array([(np.array(a) + np.array(b)) / 2. for a, b in segments])
+  depths = np.array([proj3d.proj_transform(*pt, proj)[2] for pt in midpoints])
+  depth_range = depths.max() - depths.min()
+  t = np.zeros_like(depths) if depth_range == 0 else (depths - depths.min()) / depth_range
+
+  colors = _NEAR_RGB[None, :] * (1 - t)[:, None] + _FAR_RGB[None, :] * t[:, None]
+  alphas = 0.95 - 0.55 * t
+  rgba = np.concatenate([colors, alphas[:, None]], axis=1)
+  linewidths = 1.3 - 0.7 * t
+
+  # Draw farthest-first so nearer struts are painted on top, reinforcing
+  # the depth cue instead of leaving draw order to chance.
+  order = np.argsort(-t)
+  ax.add_collection3d(Line3DCollection(
+      [segments[i] for i in order],
+      colors=rgba[order],
+      linewidths=linewidths[order],
+  ))
+
+
 def render_preview_png_bytes(V, C):
   fig = plt.figure()
   ax = fig.add_subplot(projection='3d')
-
-  segments = [[V[c[0]], V[c[1]]] for c in C]
-  ax.add_collection3d(Line3DCollection(segments, colors='steelblue', linewidths=0.8))
 
   xlim, ylim, zlim = equal_axis_limits(V)
   ax.set_xlim(*xlim)
   ax.set_ylim(*ylim)
   ax.set_zlim(*zlim)
   ax.set_box_aspect((1, 1, 1))
+
+  add_depth_cued_wireframe(ax, V, C)
 
   ax.set_title('pyLair preview')
   buf = io.BytesIO()
