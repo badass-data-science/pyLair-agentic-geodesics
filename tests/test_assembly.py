@@ -4,6 +4,7 @@ import pytest
 from pylair.polyhedral import Icosahedron
 from pylair.symmetry_triangle import ClassOneMethodOneSymmetryTriangle
 from pylair.geodesic_sphere import GeodesicSphere
+from pylair.api import build_dome
 from pylair.assembly import (
     build_assembly_manifest,
     build_pyfit_job_spec_for_panels,
@@ -76,6 +77,80 @@ def test_every_hub_connection_references_a_real_strut_and_hub():
             assert conn['to_hub'] in manifest['hubs']
             strut = manifest['struts'][conn['strut']]
             assert {strut['hub_1'], strut['hub_2']} == {hub_id, conn['to_hub']}
+
+
+def test_strut_bordering_panels_is_none_when_faces_not_given():
+    V, C, F = build_sphere_with_faces(frequency=3)
+    manifest = build_assembly_manifest(V, C, faces=None)
+
+    for strut in manifest['struts'].values():
+        assert strut['bordering_panels'] is None
+
+
+def test_strut_bordering_panels_is_the_reverse_of_panel_edges_on_an_untruncated_dome():
+    # every strut on a closed dome borders exactly 2 panels, and that
+    # link must agree exactly with the panel-side 'edges'[i]['strut']
+    # link it's the reverse of.
+    V, C, F = build_sphere_with_faces(frequency=3)
+    manifest = build_assembly_manifest(V, C, faces=F)
+
+    for strut_id, strut in manifest['struts'].items():
+        assert strut['bordering_panels'] is not None
+        assert len(strut['bordering_panels']) == 2
+        for panel_id in strut['bordering_panels']:
+            panel = manifest['panels'][panel_id]
+            strut_ids_on_panel = [e['strut'] for e in panel['edges']]
+            assert strut_id in strut_ids_on_panel
+
+
+def test_truncated_dome_every_existing_strut_borders_exactly_two_panels():
+    # Every chord truncate() actually emits borders exactly 2 panels --
+    # never 1 -- because truncate()'s own base-ring closing edge (the
+    # cut plane's own edge of each boundary triangle, see the next test)
+    # is never emitted as a chord at all. So there is currently no such
+    # thing as a "1-bordering-panel" strut in pylair's own output: an
+    # edge either has a real chord bordering 2 panels, or it has no
+    # chord and shows up only as a panel-side gap (see
+    # test_truncated_dome_base_ring_edges_have_no_corresponding_strut).
+    result = build_dome(radius=1.0, frequency=6, polyhedron='icosahedron', dome_class=1,
+                         truncation_z=0.4)
+    manifest = build_assembly_manifest(result.V, result.C, faces=result.F_sphere)
+
+    for strut in manifest['struts'].values():
+        assert len(strut['bordering_panels']) == 2
+
+
+def test_truncated_dome_base_ring_edges_have_no_corresponding_strut():
+    # A real, previously-undocumented gap this manifest's strut<->panel
+    # cross-check surfaced: truncate() clips a boundary triangle down to
+    # its two "side" edges and a new diagonal (see Chapter 10's own
+    # "unstrutted seam" fix), but never emits a chord for that
+    # triangle's own third edge -- the one lying exactly on the cutoff
+    # plane, i.e. the dome's actual base ring. A fabricator following
+    # get_bill_of_materials' strut count today would be missing exactly
+    # these base-ring struts. Confirmed on two independent dome configs
+    # (Class I frequency 6 at truncation_z=0.4, and the book's own
+    # Class III (4,1) elongated dome at truncation_z=0.499999): the
+    # count of strut-less panel edges always equals the count of
+    # distinct base-ring vertices, forming one closed, entirely
+    # unstrutted ring.
+    result = build_dome(radius=1.0, frequency=6, polyhedron='icosahedron', dome_class=1,
+                         truncation_z=0.4)
+    manifest = build_assembly_manifest(result.V, result.C, faces=result.F_sphere)
+
+    unstrutted_edges = [
+        edge
+        for panel in manifest['panels'].values()
+        for edge in panel['edges']
+        if edge['strut'] is None
+    ]
+    zmin = min(v[2] for v in result.V)
+    base_ring_vertex_count = sum(1 for v in result.V if v[2] - zmin < 1e-4)
+
+    assert len(unstrutted_edges) == base_ring_vertex_count
+    for edge in unstrutted_edges:
+        assert edge['bevel_angle_degrees'] is None
+        assert 'boundary edge' in edge['note']
 
 
 def test_every_panel_edge_resolves_to_a_real_strut_on_an_untruncated_dome():
