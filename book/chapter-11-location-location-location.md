@@ -1,6 +1,6 @@
 # Chapter 11: Location, Location, Location — Designing for Hostile (and Ridiculous) Environments
 
-Nothing in this chapter is a new pyLair feature. Chapters 3 through 10 already gave you every tool this chapter uses — polyhedron choice, subdivision class, elongation, truncation. What this chapter teaches instead is how a real commission actually arrives: never as "build a Class III dome," always as "build a dome that survives *down there*, or *up there*, or *in there*." Six stops, one design lens, applied deliberately each time.
+Nothing in this chapter is a new pyLair feature. Chapters 3 through 10 already gave you every tool this chapter uses — polyhedron choice, subdivision class, elongation, truncation. What this chapter teaches instead is how a real commission actually arrives: never as "build a Class III dome," always as "build a dome that survives *down there*, or *up there*, or *in there*." A satisfied supervillain client base spans essentially every environment capable of generating a strongly worded eviction notice, and every one of them thinks their site is the special case. Six stops, one design lens, applied deliberately each time — proof that it's the lens doing the work, not six unrelated one-off tricks.
 
 *(Figure 11-1: All six of this chapter's stops, real `design_dome` builds, plotted at a single shared scale so their true relative sizes and proportions are honestly comparable — not six independently-scaled images that would each look similarly sized regardless of their actual dimensions.)*
 
@@ -30,7 +30,7 @@ A real airlock changes this calculus — a flat mounting face is worth a small, 
 
 ## Stop Two: The Orbital Panopticon
 
-Zero gravity makes "which way is down" a design choice, not a constraint — so this stop's dome skips truncation entirely and instead asks a cost question Chapter 8 didn't need to: given a fixed footprint, which elongation ratio is *cheapest to launch*? Total strut length is a reasonable proxy for that, since more material sent to orbit costs more regardless of what it's made of.
+A panopticon only earns the name if it can actually see everything, which is precisely why this station skips a floor: zero gravity makes "which way is down" a design choice, not a constraint — so this stop's dome skips truncation entirely and instead asks a cost question Chapter 8 didn't need to: given a fixed footprint, which elongation ratio is *cheapest to launch*? Total strut length is a reasonable proxy for that, since more material sent to orbit costs more regardless of what it's made of, and a supervillain funding a circumpolar surveillance station out of pocket cares about launch mass in a way a government contractor spending someone else's budget generally doesn't have to.
 
 **Prompt:**
 > For the Orbital Panopticon, hold the footprint diameter fixed and try three different elongation ratios. Which one minimizes total strut length — and therefore launch mass?
@@ -47,7 +47,7 @@ Zero gravity makes "which way is down" a design choice, not a constraint — so 
 
 ## Stops Three and Four: The Magma Redoubt and the Permafrost Cache
 
-These two share one design logic for two opposite reasons: keep most of the structure buried, expose only a small cap. pyLair's own truncation only ever describes what to keep *above* a cutoff, so an aggressive, close-to-1 cutoff (`0.85` for both stops here) keeps just the small top fraction this chapter's own images show — the physically buried remainder isn't part of either model at all, an important scope boundary this chapter returns to below.
+These two share one design logic for two opposite reasons: keep most of the structure buried, expose only a small cap. A volcano's caldera and a glacier's ice sheet don't have much in common as building sites, but they agree on one thing that matters enormously to anyone trying not to be noticed from a satellite: the surrounding rock or ice does the hiding for free, so the only part of the budget that has to go toward stealth is whatever small fraction can't be buried. pyLair's own truncation only ever describes what to keep *above* a cutoff, so an aggressive, close-to-1 cutoff (`0.85` for both stops here) keeps just the small top fraction this chapter's own images show — the physically buried remainder isn't part of either model at all, an important scope boundary this chapter returns to below.
 
 ```json
 {"stop": "Magma Redoubt",     "elongation": "1.0,1.0,1.0", "truncation_z": 0.85, "height": 0.3000, "footprint_diameter": 1.4135, "total_strut_length": 34.8225}
@@ -58,7 +58,7 @@ The Permafrost Cache's slightly wider `1.2,1.2` footprint reflects a real, diffe
 
 ## Stop Five: The Ostentatious Mesa Spire
 
-Every other stop in this chapter reaches for a flattened, low-profile shape. This one deliberately doesn't, because the design goal here is the opposite of every other stop's: a supervillain who *wants* to be seen, not hidden. Aggressive vertical elongation (`"0.6,0.6,3.0"`), moderate truncation for a real floor (`0.4`):
+Every other stop in this chapter reaches for a flattened, low-profile shape. This one deliberately doesn't, because the design goal here is the opposite of every other stop's: a supervillain who *wants* to be seen, not hidden — a mesa-top spire visible from the highway specifically so every driver who sees it understands, instantly and correctly, that someone with resources and a point to prove lives up there. Concealment was never the brief; the brief was a skyline. Aggressive vertical elongation (`"0.6,0.6,3.0"`), moderate truncation for a real floor (`0.4`):
 
 ```json
 {"footprint_diameter": 1.2000, "height": 3.6000, "total_strut_length": 220.0035}

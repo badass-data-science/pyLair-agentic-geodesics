@@ -1,6 +1,6 @@
 # Chapter 4: Class I — The Default Subdivision
 
-Chapter 3 picked a starting shape. This chapter is where pyLair actually starts *computing* something — the first, and simplest, of the three subdivision methods this book teaches, and the one every other chapter's more complicated version gets compared back against. It's also where **the Actual Secret Lair** — the flagship design this book spends the rest of Parts II through V earning the right to build for real — makes its first appearance, in the plainest, least remarkable form it will ever take.
+Chapter 3 picked a starting shape. This chapter is where pyLair actually starts *computing* something — the first, and simplest, of the three subdivision methods this book teaches, and the one every other chapter's more complicated version gets compared back against. It's also where **the Actual Secret Lair** — the flagship design this book spends the rest of Parts II through V earning the right to build for real, and the literal, load-bearing replacement for the overstuffed sub-basement Chapter 1 opened with — makes its first appearance, in the plainest, least remarkable form it will ever take. Every other environment in this book answers to a specific hostile site; this one answers to a specific homeowners' association, which turns out to be no less demanding a client.
 
 ## The One Thing pyLair Actually Has to Solve
 

@@ -156,7 +156,7 @@ A second, smaller gotcha worth knowing before you build a CI matrix or reach for
 
 ## Proof of Life
 
-Installation isn't actually finished until you've watched real tool calls succeed — "the install command didn't error" is not the same claim as "the connection works," and this book isn't going to let the distinction slide even in the setup chapter. Here's the smoke test for both toolkits, using configurations too small to be anyone's actual secret lair: **the Proof-of-Concept Yurt** for pyLair, and **the Proof-of-Concept Nesting Job** for pyFit.
+Installation isn't actually finished until you've watched real tool calls succeed — "the install command didn't error" is not the same claim as "the connection works," and this book isn't going to let the distinction slide even in the setup chapter. No competent supervillain commissions a circumpolar fortress from a contractor who has never once been asked to build a shed, and our heroine isn't about to either: here's the smoke test for both toolkits, using configurations too small to be anyone's actual secret lair, deliberately unimpressive so that nothing about impressing anyone gets in the way of just watching the wiring work — **the Proof-of-Concept Yurt** for pyLair, and **the Proof-of-Concept Nesting Job** for pyFit.
 
 **Prompt:**
 > Confirm the pyLair MCP server is running and list every tool it exposes. Then run `design_dome` on the smallest, cheapest configuration you can, just to prove the connection works end to end.
@@ -192,7 +192,7 @@ design_dome result:
 }
 ```
 
-**What It Means:** Four real tools came back from a real subprocess, and `vertex_count`/`edge_count`/`face_count` — 42, 120, 80 — match Chapter 4's own golden-value formula for a Class I icosahedral sphere exactly (`10f²+2 = 10(4)+2 = 42`; `30f² = 120`; `20f² = 80`, at `f=2`). Nothing here is dome-shaped enough to build — a frequency-2 sphere is about as coarse as this construction gets — and that's entirely the point: this proves the wiring works, not that the design is good.
+**What It Means:** Four real tools came back from a real subprocess, and `vertex_count`/`edge_count`/`face_count` — 42, 120, 80 — match Chapter 4's own golden-value formula for a Class I icosahedral sphere exactly (`10f²+2 = 10(4)+2 = 42`; `30f² = 120`; `20f² = 80`, at `f=2`). Nothing here is dome-shaped enough to build — a frequency-2 sphere is about as coarse as this construction gets, structurally closer to a yurt than a fortress, which is the whole reason it earned that name — and that's entirely the point: this proves the wiring works, not that the design is good.
 
 Look at the shape directly rather than only trusting the summary:
 

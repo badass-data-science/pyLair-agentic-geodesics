@@ -4,7 +4,7 @@ Every dome this book has built has an answer now: what shape, subdivided which w
 
 ## A Standalone Tool That Happens to Read pyLair's Files
 
-pyFit has no code dependency on pyLair at all. It reads DXF files — pyLair's panel templates, or any other tool's, or a hand-drawn shape — and arranges however many copies of each you need onto rectangular sheet stock, minimizing wasted material. Before this chapter ever touches a dome panel, here's pyFit doing exactly that on something that has nothing to do with any dome.
+pyFit has no code dependency on pyLair at all. It reads DXF files — pyLair's panel templates, or any other tool's, or a hand-drawn shape — and arranges however many copies of each you need onto rectangular sheet stock, minimizing wasted material. A henchman payroll generates its own steady stream of 2D cutting problems that have nothing whatsoever to do with a dome — uniform patches need cutting in bulk before morale gets any worse, and a proper throwing-star stencil doesn't nest itself — and pyFit doesn't care in the slightest which kind of shape it's asked to arrange. Before this chapter ever touches a dome panel, here's pyFit doing exactly that on something that has nothing to do with any dome.
 
 **Prompt:**
 > Nest a batch of henchman-uniform patch blanks and throwing-star stencils — two shapes, ten total parts — on a 12×8 sheet, and preview the result.
