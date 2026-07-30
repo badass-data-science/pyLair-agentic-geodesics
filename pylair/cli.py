@@ -33,7 +33,7 @@ import sys
 #
 import json
 
-from .polyhedral import Icosahedron, Octahedron
+from .polyhedral import Icosahedron, Octahedron, Tetrahedron
 from .output import OutputDXF, OutputWireframeVRML, OutputFaceVRML, OutputSTL, OutputOBJ
 from .bill_of_materials import get_bill_of_materials
 from .preview import save_preview, save_assembly_schematic
@@ -69,7 +69,7 @@ Options:
 
 \t-b, --bom-rounding\tThe number of decimal places to round chord length output in the generated Bill of Materials. Also controls how aggressively near-identical strut lengths are merged into one entry: a lower value merges more, which is useful for treating fabrication-irrelevant differences as the same length, but can merge genuinely distinct lengths together at high dome frequencies. Default 9, which is fine enough to keep all distinct lengths separate at any practical frequency. Must be an integer.
 
-\t-p, --polyhedron\tEither "octahedron" or "icosahedron". Default icosahedron.
+\t-p, --polyhedron\tOne of "icosahedron", "octahedron", or "tetrahedron". Default icosahedron.
 
 \t-c, --class\tSubdivision class: 1 (Alternate), 2 (Triacon), or 3 (Skew/chiral). Class 2 requires an even --frequency, since each original edge is already implicitly split once by its construction. Class 3 requires -n/--n-frequency (a second frequency parameter distinct from --frequency); --frequency and --n-frequency play the roles of m and n in the (m,n) Goldberg-Coxeter construction, with triangle count T = m^2 + mn + n^2. (m,n) and (n,m) are mirror-image (chiral) domes of the same size -- swap --frequency and --n-frequency to get the other one. Default 1.
 
@@ -166,6 +166,8 @@ def main():
     if o in ('-p', '--polyhedron'):
       if a == 'octahedron':
         polyhedral = Octahedron()
+      elif a == 'tetrahedron':
+        polyhedral = Tetrahedron()
     if o in ('-c', '--class'):
       try:
         dome_class = int(a)

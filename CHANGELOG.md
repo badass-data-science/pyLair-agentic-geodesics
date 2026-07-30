@@ -10,6 +10,12 @@ lives under `[Unreleased]` against the `0.1.0` version in `pyproject.toml`.
 
 ### Added
 
+- `Tetrahedron` as a third base-polyhedron option (`-p tetrahedron` /
+  `polyhedron="tetrahedron"`), alongside the existing `icosahedron` and
+  `octahedron`. Verified against Euler's formula and derived golden-value
+  vertex/edge/face-count formulas for Class I/II/III subdivision, and
+  against the textbook regular-tetrahedron dihedral angle (`arccos(1/3)`,
+  ~70.53°).
 - `pylair/assembly.py`: a per-instance assembly manifest (`H#`/`S#`/`P#`
   labels, real hub/strut/panel adjacency) and a per-instance pyFit job spec
   built from real cutting templates, so a nesting result can be traced back

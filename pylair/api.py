@@ -30,7 +30,7 @@ from typing import List, Optional, Union
 
 import numpy as np
 
-from .polyhedral import Icosahedron, Octahedron, Polyhedron, build_lcd_faces
+from .polyhedral import Icosahedron, Octahedron, Tetrahedron, Polyhedron, build_lcd_faces
 from .symmetry_triangle import ClassOneMethodOneSymmetryTriangle, ClassTwoMethodOneSymmetryTriangle
 from .class_three import ClassThreeSymmetryTriangle
 from .geodesic_sphere import GeodesicSphere
@@ -55,7 +55,7 @@ class DomeResult:
   frequency: int
   dome_class: int
   n_frequency: Optional[int]
-  polyhedron: str                # "icosahedron" or "octahedron"
+  polyhedron: str                # "icosahedron", "octahedron", or "tetrahedron"
   elongation_factors: tuple      # (fx, fy, fz); needed by bill_of_materials'
                                   # ellipsoid-normal calc; not recoverable
                                   # from V/C alone
@@ -94,17 +94,28 @@ def build_dome(radius=1.0, frequency=4, polyhedron: Union[str, Polyhedron] = 'ic
                 dome_class=1, n_frequency=None, vertex_equal_threshold=1e-7,
                 elongation_factors=(1.0, 1.0, 1.0), truncation_x=None, truncation_y=None,
                 truncation_z=None) -> DomeResult:
-  # `polyhedron` accepts either a name string ("icosahedron"/"octahedron",
-  # for MCP callers) or an already-built Icosahedron()/Octahedron()
-  # instance (so cli.py, which already constructs one from -p, needs no
-  # translation code at its call site).
+  # `polyhedron` accepts either a name string ("icosahedron"/"octahedron"/
+  # "tetrahedron", for MCP callers) or an already-built
+  # Icosahedron()/Octahedron()/Tetrahedron() instance (so cli.py, which
+  # already constructs one from -p, needs no translation code at its
+  # call site).
   validate_geometry_params(radius, frequency, dome_class, n_frequency, elongation_factors)
 
   if isinstance(polyhedron, str):
-    polyhedral = Octahedron() if polyhedron == 'octahedron' else Icosahedron()
+    if polyhedron == 'octahedron':
+      polyhedral = Octahedron()
+    elif polyhedron == 'tetrahedron':
+      polyhedral = Tetrahedron()
+    else:
+      polyhedral = Icosahedron()
   else:
     polyhedral = polyhedron
-  polyhedron_name = 'octahedron' if isinstance(polyhedral, Octahedron) else 'icosahedron'
+  if isinstance(polyhedral, Octahedron):
+    polyhedron_name = 'octahedron'
+  elif isinstance(polyhedral, Tetrahedron):
+    polyhedron_name = 'tetrahedron'
+  else:
+    polyhedron_name = 'icosahedron'
 
   if dome_class == 2:
     symmetry_triangle = ClassTwoMethodOneSymmetryTriangle(frequency // 2, polyhedral)

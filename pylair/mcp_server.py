@@ -44,7 +44,7 @@ from .assembly import (
 
 mcp = FastMCP("pylair")
 
-Polyhedron = Literal["icosahedron", "octahedron"]
+Polyhedron = Literal["icosahedron", "octahedron", "tetrahedron"]
 DomeClass = Literal[1, 2, 3]
 
 # Shared geometry parameters across all four tools:
