@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from pylair.polyhedral import Icosahedron, Octahedron
+from pylair.polyhedral import Icosahedron, Octahedron, Tetrahedron
 from pylair.symmetry_triangle import ClassOneMethodOneSymmetryTriangle
 from pylair.geodesic_sphere import GeodesicSphere
 from pylair.bill_of_materials import (
@@ -343,6 +343,13 @@ def test_dihedral_angles_match_known_platonic_values():
     angles = [row['dihedral angle (degrees)'] for row in compute_dihedral_angles(face_data, C)]
     for angle in angles:
         assert angle == pytest.approx(109.47122063449, abs=1e-6)
+
+    # regular tetrahedron: textbook dihedral angle is arccos(1/3)
+    V, C, F = build_sphere_with_faces(frequency=1, polyhedron=Tetrahedron())
+    face_data = compute_face_data(V, F)
+    angles = [row['dihedral angle (degrees)'] for row in compute_dihedral_angles(face_data, C)]
+    for angle in angles:
+        assert angle == pytest.approx(70.52877936551, abs=1e-6)
 
 
 def test_group_face_types_flags_chirality_on_scalene_group():

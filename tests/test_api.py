@@ -42,6 +42,15 @@ def test_polyhedron_accepts_octahedron_name():
     assert len(dome.F_sphere) == 8 * 2 ** 2
 
 
+def test_polyhedron_accepts_tetrahedron_name():
+    dome = build_dome(frequency=2, polyhedron="tetrahedron")
+    assert dome.polyhedron == "tetrahedron"
+    # tetrahedron golden counts: V=2f^2+2, E=6f^2, F=4f^2
+    assert len(dome.V) == 2 * 2 ** 2 + 2
+    assert len(dome.C) == 6 * 2 ** 2
+    assert len(dome.F_sphere) == 4 * 2 ** 2
+
+
 def test_elongation_changes_z_extent_only():
     normal = build_dome(frequency=2, elongation_factors=(1.0, 1.0, 1.0))
     tall = build_dome(frequency=2, elongation_factors=(1.0, 1.0, 1.8))

@@ -48,7 +48,7 @@ to most dome-design questions.
 | `-o` | Output path (required). `.dxf`/`.wrl` appended automatically. |
 | `-f` | Frequency (positive integer). Higher = more struts, rounder dome. |
 | `-r` | Radius. Must be > 0. |
-| `-p` | Base polyhedron: `icosahedron` (default) or `octahedron`. |
+| `-p` | Base polyhedron: `icosahedron` (default), `octahedron`, or `tetrahedron`. |
 | `-c` | Subdivision class: `1` (Alternate, default), `2` (Triacon, needs even `-f`), `3` (Skew/chiral, needs `-n`). |
 | `-n` | Second Goldberg-Coxeter frequency, required for `-c 3`. |
 | `-t`/`-x`/`-y` | Truncation cutoff (0-1) along Z/X/Y. Prefer `0.499999` or `0.333333` over round numbers — see caveat below. |
