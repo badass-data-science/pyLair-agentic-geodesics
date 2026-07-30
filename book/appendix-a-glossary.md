@@ -1,4 +1,4 @@
-# Appendix A — Glossary
+# Appendix A: Glossary
 
 Every geometry, engineering, and nesting term this book introduced, defined in one or two sentences each, cross-referenced to the chapter that first taught it. Terms are alphabetical within two groups: pyLair's geodesic-design vocabulary, then pyFit's nesting vocabulary.
 
