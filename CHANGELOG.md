@@ -78,6 +78,11 @@ lives under `[Unreleased]` against the `0.1.0` version in `pyproject.toml`.
   dome's base ring was missing its closing struts entirely (invisible in
   the vertex/edge/face counts, since no new vertices were involved --
   only a real, previously-uncounted strut per boundary triangle).
+- Normalized the assembly manifest to native `float`/`list` values
+  throughout (angles, panel area, strut-group/panel-group lengths, and
+  `edge_lengths`) instead of raw `numpy.float64`/`tuple` -- `json.dumps()`
+  happened to accept the old values too, but only because `numpy.float64`
+  is coincidentally a `float` subclass.
 - Stale MCP tool docstrings for panel data and truncation-artifact flags.
 - Two stale README claims about panel data and the flat-chord error.
 - Stale `METHOD.md` links in `AGENTS.md` and `README.md` still pointing at
