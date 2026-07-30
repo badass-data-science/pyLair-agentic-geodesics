@@ -1,7 +1,14 @@
 import numpy as np
 import pytest
 
-from pylair.preview import equal_axis_limits, render_preview_png_bytes, save_preview
+from pylair.preview import (
+    equal_axis_limits,
+    render_preview_png_bytes,
+    save_preview,
+    render_assembly_schematic_png_bytes,
+    save_assembly_schematic,
+)
+from pylair.assembly import build_assembly_manifest
 
 
 def test_equal_axis_limits_gives_every_axis_the_same_span():
@@ -89,3 +96,52 @@ def test_save_preview_writes_the_same_bytes_render_preview_png_bytes_returns(tmp
     save_preview(V, C, str(out_file))
 
     assert out_file.read_bytes() == render_preview_png_bytes(V, C)
+
+
+def test_render_assembly_schematic_defaults_to_no_labels_and_returns_valid_png():
+    V = [
+        np.array([1.0, 0.1, 0.05]),
+        np.array([0.1, 1.0, 0.2]),
+        np.array([0.05, 0.2, 1.0]),
+    ]
+    C = [[0, 1], [1, 2], [2, 0]]
+    manifest = build_assembly_manifest(V, C)
+
+    png_bytes = render_assembly_schematic_png_bytes(V, C, manifest)
+
+    assert isinstance(png_bytes, bytes)
+    assert png_bytes[:8] == b"\x89PNG\r\n\x1a\n"
+
+
+def test_render_assembly_schematic_with_labels_differs_from_without():
+    # turning a label kind on must actually change the rendered image --
+    # otherwise the opt-in flag would be silently doing nothing
+    V = [
+        np.array([1.0, 0.1, 0.05]),
+        np.array([0.1, 1.0, 0.2]),
+        np.array([0.05, 0.2, 1.0]),
+    ]
+    C = [[0, 1], [1, 2], [2, 0]]
+    manifest = build_assembly_manifest(V, C)
+
+    unlabeled = render_assembly_schematic_png_bytes(V, C, manifest)
+    with_hub_labels = render_assembly_schematic_png_bytes(V, C, manifest, show_hub_labels=True)
+    with_strut_labels = render_assembly_schematic_png_bytes(V, C, manifest, show_strut_labels=True)
+
+    assert unlabeled != with_hub_labels
+    assert unlabeled != with_strut_labels
+
+
+def test_save_assembly_schematic_writes_the_same_bytes_the_renderer_returns(tmp_path):
+    V = [
+        np.array([1.0, 0.1, 0.05]),
+        np.array([0.1, 1.0, 0.2]),
+        np.array([0.05, 0.2, 1.0]),
+    ]
+    C = [[0, 1], [1, 2], [2, 0]]
+    manifest = build_assembly_manifest(V, C)
+
+    out_file = tmp_path / "schematic.png"
+    save_assembly_schematic(V, C, manifest, str(out_file), show_hub_labels=True)
+
+    assert out_file.read_bytes() == render_assembly_schematic_png_bytes(V, C, manifest, show_hub_labels=True)
