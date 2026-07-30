@@ -1,6 +1,6 @@
 ---
 name: pylair
-description: Design and export geodesic domes (Class I/II/III) — vertices, chords, panels, DXF/VRML/STL/OBJ output, and a full bill of materials — via the pylair CLI.
+description: Design and export geodesic domes (Class I/II/III) — vertices, chords, panels, DXF/VRML/STL/OBJ output, a full bill of materials, and a per-instance assembly manifest/pyFit job spec — via the pylair CLI.
 metadata: { "openclaw": { "requires": { "bins": ["pylair"] }, "emoji": "🛖" } }
 ---
 
@@ -9,7 +9,10 @@ panels of a geodesic dome (or full sphere) from a base polyhedron, a
 subdivision class/frequency, and optional elongation/truncation, then
 reports a bill of materials (strut lengths/counts, hub angles, panel
 shapes/counts, costs) and can export DXF/VRML/STL/OBJ files plus cutting
-templates.
+templates. On top of that, it can build a per-instance assembly manifest
+(every hub/strut/panel with its own stable label and its real adjacency to
+its neighbors, not just a type-grouped count), a per-instance pyFit job spec
+built from real cutting templates, and an annotated assembly schematic.
 
 This skill runs the `pylair` console command directly (installed via
 `pip install -e .` in the pyLair repo, or `pip install pylair` once
@@ -21,7 +24,9 @@ as a shell tool, the same binary documented in `README.md`.
 Reach for `pylair` whenever the user wants to explore, size, or export a
 geodesic dome/sphere design — e.g. "how many struts does a frequency-6
 dome need", "give me a DXF for a dome I can 3D print", "what's the bill of
-materials for a 4-meter dome truncated at the equator".
+materials for a 4-meter dome truncated at the equator", "which hubs does
+this specific strut connect to", or "build me a pyFit nesting job from this
+dome's panels".
 
 ## Basic invocation
 
@@ -52,6 +57,9 @@ to most dome-design questions.
 | `-s`/`-O` | Also write STL/OBJ. |
 | `-P` | Also save a wireframe preview PNG. |
 | `-m`/`-a`/`-w` | Material cost per unit length / area / panel areal density, for cost and weight estimates. |
+| `--assembly-manifest` | Also save a per-instance assembly manifest (`<output>_manifest.json`) — see below. |
+| `--pyfit-job-spec=panels\|hubs` | Also write real cutting templates and a per-instance pyFit job spec (`<output>_jobspec.json`) built from them. |
+| `--assembly-schematic` | Also save an annotated wireframe (`<output>_schematic.png`) with each hub's label drawn at its position. |
 | `-h` | Full flag reference. |
 
 For the complete flag table, output formats, and geometry caveats (e.g. why
@@ -59,6 +67,24 @@ an exact `0.5` truncation cutoff can fail loudly, or why a coarse
 `-b/--bom-rounding` can merge distinct strut lengths), see this repo's
 `README.md`, which this skill's behavior always matches — the CLI has one
 validation/geometry engine (`pylair/api.py`) shared by every interface.
+
+## Assembly manifest and pyFit job specs
+
+The bill of materials answers "how many of each strut/hub/panel shape do I
+need to cut" — it groups instances into cutting-template types and counts.
+`--assembly-manifest` answers a different question: "which specific physical
+piece goes where, and what does it connect to." Every hub, strut, and panel
+gets its own stable label (`H#`/`S#`/`P#`) and its real adjacency to its
+neighbors — reach for it when the user asks about a *specific* piece
+("what connects to hub 12"), not just totals.
+
+`--pyfit-job-spec=panels` (or `=hubs`) writes real cutting templates and a
+pyFit job spec with one part entry per physical instance (`quantity` always
+1), so a pyFit nest report can be traced back to a specific dome hub/panel —
+use this instead of hand-building a job spec from the bill of materials'
+own template list when the user wants that traceability. See README.md's
+"Assembly manifest, pyFit job specs, and schematics" section for the full
+JSON shapes and how chiral panel groups are handled.
 
 ## Iterating on a design
 
