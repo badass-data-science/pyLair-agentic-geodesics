@@ -11,7 +11,7 @@ A geodesic dome calculator written in Python.
 
 pyLair calculates vertices and chords of Class I ("Alternate"), Class II ("Triacon"), and Class III ("Skew"/chiral) geodesic domes of arbitrary size. Domes created by pyLair can be truncated to facilitate structure design. The program produces DXF for easy import into CAD programs, and VRML output for easy display, plus a Bill of Materials report (chord lengths/counts, hub angles, and total strut length/cost) for construction.
 
-For the geometric method (icosahedron/octahedron subdivision, projection, truncation) and reference images, see [METHOD.md](blog-posts/METHOD.md).
+For the geometric method (icosahedron/octahedron/tetrahedron subdivision, projection, truncation) and reference images, see [METHOD.md](blog-posts/METHOD.md).
 
 ## Installation
 
@@ -76,7 +76,7 @@ The skill instructs the agent to drive the same `pylair` CLI documented below, s
 | `-o` | `--output` | Output file path; `.dxf`/`.wrl` are appended. Required. | — |
 | `-r` | `--radius` | Dome radius. Must be > 0. | `1.0` |
 | `-f` | `--frequency` | Subdivision frequency. Must be a positive integer. | `4` |
-| `-p` | `--polyhedron` | Base polyhedron: `icosahedron` or `octahedron`. | `icosahedron` |
+| `-p` | `--polyhedron` | Base polyhedron: `icosahedron`, `octahedron`, or `tetrahedron`. | `icosahedron` |
 | `-c` | `--class` | Subdivision class: `1` (Alternate), `2` (Triacon), or `3` (Skew/chiral). Class 2 requires an even `-f`. Class 3 requires `-n`. | `1` |
 | `-n` | `--n-frequency` | Second frequency parameter for `-c 3`. `-f`/`-n` play the roles of `m`/`n` in the `(m,n)` Goldberg-Coxeter construction; must be a positive integer different from `-f`. Ignored for classes 1 and 2. | — |
 | `-t` | `--truncation` | Cutoff ratio (0-1) from the minimum Z (vertical) extent; keeps the portion above this fraction, discards the rest. Passing this enables Z-axis truncation. Correctly clips face data too, so it's compatible with `-F`/`-s`/`-O`/`-T`/`-a`/`-w`. | off (full sphere) |
@@ -230,7 +230,7 @@ A few behaviors are worth understanding before relying on the output for a real 
 | `pylair/cli.py` | CLI entry point (`pylair` console command → `cli:main`): argument parsing and orchestration via `pylair/api.py`. |
 | `pylair/api.py` | Programmatic entry point shared by the CLI and the MCP server: `build_dome(...)` (validation, symmetry-triangle construction, projection, elongation, sequential X/Y/Z truncation) and the shared `ValueError`-raising validators. |
 | `pylair/mcp_server.py` | MCP server (`pylair-mcp` console command, optional `mcp` extra): `design_dome`/`preview_dome`/`get_bill_of_materials`/`export_dome`/`get_assembly_manifest`/`export_assembly_job_spec`/`render_assembly_schematic` tools built on `pylair/api.py`. |
-| `pylair/polyhedral.py` | The base polyhedra (`Icosahedron`, `Octahedron`), the `Vertex`/`Chord`/`Face` primitives, `build_lcd_faces` (splits each face into 6 sub-triangles for Class II), and `compute_face_adjacency` (which face/edge borders which, for Class III's cross-face stitching). |
+| `pylair/polyhedral.py` | The base polyhedra (`Icosahedron`, `Octahedron`, `Tetrahedron`), the `Vertex`/`Chord`/`Face` primitives, `build_lcd_faces` (splits each face into 6 sub-triangles for Class II), and `compute_face_adjacency` (which face/edge borders which, for Class III's cross-face stitching). |
 | `pylair/symmetry_triangle.py` | Subdivides a single polyhedron face (Class I) or LCD sub-triangle (Class II) into a triangular vertex/chord/face grid. |
 | `pylair/class_three.py` | Builds the Class III (chiral `(m,n)`) grid for a single polyhedron face, plus the combinatorial cross-face vertex-matching data (`cross_face_matches`, `local_priority`) `GeodesicSphere` needs to stitch adjacent faces together correctly. |
 | `pylair/geodesic_sphere.py` | Replicates the symmetry triangle across every polyhedron face, deduplicates the vertices shared along adjacent-face edges (via a KD-tree, plus Class III's combinatorial matches when supplied), and projects the result onto a sphere of the requested radius. |

@@ -113,6 +113,49 @@ def compute_face_adjacency(faces):
   return adjacency
 
 
+class Tetrahedron(Polyhedron):
+  def __init__(self):
+    # The 4 vertices of a regular tetrahedron inscribed in a cube --
+    # alternating corners of [-1,1]^3 (mutually equidistant, edge length
+    # 2*sqrt(2)), each then scaled by 1/sqrt(3) so every vertex lands
+    # exactly on the *unit* sphere -- the same convention
+    # Icosahedron/Octahedron's own vertex constructions already follow
+    # (and that test_polyhedral.py's test_polyhedron_vertices_lie_on_
+    # unit_sphere checks for), even though project_onto_sphere would
+    # re-normalize any starting scale anyway.
+    s = np.float64(1.) / np.sqrt(np.float64(3.))
+    self.vertices = [
+	    Vertex(s, s, s),
+	    Vertex(s, -s, -s),
+	    Vertex(-s, s, -s),
+	    Vertex(-s, -s, s),
+	    ]
+
+    # each face omits exactly one vertex; vertex order chosen so every
+    # face's outward normal (right-hand rule on v1->v2, v1->v3) points
+    # away from the tetrahedron's own centroid (the origin) -- verified
+    # numerically, not assumed, since an inconsistent winding here would
+    # silently flip that face's own local basis in Face's own
+    # transfer-matrix construction.
+    self.faces = [
+	    Face(self.vertices[1], self.vertices[3], self.vertices[2]),
+	    Face(self.vertices[0], self.vertices[2], self.vertices[3]),
+	    Face(self.vertices[0], self.vertices[3], self.vertices[1]),
+	    Face(self.vertices[0], self.vertices[1], self.vertices[2]),
+	    ]
+
+    self.chords = [
+	    Chord(self.vertices[0], self.vertices[1]),
+	    Chord(self.vertices[0], self.vertices[2]),
+	    Chord(self.vertices[0], self.vertices[3]),
+	    Chord(self.vertices[1], self.vertices[2]),
+	    Chord(self.vertices[1], self.vertices[3]),
+	    Chord(self.vertices[2], self.vertices[3]),
+	    ]
+
+    super(Tetrahedron, self).__init__()
+
+
 class Octahedron(Polyhedron):
   def __init__(self):
 
