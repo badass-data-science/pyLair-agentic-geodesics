@@ -291,9 +291,12 @@ def test_sequential_multi_axis_clip_reuses_diagonal_edge_without_keyerror():
 def test_clip_face_two_vertices_above_cutoff_adds_diagonal_as_a_real_chord():
     # same quad-split shape as test_clip_face_two_vertices_above_cutoff_
     # produces_a_quad_split_into_two_triangles above, but checking that
-    # the split's diagonal is now reported back as a genuine chord
-    # (rather than a strut-less data-format seam), with the correct
-    # hand-computable length and connecting the two sub-triangles.
+    # the split's diagonal AND its remaining cutoff-plane edge (the
+    # quad's own base-ring segment -- see
+    # test_clip_face_one_vertex_above_cutoff_adds_base_ring_edge_as_a_
+    # real_chord below for the other clip case) are now both reported
+    # back as genuine chords, rather than either being a strut-less
+    # data-format seam, with the correct hand-computable lengths.
     A = np.array([0., 0., 0.])
     B = np.array([4., 0., 2.])
     C = np.array([0., 4., 2.])
@@ -303,8 +306,9 @@ def test_clip_face_two_vertices_above_cutoff_adds_diagonal_as_a_real_chord():
     V_new, C_new, F_new = truncate(V, edges, 0.5, axis=2, F_sphere=[[0, 1, 2]])
 
     # BC is kept as-is, AB and CA are each replaced 1:1 by a shortened
-    # chord, and the diagonal is one genuinely new chord on top of that
-    assert len(C_new) == len(edges) + 1
+    # chord, and the diagonal plus the base-ring edge are two genuinely
+    # new chords on top of that
+    assert len(C_new) == len(edges) + 2
 
     # both new triangles share exactly one edge -- that's the diagonal
     shared = set(F_new[0]) & set(F_new[1])
@@ -319,3 +323,53 @@ def test_clip_face_two_vertices_above_cutoff_adds_diagonal_as_a_real_chord():
     expected_length = np.linalg.norm(Pa - C)
     v1, v2 = (V_new[i] for i in diagonal_chords[0])
     assert np.linalg.norm(np.asarray(v1) - np.asarray(v2)) == pytest.approx(expected_length)
+
+    # the base-ring edge is whatever's left in C_new that isn't the kept
+    # BC edge, one of the two 1:1-shortened edges, or the diagonal --
+    # its two endpoints are Pa=(2,0,1) (A-B's crossing point) and the
+    # A-C edge's own crossing point, Pb=(0,2,1)
+    Pb = np.array([0., 2., 1.])
+    expected_base_ring_length = np.linalg.norm(Pa - Pb)
+    accounted_for = set(diagonal_chords[0])
+    remaining = [c for c in C_new if set(c) != shared and len(set(c) & accounted_for) < 2]
+    base_ring_candidates = [
+        c for c in remaining
+        if np.linalg.norm(np.asarray(V_new[c[0]]) - np.asarray(V_new[c[1]]))
+        == pytest.approx(expected_base_ring_length)
+    ]
+    assert len(base_ring_candidates) == 1
+
+
+def test_clip_face_one_vertex_above_cutoff_adds_base_ring_edge_as_a_real_chord():
+    # same shape as test_clip_face_one_vertex_above_cutoff_produces_a_
+    # smaller_triangle above: A is kept, B and C are discarded. The
+    # resulting triangle's own third edge -- connecting the two new
+    # crossing points, i.e. lying exactly on the cutoff plane -- must
+    # now be reported back as a real chord.
+    A = np.array([0., 0., 2.])
+    B = np.array([4., 0., 0.])
+    C = np.array([0., 4., 0.])
+    V = [A, B, C]
+    edges = [[0, 1], [1, 2], [2, 0]]
+
+    V_new, C_new, F_new = truncate(V, edges, 0.5, axis=2, F_sphere=[[0, 1, 2]])
+
+    # AB and CA are each replaced 1:1 by a shortened chord, BC is
+    # removed outright (both endpoints below cutoff), and the new
+    # base-ring edge is one genuinely new chord on top of that
+    assert len(C_new) == len(edges) - 1 + 1
+
+    # hand-computed (see test_clip_face_one_vertex_above_cutoff_produces_
+    # a_smaller_triangle): edge A-B crosses z=1 at (2, 0, 1); edge C-A
+    # crosses z=1 at (0, 2, 1)
+    Pa = np.array([2., 0., 1.])
+    Pb = np.array([0., 2., 1.])
+    expected_length = np.linalg.norm(Pa - Pb)
+
+    base_ring_chords = [
+        c for c in C_new
+        if np.linalg.norm(np.asarray(V_new[c[0]]) - np.asarray(V_new[c[1]]))
+        == pytest.approx(expected_length)
+        and V_new[c[0]][2] == pytest.approx(1.0) and V_new[c[1]][2] == pytest.approx(1.0)
+    ]
+    assert len(base_ring_chords) == 1

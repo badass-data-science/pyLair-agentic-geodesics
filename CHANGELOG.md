@@ -64,6 +64,11 @@ lives under `[Unreleased]` against the `0.1.0` version in `pyproject.toml`.
   instead of producing silently wrong geometry.
 - Validate frequency/radius CLI arguments and narrow bare `except` clauses.
 - Strut the diagonal seam left over from corner-clipped quad panels.
+- Strut a truncated dome's own base ring: a clipped boundary triangle's
+  cut-plane edge was never reported back as a chord, so every truncated
+  dome's base ring was missing its closing struts entirely (invisible in
+  the vertex/edge/face counts, since no new vertices were involved --
+  only a real, previously-uncounted strut per boundary triangle).
 - Stale MCP tool docstrings for panel data and truncation-artifact flags.
 - Two stale README claims about panel data and the flat-chord error.
 - Stale `METHOD.md` links in `AGENTS.md` and `README.md` still pointing at
