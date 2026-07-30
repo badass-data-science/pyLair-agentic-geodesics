@@ -1,4 +1,4 @@
-# Chapter 24: Conclusion
+# Chapter 25: Conclusion
 
 Twenty-three chapters ago, this book opened on a studio apartment that had run out of room for an Ultimate Cunning Master Plan&trade;. It closes here, with a real dome, real templates, and a real cut plan — not a hypothetical one, and not one this book asked you to take on faith anywhere along the way.
 
@@ -12,7 +12,7 @@ And then, because a design isn't a building: hand its panels to a second, genuin
 
 ## A Closing Status Update
 
-**The Actual Secret Lair** is designed, verified, exported, and — new, as of Part VI — actually nested: real panel templates, a real job spec built from them, a real multi-sheet cut plan sitting ready for a henchman to load into a laser cutter. This is the dome the companion blog post's heroine set out to build, and the one this book has spent 24 chapters actually finishing, not just describing.
+**The Actual Secret Lair** is designed, verified, exported, and — new, as of Part VI — actually nested: real panel templates, a real job spec built from them, a real multi-sheet cut plan sitting ready for a henchman to load into a laser cutter. This is the dome the companion blog post's heroine set out to build, and the one this book has spent 25 chapters actually finishing, not just describing.
 
 **The Under-the-Ocean Prototype** remains, honestly, just a prototype. Its panels got nested for real in Chapter 20 — real templates, a real `allow_mirror` decision, a real and genuinely surprising result — but its actual construction, like any sensible secret laboratory's, stays exactly as secret as the blog post always promised it would.
 

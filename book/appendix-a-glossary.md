@@ -6,6 +6,8 @@ Every geometry, engineering, and nesting term this book introduced, defined in o
 
 **Achiral** — A shape that *can* be superimposed on its own mirror image using rotation and translation alone. Class I and Class II domes are both achiral by construction. (Chapter 6)
 
+**Assembly manifest** — A per-instance alternative to the Bill of Materials: every hub, strut, and panel keeps its own stable label (`H#`/`S#`/`P#`, literally that instance's own index into the dome's vertex/chord/face arrays) and its real adjacency to its neighbors, instead of being collapsed into a type-grouped count. (Chapter 22)
+
 **Bevel angle** — Half of the angle between two adjacent panels' outward normals; the cut angle a panel's edge needs away from flat to sit correctly against its neighbor. A `0°` bevel means the two panels are coplanar. (Chapter 10, Chapter 12)
 
 **Bill of materials (BOM)** — The full JSON report of a dome's strut lengths/counts, hub angles, panel shapes/counts, and costs — everything needed to actually fabricate the design. (Chapters 12–16)
@@ -68,7 +70,7 @@ Every geometry, engineering, and nesting term this book introduced, defined in o
 
 **Rotation step (`-R/--rotation-step`)** — The angular spacing between candidate orientations tried during placement search; a finer step means denser search and better packing at the cost of speed. (Chapter 20)
 
-**Sheet utilization** — The fraction of a sheet's area actually covered by placed parts; the real metric for "how much material is being wasted," as distinct from a design's theoretical panel area. (Chapter 20, Chapter 22)
+**Sheet utilization** — The fraction of a sheet's area actually covered by placed parts; the real metric for "how much material is being wasted," as distinct from a design's theoretical panel area. (Chapter 20, Chapter 23)
 
 ## Agentic Interface (Both Toolkits)
 

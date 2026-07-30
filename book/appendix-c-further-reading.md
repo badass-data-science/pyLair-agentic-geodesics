@@ -11,7 +11,7 @@ The real sources pyLair's and pyFit's own constructions are drawn from and verif
 ## Independent Geometry Oracles
 
 - [`trimesh`](https://trimesh.org/). Independently recomputes panel areas and inter-panel angles from pyLair's own exported files, and serves as an independent ground truth for truncated-panel clipping via its own mesh-slicing routine — referenced in Chapter 17 and pyLair's own `README.md`/test suite.
-- [`ezdxf`](https://ezdxf.readthedocs.io/). Parses a generated panel cutting template back out to confirm it reproduces the exact edge lengths it claims to — a parse-then-measure round trip, not a restatement of the same trigonometry (Chapter 15, Chapter 23).
+- [`ezdxf`](https://ezdxf.readthedocs.io/). Parses a generated panel cutting template back out to confirm it reproduces the exact edge lengths it claims to — a parse-then-measure round trip, not a restatement of the same trigonometry (Chapter 15, Chapter 24).
 
 ## 2D Nesting
 

@@ -1,6 +1,6 @@
 # Chapter 21: Talking to pyFit — The Four MCP Tools, Progress Notifications, and a Combined Workflow
 
-Chapter 18 taught pyLair's four-tool iterate-then-commit pattern. pyFit has the identical shape — `design_nest`, `preview_nest`, `get_nest_report`, `export_nest` — for exactly the same reason: cheap sanity check, visual check, full report, commitment, in that order. This chapter teaches that pattern's pyFit version, one genuinely new idea neither dome design ever needed, and then closes Part VI with one continuous session spanning both toolkits.
+Chapter 18 taught pyLair's four-tool iterate-then-commit pattern. pyFit has the identical shape — `design_nest`, `preview_nest`, `get_nest_report`, `export_nest` — for exactly the same reason: cheap sanity check, visual check, full report, commitment, in that order. This chapter teaches that pattern's pyFit version, one genuinely new idea neither dome design ever needed, and then walks through one continuous session spanning both toolkits before Part VI's own final chapter.
 
 ## The Same Four-Tool Shape, on the Nesting Side
 
@@ -84,4 +84,6 @@ Here, narrated as one transcript, is the complete arc this book has been buildin
 
 ## What's Next
 
-Part VII closes the book. Chapter 22 is a prompting clinic spanning both toolkits at once — real flawed prompts, rewritten, including one that looks like a single question but actually needs both pyLair and pyFit to answer honestly. Chapter 23 is the retrospective this whole book has been setting up since its very first gotcha, and Chapter 24 sends the Actual Secret Lair off to be built.
+That eight-tool session leaves one real question deliberately unanswered: a pyFit nest report tells you which sheet and position each *shape type* landed at, never which specific dome hub or panel a given physical, cut piece actually is. Chapter 22 closes Part VI by answering exactly that — a per-instance assembly manifest, a job spec that survives the trip through pyFit with its identity intact, and a real historical bug this exact work caught along the way.
+
+Part VII closes the book after that. Chapter 23 is a prompting clinic spanning both toolkits at once — real flawed prompts, rewritten, including one that looks like a single question but actually needs both pyLair and pyFit to answer honestly. Chapter 24 is the retrospective this whole book has been setting up since its very first gotcha, and Chapter 25 sends the Actual Secret Lair off to be built.

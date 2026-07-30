@@ -1,4 +1,4 @@
-# Chapter 22: Prompting pyLair and pyFit Like You Mean It
+# Chapter 23: Prompting pyLair and pyFit Like You Mean It
 
 Twenty-one chapters have taught two toolkits, eight tools between them, and a long list of real gotchas. This chapter is a clinic, not a lesson: four real, flawed prompts, rewritten and explained — reusing designs this book has already built rather than inventing new ones, because the whole point is practicing on material you already understand.
 
@@ -59,4 +59,4 @@ What changed: the fix isn't a cleverer single prompt — it's recognizing the qu
 
 ## What's Next
 
-Chapter 23 is the retrospective this book has been quietly building toward since its very first gotcha: every point where either toolkit checked its own work against something genuinely independent, gathered into one general habit worth taking well beyond these two projects. Chapter 24 closes the book.
+Chapter 24 is the retrospective this book has been quietly building toward since its very first gotcha: every point where either toolkit checked its own work against something genuinely independent, gathered into one general habit worth taking well beyond these two projects. Chapter 25 closes the book.

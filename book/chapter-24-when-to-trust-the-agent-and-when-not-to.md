@@ -1,4 +1,4 @@
-# Chapter 23: When to Trust the Agent, and When Not To
+# Chapter 24: When to Trust the Agent, and When Not To
 
 No new dome, no new nesting job. This chapter is the after-action review our heroine holds after any real operation — a structured look back across everything Chapters 1 through 22 actually checked, and a single, generalizable rule underneath all of it, worth carrying to any geometry tool this book didn't write.
 
@@ -41,4 +41,4 @@ The same principle applies to this book itself, not just the two toolkits it tea
 
 ## What's Next
 
-Chapter 24 closes the book — a full recap of both pipelines, a status update on every named design this book actually built, and an honest look at what each toolkit's own real, currently-open work still is.
+Chapter 25 closes the book — a full recap of both pipelines, a status update on every named design this book actually built, and an honest look at what each toolkit's own real, currently-open work still is.

@@ -1642,9 +1642,91 @@ inline tool outputs, reusing renders already produced in Chapters 18 and
 
 ---
 
+### Chapter 22: Which Piece Goes Where — the Assembly Manifest
+
+**Concept(s) taught:** The Bill of Materials deliberately collapses individual
+hubs/struts/panels into cutting-template *types* and counts — "how many of
+each shape to cut." The **assembly manifest** answers a different question:
+"which specific physical piece goes where, and what does it connect to."
+Every hub, strut, and panel gets its own stable label (`H#`/`S#`/`P#` —
+literally its position in the dome's own vertex/chord/face arrays) and its
+real adjacency to its neighbors (which struts meet at a hub and at what
+angle, which hubs bound a panel, which panel(s) border a strut, the bevel
+angle at each panel edge). On top of that: a **per-instance pyFit job spec**
+(quantity always 1 per part, named by its manifest label) so a pyFit nest
+report becomes traceable back to a specific dome hub/panel, handling a
+chiral panel group's mirror orientation explicitly rather than trusting
+pyFit's own packer to flip the correct instances; and an **annotated
+assembly schematic** — the same depth-cued wireframe Chapter 2 introduced,
+with per-instance labels optionally drawn at each hub/strut/panel's
+position. The chapter closes with the real historical bug this exact
+cross-check caught: a truncated dome's base ring was missing its closing
+struts entirely, invisible to every golden-value/Euler's-formula check in
+this book so far, because those checks only apply to a *closed* manifold
+and a truncated dome isn't one.
+
+**pyLair/pyFit interfaces used:** `get_assembly_manifest`,
+`export_assembly_job_spec` (`kind="panels"` or `"hubs"`),
+`render_assembly_schematic` (MCP); `--assembly-manifest`,
+`--pyfit-job-spec=panels|hubs` (plus `--sheet-width`/`--sheet-height`),
+`--assembly-schematic` (plus `--schematic-strut-labels`/
+`--schematic-panel-labels`) (CLI).
+
+**Learning objectives:**
+- Explain what a per-instance assembly manifest gives you that the Bill of
+  Materials' own type-grouped counts structurally can't: which *specific*
+  physical piece a builder is holding, and what it connects to.
+- Read a real manifest's hub entry and trace one hub's own connections to
+  specific neighboring hubs, the struts between them, and each strut's
+  tangential/spoke angle.
+- Explain why a chiral panel group's "other" mirror-orientation instances
+  get an inline pre-mirrored polygon in the job spec, rather than an
+  `allow_mirror=True` flag left to pyFit's own packer to resolve.
+- Recognize the base-ring-strut bug as a category, not just a fixed
+  instance: a bug that passed every closed-manifold check (Euler's formula,
+  golden-value counts) because a truncated dome was never a closed manifold
+  to begin with, caught instead by a direct strut↔panel adjacency
+  cross-check built for an unrelated reason.
+
+**The villainous example:** **The Actual Secret Lair**'s own assembly
+manifest and per-instance job spec, picking up exactly where Chapter 20's
+nesting session left off — plus a smaller, deliberately coarser example dome
+for the annotated schematic image, since a dome at the Actual Secret Lair's
+own frequency has far too many hubs to label legibly at once.
+
+**Images:** A real annotated assembly schematic (hub labels drawn at their
+positions) on a small, legible example dome — the same depth-cued wireframe
+style established in Chapter 2, now with labels.
+
+**Gotchas & rationale:**
+- Chiral job-spec construction: a chiral group's cutting template is,
+  without saying so, one specific arbitrary mirror orientation; letting
+  pyFit's own packer decide whether to flip an instance for packing
+  efficiency would risk cutting the wrong-handed piece for this specific
+  dome.
+- Hub connector plates have no chirality model at all — pyLair doesn't
+  compute a chirality signature for hub shapes the way it does for panels,
+  so every hub instance is submitted with `allow_mirror=True` unconditionally.
+- The base-ring-strut bug: found via the manifest's own `bordering_panels`
+  field (a base-ring strut borders exactly 1 panel, an interior strut
+  borders exactly 2 — there was, before the fix, no such thing as a
+  1-bordering-panel strut at all, because the edge that would have produced
+  one was never a chord in the first place).
+
+**Sample prompts:**
+- "Get the assembly manifest for this dome and tell me which struts meet at
+  hub 12, and at what angles."
+- "Build a per-instance pyFit job spec for this dome's panels, and make sure
+  the chiral ones keep the correct orientation rather than letting the
+  packer decide."
+- "Render an annotated schematic of this dome with hub labels so a builder
+  knows which connector goes where."
+
+---
+
 ## Part VII — Becoming a Better Design Villain
 
-### Chapter 22: Prompting pyLair and pyFit Like You Mean It
+### Chapter 23: Prompting pyLair and pyFit Like You Mean It
 
 **Concept(s) taught:** Practical prompt craft across a two-toolkit, eight-tool
 agentic interface: being specific about which tool's answer you actually
@@ -1720,7 +1802,7 @@ this book has already built rather than introducing new ones.
 
 ---
 
-### Chapter 23: When to Trust the Agent, and When Not To
+### Chapter 24: When to Trust the Agent, and When Not To
 
 **Concept(s) taught:** A retrospective, cross-cutting look at every
 deliberately rule-based or independently-verified decision point this book
@@ -1781,7 +1863,7 @@ review our heroine holds after any operation.
 
 ---
 
-### Chapter 24: Conclusion
+### Chapter 25: Conclusion
 
 **Concept(s) taught:** A wrap-up, not a new concept — consolidates the
 book's arc from "pick a polyhedron" through "should you even trust this
