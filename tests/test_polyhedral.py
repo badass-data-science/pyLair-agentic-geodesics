@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from pylair.polyhedral import Vertex, Face, Chord, Octahedron, Icosahedron, build_lcd_faces
+from pylair.polyhedral import Vertex, Face, Chord, Octahedron, Icosahedron, Tetrahedron, build_lcd_faces
 
 
 def test_vertex_distance_to():
@@ -30,6 +30,7 @@ def test_face_transfer_matrix_x_axis_is_unit_length():
 @pytest.mark.parametrize(
     "polyhedron_cls,expected_vertices,expected_faces,expected_chords",
     [
+        (Tetrahedron, 4, 4, 6),
         (Octahedron, 6, 8, 12),
         (Icosahedron, 12, 20, 30),
     ],
@@ -41,7 +42,7 @@ def test_polyhedron_counts(polyhedron_cls, expected_vertices, expected_faces, ex
     assert len(poly.chords) == expected_chords
 
 
-@pytest.mark.parametrize("polyhedron_cls", [Octahedron, Icosahedron])
+@pytest.mark.parametrize("polyhedron_cls", [Tetrahedron, Octahedron, Icosahedron])
 def test_polyhedron_vertices_lie_on_unit_sphere(polyhedron_cls):
     poly = polyhedron_cls()
     for v in poly.vertices:
@@ -64,7 +65,7 @@ def test_chord_stores_endpoints():
 
 @pytest.mark.parametrize(
     "polyhedron_cls,expected_lcd_count",
-    [(Octahedron, 48), (Icosahedron, 120)],
+    [(Tetrahedron, 24), (Octahedron, 48), (Icosahedron, 120)],
 )
 def test_build_lcd_faces_produces_six_per_original_face(polyhedron_cls, expected_lcd_count):
     poly = polyhedron_cls()
