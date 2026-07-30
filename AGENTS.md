@@ -8,9 +8,12 @@ tools, caveats) see [README.md](README.md); for the geometric method itself see
 
 pyLair is a geodesic dome calculator: given a base polyhedron, subdivision
 class/frequency, and optional truncation/elongation, it computes vertices/chords/
-faces and exports DXF/VRML/STL/OBJ plus a JSON Bill of Materials. There's a CLI
-(`pylair`) and an MCP server (`pylair-mcp`) that both go through the same
-`pylair/api.py:build_dome` / `validate_geometry_params`. There's also an
+faces and exports DXF/VRML/STL/OBJ plus a JSON Bill of Materials. On top of that,
+`pylair/assembly.py` builds a per-instance assembly manifest, a per-instance
+pyFit job spec, and an annotated schematic — see README's "Assembly manifest,
+pyFit job specs, and schematics" section. There's a CLI (`pylair`) and an MCP
+server (`pylair-mcp`) that both go through the same `pylair/api.py:build_dome` /
+`validate_geometry_params`. There's also an
 [OpenClaw](https://openclaw.ai/) skill (`SKILL.md` + `openclaw.config.snippet.jsonc`
 at the repo root) that drives the `pylair` CLI directly — OpenClaw has no MCP
 client, so that skill wraps the CLI rather than `pylair-mcp`.
@@ -66,7 +69,7 @@ you're editing.
 | `pylair/truncation.py` | Cuts the sphere into a dome along X/Y/Z, clipping face data to match. |
 | `pylair/elongation.py` | Scales axes independently into a general ellipsoid. |
 | `pylair/output.py` | DXF/VRML/STL/OBJ/template file writers. |
-| `pylair/preview.py` | Wireframe preview PNG rendering. |
+| `pylair/preview.py` | Depth-cued wireframe preview PNG rendering, plus the same wireframe as an annotated (per-hub/strut/panel label) assembly schematic. |
 | `pylair/bill_of_materials.py` | Strut/hub/panel clustering, angles, cost/weight, cutting templates, JSON report. |
 | `pylair/assembly.py` | Per-instance assembly manifest (`H#`/`S#`/`P#` labels + real adjacency, unlike `bill_of_materials.py`'s type-grouped counts) and a per-instance pyFit job spec built from real cutting templates. |
 
@@ -84,8 +87,23 @@ limitations" and the corresponding "Development" paragraph — several of these
 (Class II's coordinate-basis bug, Class III's cross-face stitching, elongated
 surface-normal angles) were real historical bugs that passed a naive smoke test.
 
-`truncate()`'s diagonal-seam handling for quad boundary panels is the current,
-correct behavior (see README caveat). The blog post used to carry a stale
+`truncate()`'s diagonal-seam handling for quad boundary panels, and its
+base-ring-strut handling (every boundary triangle's own cut-plane edge now
+gets a real chord too — see README caveat), are the current, correct
+behavior. The base-ring bug specifically is worth knowing about as a category,
+not just a fixed instance: it passed every golden-value/Euler's-formula check
+in the test suite, because those checks only apply to a *closed* manifold
+(the full, untruncated sphere) — a truncated dome isn't one, so an
+undercounted chord total on the open boundary had no golden-value formula to
+contradict. What actually caught it was `pylair/assembly.py`'s own
+strut<->panel adjacency cross-check (`bordering_panels`), built for an
+unrelated reason, not a dedicated regression test. If you touch `truncation.py`
+again, don't assume "the golden-value/Euler tests still pass" is sufficient
+evidence of correctness on a *truncated* dome specifically — check strut/panel
+adjacency directly instead, the way `test_assembly.py`'s own
+`test_truncated_dome_base_ring_struts_border_exactly_one_panel` does.
+
+The blog post used to carry a stale
 "Next Steps" bullet about this with a strikethrough + inline "Done." patched
 onto it, which read as self-contradictory and got flagged by `/graphify` as an
 AMBIGUOUS edge; that bullet was removed rather than reworded, since the item
