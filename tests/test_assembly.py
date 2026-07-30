@@ -1,4 +1,5 @@
 import collections
+import json
 
 import numpy as np
 import pytest
@@ -67,6 +68,38 @@ def test_manifest_omits_panels_when_faces_not_given():
     assert manifest['panel_groups'] == []
     assert len(manifest['hubs']) == len(V)
     assert len(manifest['struts']) == len(C)
+
+
+def _assert_no_numpy_or_tuple_leaves(obj, path="manifest"):
+    # numpy.float64 happens to be a float subclass, so json.dumps
+    # wouldn't actually catch this regressing -- walk the structure
+    # directly and demand every leaf is a type()-exact native type
+    # (isinstance would silently let numpy.float64 back in).
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            _assert_no_numpy_or_tuple_leaves(v, f"{path}.{k}")
+    elif isinstance(obj, tuple):
+        raise AssertionError(f"{path} is a tuple (json round-trips this as a list): {obj!r}")
+    elif isinstance(obj, list):
+        for i, v in enumerate(obj):
+            _assert_no_numpy_or_tuple_leaves(v, f"{path}[{i}]")
+    else:
+        assert type(obj) in (int, str, bool, type(None), float), \
+            f"{path} is {type(obj)!r}, not a native JSON-safe type: {obj!r}"
+
+
+def test_manifest_is_built_from_native_json_safe_types_only():
+    # Regression test for the numpy.float64/tuple leakage this module
+    # used to have: every angle, length, and area is now explicitly
+    # cast to a plain float, and edge_lengths is a list, not a tuple --
+    # not relying on numpy.float64 happening to subclass float, or on
+    # json.dumps happening to accept a tuple as an array.
+    V, C, F = build_sphere_with_faces(frequency=4)
+    manifest = build_assembly_manifest(V, C, faces=F)
+
+    _assert_no_numpy_or_tuple_leaves(manifest)
+    # also confirm it still actually round-trips through real JSON
+    assert json.loads(json.dumps(manifest)).keys() == manifest.keys()
 
 
 def test_every_hub_connection_references_a_real_strut_and_hub():
