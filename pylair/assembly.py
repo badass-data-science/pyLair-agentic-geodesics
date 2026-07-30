@@ -122,6 +122,15 @@ def build_assembly_manifest(vertices, chords, faces=None, elongation_factors=(1.
   (each a list of per-cutting-template-type summaries, with a labeled
   'hub_ids'/'strut_ids'/'panel_ids' list instead of raw indices).
   'panels' and 'panel_groups' are empty if faces is None.
+
+  Every adjacency direction a builder needs to orient assembly is
+  covered, not just half of each pair: a hub's own 'connections' list
+  gives hub->strut and hub->hub; a strut's 'hub_1'/'hub_2' gives
+  strut->hub back; a panel's 'hub_ids' gives panel->hub and its
+  'edges'[i]['strut'] gives panel->strut; a strut's own
+  'bordering_panels' gives the reverse, strut->panel (1 entry on a
+  truncated dome's open boundary edges, 2 on any interior edge, None
+  rather than [] if faces wasn't given at all).
   """
   vertices = [np.asarray(v, dtype=float) for v in vertices]
 
@@ -168,6 +177,11 @@ def build_assembly_manifest(vertices, chords, faces=None, elongation_factors=(1.
       'hub_2': hub_label(b),
       'length': length,
       'template_group': strut_group_of.get(idx),
+      # None (not just an empty list) when faces isn't given at all --
+      # distinct from "face data exists but this strut genuinely borders
+      # no panel", which shouldn't happen for a real triangulated dome
+      # but isn't assumed away below.
+      'bordering_panels': None,
     }
 
   hub_groups = [
@@ -193,6 +207,23 @@ def build_assembly_manifest(vertices, chords, faces=None, elongation_factors=(1.
   panel_groups = []
   if faces is not None:
     face_data = compute_face_data(vertices, faces)
+
+    # Every strut's bordering panel(s) -- the reverse of a panel's own
+    # 'edges'/'strut' link. Built directly from face_data rather than
+    # reusing compute_dihedral_angles' own internal edge_to_faces: that
+    # function only keeps edges bordering exactly 2 faces (it has no
+    # dihedral angle to report otherwise), which would silently drop a
+    # truncated dome's boundary struts -- those border exactly 1 panel,
+    # a real and useful fact for assembly, not an edge case to discard.
+    edge_to_faces = {}
+    for face_idx, fd in enumerate(face_data):
+      a, b, c = fd['vertices']
+      for u, v in ((a, b), (b, c), (c, a)):
+        edge_to_faces.setdefault(frozenset((u, v)), []).append(face_idx)
+    for idx, c in enumerate(chords):
+      bordering = edge_to_faces.get(frozenset((c[0], c[1])), [])
+      struts_out[strut_label(idx)]['bordering_panels'] = [panel_label(i) for i in sorted(bordering)]
+
     face_groups_raw = group_face_types(face_data, length_precision)
     face_group_of = {idx: gi for gi, g in enumerate(face_groups_raw) for idx in g['face_indices']}
 
