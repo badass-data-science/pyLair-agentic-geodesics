@@ -1,1 +1,3 @@
 This is VERY MUCH a work in progress...
+
+TO DO:  Ensure the book assembly script DOES NOT accidentally include this README.md file!
