@@ -75,7 +75,7 @@ def design_dome(radius: float = 1.0, frequency: int = 4, polyhedron: Polyhedron 
   return _design_summary(dome)
 
 
-@mcp.tool()
+@mcp.tool(structured_output=False)
 def preview_dome(radius: float = 1.0, frequency: int = 4, polyhedron: Polyhedron = "icosahedron",
                   dome_class: DomeClass = 1, n_frequency: Optional[int] = None,
                   truncation_x: Optional[float] = None, truncation_y: Optional[float] = None,
@@ -290,7 +290,7 @@ def export_assembly_job_spec(output_path: str, kind: Literal["panels", "hubs"] =
   return {"files_written": files_written, "job_spec": job_spec}
 
 
-@mcp.tool()
+@mcp.tool(structured_output=False)
 def render_assembly_schematic(radius: float = 1.0, frequency: int = 4,
                                polyhedron: Polyhedron = "icosahedron", dome_class: DomeClass = 1,
                                n_frequency: Optional[int] = None, truncation_x: Optional[float] = None,
