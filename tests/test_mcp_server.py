@@ -238,6 +238,30 @@ def test_tools_are_reachable_over_a_real_mcp_session():
     asyncio.run(run())
 
 
+def test_preview_dome_and_render_assembly_schematic_serialize_over_a_real_mcp_session():
+    # Regression test: preview_dome/render_assembly_schematic return a bare
+    # `List` mixing a str summary with an `Image`. FastMCP auto-detects a
+    # bare `List` return annotation as structured-output-eligible and tries
+    # to JSON-serialize the actual return value for structuredContent --
+    # which fails on the Image object ("Unable to serialize unknown type").
+    # Calling the tool body directly (as in the tests above) never exercises
+    # that serialization step, so it can't catch this; only a real
+    # client.call_tool() round-trip can. Both tools are registered with
+    # structured_output=False specifically to avoid this.
+    async def run():
+        async with create_connected_server_and_client_session(mcp) as client:
+            for tool_name, kwargs in [
+                ("preview_dome", {"frequency": 1}),
+                ("render_assembly_schematic", {"frequency": 1}),
+            ]:
+                result = await client.call_tool(tool_name, kwargs)
+                assert result.isError is False, result.content
+                assert result.content[0].type == "text"
+                assert result.content[1].type == "image"
+
+    asyncio.run(run())
+
+
 def test_invalid_params_become_an_mcp_error_result():
     async def run():
         async with create_connected_server_and_client_session(mcp) as client:
