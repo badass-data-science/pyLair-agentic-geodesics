@@ -950,6 +950,10 @@ def render_pdf(md_path, out_dir, pdf_engine):
     cmd = [
         "pandoc",
         os.path.basename(md_path),
+        # "**Prompt:**" is followed directly by its "> ..." quote with no
+        # blank line between; pandoc's default markdown would print the
+        # ">" literally and run the quote into the label.
+        "-f", "markdown-blank_before_blockquote",
         "-o", pdf_path_abs,
         f"--pdf-engine={pdf_engine}",
         "--top-level-division=chapter",
@@ -1009,6 +1013,7 @@ def render_epub(md_path, out_dir):
     cmd = [
         "pandoc",
         EPUB_SOURCE_NAME,
+        "-f", "markdown-blank_before_blockquote",
         "-o", epub_path_abs,
         "--split-level=2",
         "--toc",
