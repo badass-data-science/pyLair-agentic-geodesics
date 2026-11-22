@@ -1,54 +1,60 @@
 # Chapter 14: Skinning the Dome — Panel Shapes and the Chirality Trap
 
-Chapter 13 grouped struts by length. This chapter groups panels by shape — and runs directly into Chapter 6's chirality definition again, at a scale one order smaller than a whole dome: a single flat triangle. The result is a genuine, easy-to-miss trap for anyone about to order directional cladding material, and — a real surprise worth sitting with — it shows up in a place you might not expect.
+While the Actual Secret Lair's design was being finalized, the Junior Henchman was given a practice job: skin a lobby display model, a plain frequency-6 Class I sphere, in walnut veneer, so the crew could rehearse on something that didn't matter. The bill of materials said the largest panel group had 240 panels, all the same shape. The Junior Henchman made one template, laid it on the veneer with the grain running point-up, and cut 240 panels. When they went on the model, half of them had their grain running sideways relative to their neighbors, in a neat, maddening pattern. Nobody had cut anything wrong. The Foreman took the LEFT and RIGHT cardboard models down from the shelf.
 
-## Grouping Panels the Same Way You Grouped Struts
+Chapter 13 grouped struts by length. This chapter groups panels by shape, and runs into Chapter 6's chirality again at a smaller scale: a single flat triangle. The result is an easy-to-miss trap for anyone about to order directional cladding, and it turns up where you might least expect it.
 
-Every panel on a dome is a triangle, and pyLair groups them into shape "types" the same conceptual way Chapter 13 grouped struts by length — except a triangle needs three numbers to describe, not one. `_face_type_signature` computes exactly that: the panel's three edge lengths, sorted, an **SSS** (side-side-side) fingerprint. Two panels sharing that fingerprint get treated as the same cutting template — one DXF file serves every panel in the group, which is the entire point of grouping them at all.
+## Grouping Panels the Way You Grouped Struts
 
-## The Ambiguity SSS Alone Can't Resolve
+Every panel is a triangle, and pyLair groups panels into shape types the way Chapter 13 grouped struts by length, except that a triangle takes three numbers to describe. `_face_type_signature` computes them: the panel's three edge lengths, sorted, an **SSS** (side-side-side) fingerprint. Panels sharing a fingerprint share a cutting template, one DXF file for the whole group, which is the point of grouping them.
 
-Here's the catch, stated in `_face_type_signature`'s own source comment: sorting three edge lengths throws away one piece of information — which order those edges actually connect the panel's corners in, going around it. Two triangles with the *identical* three edge lengths can still be arranged as genuine mirror images of each other, distinguishable only by that winding order — precisely Chapter 6's chirality definition, applied to a single flat triangle instead of an entire dome's strut lattice. `_face_chirality_key` is pyLair's actual fix: a second fingerprint, this one keeping the winding-order sequence (canonicalized over its 3 rotations, but never reflected), so two panels that share an SSS signature but differ here are flagged as genuinely different, mirror-image shapes — not the same shape reported twice.
+## What SSS Alone Can't Tell You
 
-## A Real, Surprising Example — On the Plainest Dome in This Book
+Here is the catch, stated in `_face_type_signature`'s source comment: sorting the three lengths throws away one piece of information, the order in which the edges connect going around the panel. Two triangles with the *same* three lengths can be mirror images of each other, distinguishable only by that winding order. That is Chapter 6's chirality, applied to one flat triangle instead of a whole lattice. pyLair's fix is `_face_chirality_key`, a second fingerprint that keeps the winding order (allowing the three rotations of the sequence, but never a reflection), so two panels with the same SSS signature but opposite winding are flagged as mirror-image shapes, not the same shape counted twice.
 
-Here's the part worth pausing on: you don't need Class III's chiral construction, elongation, or truncation to see this happen. It shows up on a completely plain, untruncated, unelongated Class I icosahedral sphere at frequency 6 — the simplest dome this entire book builds:
+## A Surprise on the Plainest Dome in the Book
+
+You don't need Class III, elongation, or truncation to see this. It happens on a plain, untruncated, unelongated Class I icosahedral sphere at frequency 6, the simplest dome the book builds, and the one the Junior Henchman was skinning:
+
+**Prompt:**
+> Group this dome's panels by shape. Are any of the groups flagged as chiral, and what does that mean for a one-sided material?
+
+**What Comes Back** (the largest group from `get_bill_of_materials`'s panel section, trimmed):
 
 ```json
 {"edge_lengths": [0.198, 0.203, 0.206], "count": 240, "chiral": true,
  "orientations": [{"count": 120}, {"count": 120}]}
 ```
 
-**Prompt:**
-> Group this dome's panels by shape. Are any of the groups flagged as chiral, and what does that mean for a one-sided material?
+**What It Means:** Two of this dome's six panel shape groups are flagged `chiral`. The largest, with edge lengths `(0.198, 0.203, 0.206)`, has 240 panels split exactly 120 and 120 between two winding orders. (The other, `(0.182, 0.187, 0.203)`, splits 60 and 60.) Here is one of each, drawn from the dome's panel data:
 
-**What Comes Back:** Yes — on this exact dome, 2 of 6 total panel shape groups are flagged `chiral`. The largest one, edge lengths `(0.198, 0.203, 0.206)`, has 240 total panels split *exactly* 120/120 between two genuinely different winding-order orientations. Here they are, both real, both drawn from this exact dome's actual panel data:
+**[IMAGE: examples/images/panel_chirality_pair.png | Two triangles side by side, each with a 0.203 base; in one the 0.198 edge is on the left and the 0.206 edge on the right, in the other they are swapped.]**
+**[CAPTION: The same three edge lengths, `0.203` along the base of both, with the `0.198` and `0.206` edges on opposite sides. Same SSS signature, and the same outline if you may flip the template over; different panels if you can't.]**
 
-**[IMAGE: examples/images/panel_chirality_pair.png | Two triangles with identical edge lengths but swapped winding order, shown side by side as true mirror images]**
-**[CAPTION: The same three edge lengths — `0.203` along the base in both — but the `0.198` and `0.206` edges swap sides between the two. Same SSS signature, same cutting outline once you allow flipping the template over; genuinely different panels if you can't.]**
+Cut all 240 from one template, oriented the same way every time, and 120 of them come out with the grain running the wrong way relative to the other half, because they are not the same shape traced 240 times. They're mirror images, and no amount of care with a single-orientation template fixes that; the template has to be flipped for half the batch. That's exactly what happened to the walnut.
 
-**What It Means:** You were about to order a run of wood-grain veneer panels, count the largest shape group at `240` total, and cut all `240` from a single template, oriented the same way every time. Half of them — the `120` panels in "Orientation 2" — would come out with the grain running the wrong direction relative to the other half, because they are not, in fact, the same shape traced twice. They're mirror images, and no amount of careful cutting from a single-orientation template fixes that; the template itself has to be flipped for half the batch.
+## Why This Isn't a Class III Curiosity
 
-## Why This Isn't a Class III-Only Curiosity
+Here is the surprising part, checked rather than assumed. Class III's `(4,1)` construction, the subdivision Chapter 6 spent a whole chapter on because its strut pattern has a handedness, reports **zero** chiral panel groups on every configuration this book tested: plain, stretched, truncated, and the `(3,2)` lattice too. Class I, the *achiral* construction, is where mirror-image panel pairs appear.
 
-Here's the genuinely surprising finding, verified directly rather than assumed: on the exact same dome family, Class III's own chiral `(4,1)` construction — the subdivision method Chapter 6 built an entire chapter around, precisely because it produces genuinely handed strut patterns — reports **zero** chiral panel groups on every configuration this book tested, elongated, truncated, or plain. Class I, the *achiral* construction, is where real mirror-image panel pairs actually showed up.
-
-This isn't a contradiction — it's two different questions, easy to conflate, worth keeping separate. Chapter 6's chirality is about the *whole dome*: is `(m,n)` superimposable on `(n,m)`? Class III's own construction is built consistently from one fixed combinatorial rule, replicated identically across every face — so within any *single* `(m,n)` dome, every copy of a given panel shape comes out with the same, consistent handedness. You'd only ever see its mirror counterpart by building the *separate* `(n,m)` dome, a different object entirely. Class I's grid, by contrast, is itself mirror-symmetric — but the icosahedron it gets replicated across has 3D symmetry operations that include orientation-reversing ones (a rotation in 3D space that, restricted to one flat face's own local 2D grid, looks like a reflection). Replicate a mirror-symmetric local grid across a polyhedron using symmetries that include reflections, and some of those replicated copies end up mirrored relative to others — real chirality, introduced by the replication step, on a subdivision method that has none of its own.
+It isn't a contradiction; it's two different questions. Chapter 6 asked whether the *whole dome* can be superimposed on its mirror image. A Class I sphere can: it has every symmetry of the icosahedron, reflections included. So any panel shape that isn't itself mirror-symmetric (a triangle with three different side lengths, like the walnut panel) appears on the dome in both hands, each mapped to the other by one of the dome's reflections. A Class III dome *can't* be superimposed on its mirror; its symmetries are rotations only. Every copy of a given panel is a rotated copy of every other, so they all share one handedness, and the opposite hand exists only on the separate `(1,4)` dome. Put briefly: **an achiral dome contains both hands of each lopsided panel; a chiral dome contains only one.**
 
 **Prompt:**
-> If I'm using plain plywood with no grain direction, does the chirality flag actually matter for my build?
+> If I'm using plain plywood with no grain direction, does the chirality flag matter for my build?
 
 **What Comes Back:**
-> No — not physically. A `chiral: true` flag only matters when the material itself has a direction that matters: wood grain, a printed pattern, a one-sided laminate or finish. Plain, non-directional plywood looks identical from either side and in either orientation, so a template that happens to produce a mirror-image panel instead of a direct copy cuts exactly as usable a piece either way. The flag exists to tell you *when* to check, not to declare every chiral group an emergency regardless of what you're actually cutting it from.
+> Not physically. A `chiral: true` flag matters only when the material has a direction: wood grain, a printed pattern, a one-sided laminate or finish. Plain plywood is the same from either side and in either orientation, so a template that produces a mirror-image panel instead of a direct copy yields an equally usable piece. The flag tells you *when* to check, not that every chiral group is an emergency whatever you cut it from.
 
-## Checking the Actual Secret Lair Itself
+## Checking the Actual Secret Lair
 
-Running this same check against the real, continuing Actual Secret Lair — Class III `(4,1)`, elongated, truncated at `0.499999` — comes back clean: every one of its 52 panel shape groups reports `chiral: false`. That's consistent with the mechanism above, not a coincidence to be suspicious of: a single Class III dome never contains its own mirror-image panel pairs, by the same construction logic that makes `(4,1)` and `(1,4)` two separate objects rather than one dome with both handedness mixed in. It's still worth having actually run the check rather than assumed the result from the general rule above — the same "verify, don't assume" habit Chapter 16 teaches next, applied one chapter early.
+The same check on the Actual Secret Lair (Class III `(4,1)`, stretched, truncated at `0.499999`) comes back clean: all 52 of its panel shape groups report `chiral: false`. That fits the mechanism above; a single Class III dome never contains its own mirror-image pairs. It's still worth having run the check rather than inferring the answer from the rule, the "verify, don't assume" habit Chapter 16 teaches next, one chapter early. Our Heroine, who had been planning a lacquered interior finish, was relieved.
 
 ## One Template Still Covers Both Orientations
 
-This is worth stating plainly so the chirality flag doesn't get over-corrected into "twice as much fabrication work": a DXF cutting template still only needs **one file per shape group**, chiral or not — never one per orientation. A physical template can always be flipped over on the material itself; the shape traced from either face of the same template is exactly the mirror image needed. The chirality flag is about *awareness* — knowing that a batch labeled "one shape, 240 panels" is actually two distinct 120-panel sub-batches that need the template used in two different orientations — not about needing to generate, track, or store twice as many cutting files. Chapter 15 picks this up concretely once cutting templates themselves are the subject.
+So the flag doesn't get over-corrected into twice the work: a DXF cutting template needs **one file per shape group**, chiral or not, never one per orientation. A physical template can always be turned over on the material, and tracing it face down gives exactly the mirror image needed. The flag is about *awareness*: knowing that "one shape, 240 panels" is really two 120-panel batches that use the template in two orientations. It doesn't mean generating, tracking, or storing twice as many files. Chapter 15 picks this up once templates are the subject, and Chapter 20 meets it again when the panels are laid out on sheets.
 
 ## What's Next
 
-Chapter 15 generates real cutting templates for both hubs and panels, and shows exactly how this chapter's chirality flag and Chapter 12's spoke-angle reference-strut gotcha both resolve at the point where a builder actually needs a finite, correctly-deduplicated set of files to send to a fabricator.
+The Junior Henchman recut 120 walnut panels with the template turned face down, and wrote "FLIP" on the template's back in large letters. The lobby model looked splendid. The Foreman added the LEFT and RIGHT cardboard models to the cutting room's wall, at eye level.
+
+Chapter 15 generates cutting templates for both hubs and panels, and shows how this chapter's chirality flag and Chapter 12's spoke-angle reference gotcha are both resolved at the point where a builder needs a finite, correctly deduplicated set of files for a fabricator.
