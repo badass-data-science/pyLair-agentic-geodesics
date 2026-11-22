@@ -1,89 +1,106 @@
 # Chapter 21: Talking to pyFit — The Four MCP Tools, Progress Notifications, and a Combined Workflow
 
-Chapter 18 taught pyLair's four-tool iterate-then-commit pattern. pyFit has the identical shape — `design_nest`, `preview_nest`, `get_nest_report`, `export_nest` — for exactly the same reason: cheap sanity check, visual check, full report, commitment, in that order. This chapter teaches that pattern's pyFit version, one genuinely new idea neither dome design ever needed, and then walks through one continuous session spanning both toolkits before Part VI's own final chapter.
+The first time the AI Henchman ran a large nesting job, it went quiet for a minute and a half. Our Heroine, who had watched the Rival's chatbot confidently produce nonsense, found an agent that said *nothing* even more unsettling. Was it working? Was it stuck? Had it, in some sense, left? pyFit's answer to that question is the new idea in this chapter.
+
+Chapter 18 taught pyLair's iterate-then-commit loop. pyFit has the same shape, `design_nest`, `preview_nest`, `get_nest_report`, and `export_nest`, for the same reason: cheap sanity check, visual check, full report, then commitment. This chapter teaches pyFit's version, one idea no dome design ever needed, and then one continuous session spanning both toolkits.
 
 ## The Same Four-Tool Shape, on the Nesting Side
 
-`design_nest` answers the cheapest question — sheets used, per-sheet utilization, no files written. `preview_nest` renders the layout inline. `get_nest_report` returns the full placement detail (sheet index, position, rotation, mirror flag for every part instance) — also no files written. `export_nest` is the only one that commits DXFs (and, optionally, preview PNGs) to disk. Here's all three of the free tools, run for real, on a small, deliberately quick subset of the Actual Secret Lair's own panels — four of its 52 real shapes, `20` panels total:
-
-```json
-{"tool": "design_nest", "sheets_used": 6,
- "utilization_by_sheet": [0.464, 0.454, 0.579, 0.464, 0.574, 0.114]}
-```
-
-```json
-{"tool": "get_nest_report", "placements_returned": 20}
-```
-
-```json
-{"tool": "export_nest", "files_written": ["lair_sheet1.dxf", "lair_sheet1.png", "...", "lair_sheet6.dxf", "lair_sheet6.png"]}
-```
+`design_nest` answers the cheapest question: sheets used and utilization per sheet, no files written. `preview_nest` renders each sheet's layout inline. `get_nest_report` returns every placement (sheet, position, rotation, and mirror flag for each part), still with no files. `export_nest` is the only one that writes anything: one DXF per sheet and, optionally, a preview PNG of each. Here they are on a deliberately small batch of the Actual Secret Lair's panels, four of its 52 shapes, five panels each, on small `0.6 × 0.5` sheets:
 
 **Prompt:**
-> Try two different rotation steps for this nesting job using `design_nest` only — don't write any files yet. Which one gives better utilization for the time it takes?
+> Nest these four panel templates, five of each, on 0.6 by 0.5 sheets. Summarize first, then give me the full report, then export.
 
-**What Comes Back:** Exactly the same discipline Chapter 18 taught for pyLair's own `design_dome` — try as many rotation-step/sheet-size combinations as you like through `design_nest` alone, and nothing touches disk until you're actually satisfied. `get_nest_report` costs nothing either, for the same reason `get_bill_of_materials` didn't: both return everything but a file path.
+**What Comes Back** (from `design_nest`, `get_nest_report`, and `export_nest` in turn; utilizations rounded, the report and file list summarized):
 
-## A Genuinely New Idea: Progress on a Call Long Enough to Need It
-
-Nothing in pyLair's own four tools ever needed this, because nothing pyLair computes takes long enough to matter. Nesting is different — Chapter 20 already showed a real job running for minutes — and pyFit's tools report **MCP progress notifications**: a placement heartbeat, sent while a long call is still running, so a slow job never looks like a hung one.
-
-Here's why that's harder than it sounds, and worth understanding rather than taking for granted: a *synchronous* MCP tool function blocks its server's entire event loop for the whole duration of the call. If `pack()` ran directly inside a plain `def design_nest(...)`, the server couldn't send a single progress message until the function returned — by which point there'd be nothing left to report progress *on*. pyFit's tools are declared `async def` specifically to avoid this: the actual packing work runs in a separate worker thread (`asyncio.to_thread`), while the event loop stays free to relay that thread's own progress callback back out as real MCP notifications, live, while the work is still happening.
-
-This is worth confirming rather than trusting as a design description. Here's a real, independent reproduction — a `40`-part nesting job, run with a stand-in progress-reporting client attached, timestamping every notification as it actually arrives:
-
-```
-elapsed: 74.36s, 88 progress notifications
-first: t=0.003s (0/40 placed)
-last:  t=74.241s (39/40 placed)
+```json
+{"tool": "design_nest", "sheets_used": 5,
+ "utilization_by_sheet": [0.580, 0.598, 0.550, 0.577, 0.343]}
 ```
 
-**What It Means:** `88` notifications, arriving continuously from three milliseconds after the call started to essentially its final moment — not bunched at the end, which is exactly what a genuinely blocked event loop would look like if this mechanism didn't work. This is the same live-progress mechanism this project's own engineering notes report verifying on a shorter job (`~5.6`s, `~33` notifications) — a different real run, a different real duration, the identical real behavior.
+```json
+{"tool": "get_nest_report", "sheets_used": 5, "placements_returned": 20}
+```
 
-One more thing worth confirming rather than assuming: what happens with no progress-reporting client attached at all.
+```json
+{"tool": "export_nest", "files_written": ["lair_sheet1.dxf", "lair_sheet1.png", "...", "lair_sheet5.dxf", "lair_sheet5.png"]}
+```
+
+**What It Means:** Two free calls and one that writes: five sheets, twenty placements (one per panel), ten files. Chapter 23 uses this batch to measure how far real sheet use departs from pyLair's theoretical panel area.
+
+**Prompt:**
+> Try two other rotation steps for this job using `design_nest` only; don't write any files yet. Do they change the sheet count?
+
+**What Comes Back** (from `design_nest` at the default 15° step and at 30° and 45°):
+
+```json
+{"rotation_step_degrees": 15, "sheets_used": 5}
+{"rotation_step_degrees": 30, "sheets_used": 6}
+{"rotation_step_degrees": 45, "sheets_used": 5}
+```
+
+**What It Means:** It's the same discipline as Chapter 18's `design_dome`: try as many settings as you like through `design_nest`, and nothing touches disk until you're satisfied. Notice, too, that the coarser 30° step needed a sixth sheet while the even coarser 45° didn't. A greedy heuristic doesn't get steadily better or worse as you give it more or fewer options; Chapter 20 meets the same effect with mirroring. Try, and read the numbers.
+
+## A New Idea: Progress on a Call Long Enough to Need It
+
+Nothing in pyLair's tools needed this, because nothing pyLair computes takes long enough to matter. Nesting does: the whole Actual Secret Lair, in Chapter 20, takes minutes. So pyFit's tools send **MCP progress notifications**, a placement heartbeat while a long call is still running, so a slow job never looks like a hung one.
+
+That's harder than it sounds. An MCP server handles requests on an event loop, and a tool written as an ordinary (synchronous) function blocks that loop for the whole call. If the packer ran inside a plain `def design_nest(...)`, the server couldn't send a single progress message until the function returned, when there'd be nothing left to report. pyFit's tools are declared `async def` for this reason: the packing runs in a worker thread (`asyncio.to_thread`), and the event loop stays free to relay the thread's progress callback as MCP notifications while the work is still happening.
+
+That's worth confirming rather than trusting as a description. Here is a reproduction: a 40-panel job (eight of the Lair's shapes on the same small sheets), called through an MCP client that timestamps each notification as it arrives:
+
+```
+elapsed: 23.03s, 214 progress notifications
+first: t=0.008s (placed 0/40 parts, checking sheet 1)
+last:  t=23.026s (placed 39/40 parts, checking sheet 10)
+```
+
+**What It Means:** 214 notifications, arriving continuously from eight milliseconds after the call began to its final moment, not bunched at the end, which is what a blocked event loop would produce. pyFit's `AGENTS.md` records the same behavior on a different, shorter job (about 33 notifications over 5.6 seconds): a different run, the same mechanism. Timings depend on the machine; the shape of the arrivals doesn't. The AI Henchman, given a client that displayed them, stopped going quiet.
+
+And with no progress-reporting client at all, as when a test suite or a script calls the function directly:
 
 ```python
-await design_nest(sheet_width=1.0, sheet_height=0.8, parts=parts, rotation_step_degrees=15.0, ctx=None)
-# -> {'sheets_used': 1, 'utilization_by_sheet': [0.5625]}  (succeeds normally, no notifications, no error)
+await design_nest(sheet_width=0.6, sheet_height=0.5, parts=parts)  # ctx defaults to None
+# -> {'sheets_used': 5, 'utilization_by_sheet': [0.5796, 0.5984, 0.5502, 0.5771, 0.3434]}
 ```
 
-**What It Means:** No progress token, or a direct function call the way a test suite makes one, is simply a no-op — the packing still runs in its worker thread exactly the same way, nothing about the result changes, and nothing needs to opt out of anything to get correct behavior either way.
+**What It Means:** No client, or no progress token, means no notifications and nothing else different: the packing runs in its worker thread the same way, the result is identical, and nothing has to opt out to get correct behavior.
 
-## Same Validation, Every Interface — Again
+## Same Validation, Every Interface, Again
 
 **Prompt:**
-> Try a malformed job spec — a part missing its required `"name"` field — through `design_nest`. What happens?
+> Try a malformed job spec, a part missing its required `"name"` field, through `design_nest`. What happens?
 
-**What Comes Back:** The identical error Chapter 2 already showed you coming from the plain `pyfit` CLI on the same malformed spec:
+**What Comes Back** (the same message the `pyfit` CLI gives for the same spec; through MCP it carries the "Error executing tool" prefix):
 
 ```
 Part spec is missing required field "name".
 ```
 
-**What It Means:** One engine, `pyfit/api.py`, underlies every one of pyFit's four MCP tools and its CLI, the same way Chapter 18 confirmed for pyLair's own four tools. There is no separate, looser validation path anywhere in either project's agentic interface.
+**What It Means:** One engine, `pyfit/api.py`, sits under all four of pyFit's MCP tools and its CLI, as Chapter 18 showed for pyLair. Neither project has a separate, looser validation path for agents.
 
 ## One Continuous Session, Start to Finish
 
-Here, narrated as one transcript, is the complete arc this book has been building since Chapter 1's cold open — every number below is one this book has already shown you, real, from the chapter that first produced it:
+Here, as one transcript, is the arc the book has built since Chapter 1. Every number below comes from the chapter that first produced it:
 
-1. **`design_dome`**, several times (Chapter 18): comparing Class III `(3,1)`/`(4,1)`/`(5,1)` — `97.99`/`121.08`/`144.02` total strut length — settling on `(4,1)` against a strut budget, no files written.
-2. **`preview_dome`** (Chapter 18): one inline check confirming the shape.
-3. **`get_bill_of_materials`** (Chapters 12–16, 18): hub angles, strut clustering, panel shapes, chirality flags, zero flagged artifacts — the full cost and buildability interrogation, still no files written.
-4. **`export_dome`** with `face_templates=True` (Chapters 15, 17, 18): the only file-writing pyLair call in the whole session — `52` real panel cutting templates, `32` real hub connector templates, a DXF, a VRML, an STL, an OBJ.
-5. **A real job spec, built with zero hand-typing** (Chapter 20): every one of those `52` templates' own file paths and panel counts, straight from pyLair's own `"Panel Cutting Templates"` report, into a pyFit job spec's `"dxf"`/`"quantity"` fields.
-6. **`design_nest`**, several times (this chapter): trying rotation steps and sheet sizes, no files written, until the layout looks worth committing to.
-7. **`preview_nest`** and **`get_nest_report`** (this chapter): one visual check, one full placement interrogation.
-8. **`export_nest`** (this chapter): the second, and last, file-writing call in the entire session — real, numbered `_sheetN.dxf` files, ready to hand to a laser cutter.
+1. **`design_dome`**, three times (Chapter 18): Class III `(3,1)`, `(4,1)`, `(5,1)`, at `97.99`, `121.08`, and `144.02` units of strut, settling on `(4,1)` against the CFV's budget. No files written.
+2. **`preview_dome`** (Chapter 18): one inline look at the shape.
+3. **`get_bill_of_materials`** (Chapters 12 through 16, 18): hub angles, strut clustering, panel shapes, chirality flags, empty artifact lists. Still no files.
+4. **`export_dome`** with templates (Chapters 15, 17, 18): the only pyLair call that writes files: `52` panel templates, `32` hub templates, a DXF, a VRML, an STL, an OBJ.
+5. **A job spec built with no hand-typing** (Chapter 20): the 52 templates' paths and panel counts, from pyLair's "Panel Cutting Templates" report, into a pyFit job spec's `"dxf"` and `"quantity"` fields.
+6. **`design_nest`**, several times (this chapter and Chapter 20): rotation steps and sheet sizes, no files, until the layout is worth keeping.
+7. **`preview_nest`** and **`get_nest_report`** (this chapter): one visual check, one full placement report.
+8. **`export_nest`** (this chapter): the second and last file-writing call of the session, numbered `_sheetN.dxf` files ready for a laser cutter.
 
 **Prompt:**
-> Walk me through this entire dome, from picking a polyhedron to a ready-to-cut sheet layout, as one continuous session.
+> Walk me through this whole dome, from picking a polyhedron to a ready-to-cut sheet layout, as one continuous session.
 
-**What Comes Back:** Exactly the eight steps above, in that order — two design toolkits, eight tools total, and only two moments in the whole session where anything was actually written to disk. Everything else was free to try, reconsider, and try again.
+**What Comes Back:** The eight steps above, in that order: two toolkits, eight different tools, and only two moments in the session when anything was written to disk. Everything else was free to try, reconsider, and try again.
 
-**What It Means:** This is the entire discipline both toolkits have been teaching since Chapter 1, now shown as one uninterrupted arc rather than two separate lessons: iterate freely through whichever tool costs nothing, commit only once, and never confuse "the design looks right" with "the build is validated" along the way.
+**What It Means:** It's the discipline both toolkits have taught since Chapter 1, as one uninterrupted arc instead of two lessons: iterate freely with the tools that cost nothing, commit once, and never confuse "the design looks right" with "the build is validated."
 
 ## What's Next
 
-That eight-tool session leaves one real question deliberately unanswered: a pyFit nest report tells you which sheet and position each *shape type* landed at, never which specific dome hub or panel a given physical, cut piece actually is. Chapter 22 closes Part VI by answering exactly that — a per-instance assembly manifest, a job spec that survives the trip through pyFit with its identity intact, and a real historical bug this exact work caught along the way.
+That session leaves one question deliberately open. A pyFit nest report says which sheet and position each *part* landed at, but with one part per panel *shape*, it can't say which specific panel of the dome a given cut piece is. Chapter 22 answers that: a per-instance assembly manifest, a job spec whose parts keep their identity through pyFit, and a bug that work caught along the way.
 
-Part VII closes the book after that. Chapter 23 is a prompting clinic spanning both toolkits at once — real flawed prompts, rewritten, including one that looks like a single question but actually needs both pyLair and pyFit to answer honestly. Chapter 24 is the retrospective this whole book has been setting up since its very first gotcha, and Chapter 25 sends the Actual Secret Lair off to be built.
+Part VII closes the book after that: a prompting clinic across both toolkits (Chapter 23), the retrospective (Chapter 24), and moving day (Chapter 25).
