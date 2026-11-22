@@ -79,7 +79,7 @@ The dome from Chapter 4 is rebuilt here, at the same nominal frequency, under Cl
 **[IMAGE: examples/images/class2-secret-lair.png | A depth-cued wireframe sphere, visibly denser than the Class I sphere at the same frequency, with clusters of triangles radiating from points where six or five struts meet.]**
 **[CAPTION: The Actual Secret Lair, same nominal frequency as Figure 4.2, rebuilt under Class II: 1,080 faces against 720, the "same frequency number, more detail" surprise the golden-value table predicts.]**
 
-Neither version is more correct; they're two valid subdivision strategies for the same polyhedron. Which one the Actual Secret Lair ships with isn't settled until Chapter 6 offers a third.
+Neither version is more correct; they're two valid subdivision strategies for the same polyhedron. They do differ in a way the Foreman cares about, though, and it shows up in the hubs. In the Class I sphere, every hub joins five or six struts. In the Class II sphere, the 30 points that sit on the original icosahedron's edge midpoints join only four, and the 12 points where the icosahedron's own vertices were join *ten*, the meeting point of ten LCD triangles. (Counting struts per vertex in the chord list shows it: 12 ten-strut hubs, 30 four-strut hubs, and 500 six-strut hubs at `f=6`.) A ten-socket connector is a harder part to make than a five-socket one. Which subdivision the Actual Secret Lair ships with isn't settled until Chapter 6 offers a third.
 
 ## What's Next
 
