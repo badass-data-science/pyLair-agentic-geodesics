@@ -25,7 +25,7 @@ The sources this book's chapters draw on, and the independent tools pyLair and p
 
 ## Companion Reading
 
-- [`blog-posts/introducing-pylair.md`](https://github.com/badass-data-science/pyLair-agentic-geodesics/blob/main/blog-posts/introducing-pylair.md), "Introducing pyLair, or, How Our Heroine Designed Her Geodesic Secret Lair": the shorter companion to this book's pyLair half.
+- [`blog-posts/introducing-pylair.md`](https://github.com/badass-data-science/pyLair-agentic-geodesics/blob/main/blog-posts/introducing-pylair.md), "Introducing pyLair (or, How Our Heroine Designed Her Geodesic Secret Lair)": the shorter companion to this book's pyLair half.
 - `blog-posts/introducing-pyfit.md`, in the [pyFit repository](https://github.com/badass-data-science/pyFit-agentic-polygon-nesting): the same for the nesting half.
 - Each project's `README.md` (its caveats and known limitations) and `AGENTS.md` (its engineering notes), kept current beyond whatever this book covers.
 - *Agentic Time Series Forecasting for Supervillains*, *Systems Thinking for Supervillains*, and *Strategy for Supervillains*, the other volumes in the series. None is a prerequisite.
