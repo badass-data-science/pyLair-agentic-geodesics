@@ -130,10 +130,8 @@ Chapter 2 gets both pyLair and pyFit actually installed and connected to a real 
 
 The homeowners' association, for what it's worth, never did send that third letter. By the time it would have arrived, the sub-basement was empty, the particle accelerator was in transit, and the "decorative atmospheric processing equipment" had found a much more spacious new home.
 
-*(Figure 1-1: The Actual Secret Lair, fully truncated and exported — the shape this book spends Parts II–V earning the right to build. Real pyLair `preview_dome` output.)*
+**[IMAGE: ../blog-posts/edited_truncated.png | A truncated geodesic dome, exported and rendered by pyLair]**
+**[CAPTION: The Actual Secret Lair, fully truncated and exported — the shape this book spends Parts II–V earning the right to build. Real pyLair `preview_dome` output.]**
 
-![A truncated geodesic dome, exported and rendered by pyLair](../blog-posts/edited_truncated.png)
-
-*(Figure 1-2: A real pyFit nesting result — pyLair-designed triangular panels laid out on a sheet, ready to cut. The problem Part VI exists to solve.)*
-
-![Triangular dome panels nested onto a sheet by pyFit](examples/images/nest_sheet1_pylair_triangles.png)
+**[IMAGE: examples/images/nest_sheet1_pylair_triangles.png | Triangular dome panels nested onto a sheet by pyFit]**
+**[CAPTION: A real pyFit nesting result — pyLair-designed triangular panels laid out on a sheet, ready to cut. The problem Part VI exists to solve.]**

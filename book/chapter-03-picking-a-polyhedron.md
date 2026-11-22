@@ -17,9 +17,8 @@ pyLair's default, and the shape nearly every geodesic dome you've ever seen a ph
 
 **What Comes Back** (a real `preview_dome` render, `polyhedron="icosahedron"`, `frequency=1`, `radius=1.0`):
 
-*(Figure 3-1: A bare, unsubdivided icosahedron — pyLair's default base polyhedron, before any subdivision is applied.)*
-
-![A bare icosahedron, 12 vertices and 20 triangular faces](examples/images/base-icosahedron.png)
+**[IMAGE: examples/images/base-icosahedron.png | A bare icosahedron, 12 vertices and 20 triangular faces]**
+**[CAPTION: A bare, unsubdivided icosahedron — pyLair's default base polyhedron, before any subdivision is applied.]**
 
 pyLair's other option is the **octahedron**: 8 triangular faces, 6 vertices, 12 edges — a coarser starting point, selected with `polyhedron="octahedron"`.
 
@@ -28,9 +27,8 @@ pyLair's other option is the **octahedron**: 8 triangular faces, 6 vertices, 12 
 
 **What Comes Back** (a real `preview_dome` render, `polyhedron="octahedron"`, `frequency=1`, `radius=1.0`):
 
-*(Figure 3-2: A bare octahedron — pyLair's other base polyhedron, at the same frequency and radius as Figure 3-1 for a direct comparison.)*
-
-![A bare octahedron, 6 vertices and 8 triangular faces](examples/images/base-octahedron.png)
+**[IMAGE: examples/images/base-octahedron.png | A bare octahedron, 6 vertices and 8 triangular faces]**
+**[CAPTION: A bare octahedron — pyLair's other base polyhedron, at the same frequency and radius as Figure 3.1 for a direct comparison.]**
 
 pyLair's third and coarsest option is the **tetrahedron**: 4 triangular faces, 4 vertices, 6 edges — the fewest of anything pyLair can start from, selected with `polyhedron="tetrahedron"`.
 
@@ -39,9 +37,8 @@ pyLair's third and coarsest option is the **tetrahedron**: 4 triangular faces, 4
 
 **What Comes Back** (a real `preview_dome` render, `polyhedron="tetrahedron"`, `frequency=1`, `radius=1.0`):
 
-*(Figure 3-3: A bare tetrahedron — pyLair's third base polyhedron, at the same frequency and radius as Figures 3-1 and 3-2.)*
-
-![A bare tetrahedron, 4 vertices and 4 triangular faces](examples/images/base-tetrahedron.png)
+**[IMAGE: examples/images/base-tetrahedron.png | A bare tetrahedron, 4 vertices and 4 triangular faces]**
+**[CAPTION: A bare tetrahedron — pyLair's third base polyhedron, at the same frequency and radius as Figures 3.1 and 3-2.]**
 
 All three of these are real `design_dome` results, at frequency 1 (meaning: no subdivision at all yet, just the base polyhedron itself, reported through the same pipeline as every other dome in this book):
 
@@ -69,7 +66,7 @@ These aren't folklore or a rule of thumb — they're the same identities pyLair'
 
 Reaching for the icosahedron by default (which is also what happens if you don't specify `polyhedron` at all) is the right call most of the time — more faces at the same frequency means a gentler grid per face, which generally means a rounder-looking result and less strut-length variety for a given amount of subdivision effort. But "the default is usually right" is a different claim from "the default is always right," and this chapter's actual job is teaching you to notice the cases where it isn't.
 
-Look again at Figure 3-2's octahedron. Two of its six vertices sit at the poles — directly "above" and "below" the shape along Z — and the other four sit in an exact ring around the middle, all at `Z=0`: `(±1,0,0)` and `(0,±1,0)`, in pyLair's own coordinate construction (`pylair/polyhedral.py`'s `Octahedron` class). That's not an approximate equator — it's an exact one, present in the base shape before any subdivision or truncation has touched it at all.
+Look again at Figure 3.2's octahedron. Two of its six vertices sit at the poles — directly "above" and "below" the shape along Z — and the other four sit in an exact ring around the middle, all at `Z=0`: `(±1,0,0)` and `(0,±1,0)`, in pyLair's own coordinate construction (`pylair/polyhedral.py`'s `Octahedron` class). That's not an approximate equator — it's an exact one, present in the base shape before any subdivision or truncation has touched it at all.
 
 The icosahedron's own vertex layout (`pylair/polyhedral.py`'s `Icosahedron` class) is different, and worth understanding precisely rather than by vague impression: one vertex sits at the north pole, one at the south, and the remaining ten split into two rings of five, sitting at `Z = ±1/√5 ≈ ±0.4472` — close to the equator, and considerably flatter than the poles-and-nothing-else arrangement a naive guess might expect, but not sitting exactly *on* `Z=0` the way the octahedron's four-vertex ring does. It's a genuinely different shape near the equator, not just a denser version of the same one: a pentagonal antiprism of two offset five-vertex rings, versus a single square ring sitting exactly at the midline.
 

@@ -19,13 +19,11 @@ A per-vertex multiply, nothing more — chord and face connectivity are complete
 
 **What Comes Back** (three real `preview_dome` renders):
 
-*(Figure 8-1: Left: unelongated. Center: the Under-the-Ocean Prototype's gentle inward squash, `elongation_z=0.9`. Right: the Actual Secret Lair's upward stretch, `elongation_z=1.8`. Notice how subtle the center shape's difference from the sphere actually looks — that's not an error in the render, it's the honest visual size of a 10% squash next to an 80% stretch.)*
+**[IMAGE: examples/images/elongation_triptych.png | Three domes at the same frequency: unelongated, gently squashed, and dramatically stretched]**
+**[CAPTION: Left: unelongated. Center: the Under-the-Ocean Prototype's gentle inward squash, `elongation_z=0.9`. Right: the Actual Secret Lair's upward stretch, `elongation_z=1.8`. Notice how subtle the center shape's difference from the sphere actually looks — that's not an error in the render, it's the honest visual size of a 10% squash next to an 80% stretch.]**
 
-![Three domes at the same frequency: unelongated, gently squashed, and dramatically stretched](examples/images/elongation_triptych.png)
-
-*(Figure 8-2: An independently-produced reference for the same general-ellipsoid shape, from pyLair's own earlier documentation.)*
-
-![A general axis-aligned ellipsoid](../blog-posts/ellipsoid.png)
+**[IMAGE: ../blog-posts/ellipsoid.png | A general axis-aligned ellipsoid]**
+**[CAPTION: An independently-produced reference for the same general-ellipsoid shape, from pyLair's own earlier documentation.]**
 
 ## Two Opposite Design Philosophies, One Flag
 

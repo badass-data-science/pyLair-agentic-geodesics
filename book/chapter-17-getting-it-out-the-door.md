@@ -6,13 +6,11 @@ Everything from Chapter 3 onward has been building toward this moment: the Actua
 
 **DXF**, written by default, is for CAD import — the format a fabricator's own software, a CNC controller, or a laser cutter's driver actually expects. **VRML** (`.wrl`), also written by default, is for 3D display — a format built for showing a shape, not manufacturing it. **STL** and **OBJ** (`export_dome`'s `stl`/`obj` parameters) are for 3D printing — a scale model of the dome's own surface, not its strut skeleton (more on that distinction below). None of the four is a strictly better version of another; each answers a question the others don't.
 
-*(Figure 17-1: A real pyLair DXF export, loaded back into a CAD viewer — the actual output of the default export path, not a mockup.)*
+**[IMAGE: ../sample_image.png | A pyLair-exported dome loaded into CAD software]**
+**[CAPTION: A real pyLair DXF export, loaded back into a CAD viewer — the actual output of the default export path, not a mockup.]**
 
-![A pyLair-exported dome loaded into CAD software](../sample_image.png)
-
-*(Figure 17-2: A second real CAD import, from pyLair's own earlier documentation.)*
-
-![Another real CAD-imported dome](../blog-posts/CAD_dome.jpg)
+**[IMAGE: ../blog-posts/CAD_dome.jpg | Another real CAD-imported dome]**
+**[CAPTION: A second real CAD import, from pyLair's own earlier documentation.]**
 
 ## Why `face_output=True` Skips DXF Entirely
 

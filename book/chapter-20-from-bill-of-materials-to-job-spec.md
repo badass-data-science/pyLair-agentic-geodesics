@@ -49,10 +49,11 @@ Chapter 14 flagged panel shapes as chiral — genuinely different mirror-image o
 {"allow_mirror": false, "sheets_used": 2, "utilization_by_sheet": [0.656, 0.655]}
 ```
 
-*(Figure 20-1: The same real chiral panel batch, nested both ways — `allow_mirror: true` (left, 3 sheets) and `allow_mirror: false` (right, 2 sheets). Both are real, legal layouts; the flag did not cost this batch an extra sheet.)*
+**[IMAGE: examples/images/ocean_nest_mirror_true.png | Two real nesting results for the same chiral panel batch, allow_mirror true producing 3 sheets and allow_mirror false producing 2]**
+**[CAPTION: The same real chiral panel batch, nested both ways — `allow_mirror: true` (left, 3 sheets) and `allow_mirror: false` (right, 2 sheets). Both are real, legal layouts; the flag did not cost this batch an extra sheet.]**
 
-![Two real nesting results for the same chiral panel batch, allow_mirror true producing 3 sheets and allow_mirror false producing 2](examples/images/ocean_nest_mirror_true.png)
-![The allow_mirror false version of the same batch, using 2 sheets instead of 3](examples/images/ocean_nest_mirror_false.png)
+**[IMAGE: examples/images/ocean_nest_mirror_false.png | The allow_mirror false version of the same batch, using 2 sheets instead of 3]**
+**[CAPTION: TODO-CAPTION]**
 
 **Prompt:**
 > Nest it once with mirroring allowed, once without. How much does disallowing mirroring change the sheet count or utilization?

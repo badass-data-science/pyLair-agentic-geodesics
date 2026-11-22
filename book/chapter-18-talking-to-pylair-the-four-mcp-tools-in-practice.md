@@ -28,7 +28,7 @@ Here's that whole session, narrated as it actually happened rather than assumed 
 
 **What Comes Back** (a real `preview_dome` render, then a real `get_bill_of_materials` result on the same `(4,1)` configuration):
 
-The preview matches Figure 9-2 from several chapters back — the same elongated, truncated Class III dome, still no file written by this call either.
+The preview matches Figure 9.2 from several chapters back — the same elongated, truncated Class III dome, still no file written by this call either.
 
 ```json
 {

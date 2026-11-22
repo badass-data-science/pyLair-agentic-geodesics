@@ -18,15 +18,13 @@ T = m² + mn + n²
 
 Set `n=0` and `T` reduces to `m²` — Class I's own single-symmetry-triangle count. Set `m=n` and `T` becomes `3m²` — Class II's LCD construction, arrived at from the same general formula. Class III is the genuinely general case, `m≠n`, and this is exactly where the achiral coincidences of the last two chapters stop holding. Here is a real, bare Class III symmetry triangle, `(m,n)=(4,1)`, computed directly from pyLair's own `ClassThreeSymmetryTriangle`:
 
-*(Figure 6-1: A bare Class III symmetry triangle, `(m,n)=(4,1)` — the third and last of this book's three per-class symmetry-triangle figures. Compare its visibly angled grid against Class I's parallel-to-edges one (Figure 4-1) and Class II's centroid-radiating one (Figure 5-1, right panel): none of the three classes share a construction, only a family of triangulation-number formulas.)*
-
-![A bare Class III symmetry triangle at (m,n)=(4,1), showing the skewed grid](examples/images/class3_symmetry_triangle.png)
+**[IMAGE: examples/images/class3_symmetry_triangle.png | A bare Class III symmetry triangle at (m,n)=(4,1), showing the skewed grid]**
+**[CAPTION: A bare Class III symmetry triangle, `(m,n)=(4,1)` — the third and last of this book's three per-class symmetry-triangle figures. Compare its visibly angled grid against Class I's parallel-to-edges one (Figure 4.1) and Class II's centroid-radiating one (Figure 5.1, right panel): none of the three classes share a construction, only a family of triangulation-number formulas.]**
 
 Now build the same `T` a second way — swap the two parameters, `(n,m)=(1,4)` — and place the result directly beside the first:
 
-*(Figure 6-2: `(m,n)=(4,1)` next to `(n,m)=(1,4)`. These aren't the same triangle rotated — reflecting the left triangle's local x-coordinate maps it onto the right one exactly, to within `1.2×10⁻¹⁶` (floating-point noise, not a real discrepancy), while no rotation of either triangle produces the other. This is chirality, made concrete: identical lengths, identical angles, genuinely different handedness.)*
-
-![The (4,1) and (1,4) symmetry triangles, shown to be true mirror images of each other](examples/images/class3_mirror_pair.png)
+**[IMAGE: examples/images/class3_mirror_pair.png | The (4,1) and (1,4) symmetry triangles, shown to be true mirror images of each other]**
+**[CAPTION: `(m,n)=(4,1)` next to `(n,m)=(1,4)`. These aren't the same triangle rotated — reflecting the left triangle's local x-coordinate maps it onto the right one exactly, to within `1.2×10⁻¹⁶` (floating-point noise, not a real discrepancy), while no rotation of either triangle produces the other. This is chirality, made concrete: identical lengths, identical angles, genuinely different handedness.]**
 
 That reflection relationship isn't asserted from a formula — it was checked directly, point by point, against pyLair's own real vertex data for both configurations, and it's worth stating exactly what was checked: every point in the `(4,1)` triangle has a point in the `(1,4)` triangle at *exactly* the position you'd get by negating one local coordinate and nothing else — not "approximately the same shape," but a specific, checkable reflection with a residual small enough to be pure floating-point roundoff. `(m,n)` and `(n,m)` are mirror-image constructions of the same underlying lattice, not two independent triangles that happen to share a name.
 
@@ -96,9 +94,8 @@ The dome this book has been building toward gets its real subdivision choice her
 
 **What Comes Back** (a real `preview_dome` render, `dome_class=3`, `frequency=4`, `n_frequency=1`):
 
-*(Figure 6-3: The Actual Secret Lair's final subdivision — Class III, `(m,n)=(4,1)` — the flagship shape Chapters 8 through 21 spend the rest of this book elongating, truncating, accounting for, exporting, and finally nesting onto real sheet stock.)*
-
-![The Actual Secret Lair, subdivided under Class III at (m,n)=(4,1)](examples/images/class3-secret-lair.png)
+**[IMAGE: examples/images/class3-secret-lair.png | The Actual Secret Lair, subdivided under Class III at (m,n)=(4,1)]**
+**[CAPTION: The Actual Secret Lair's final subdivision — Class III, `(m,n)=(4,1)` — the flagship shape Chapters 8 through 21 spend the rest of this book elongating, truncating, accounting for, exporting, and finally nesting onto real sheet stock.]**
 
 ## What's Next
 

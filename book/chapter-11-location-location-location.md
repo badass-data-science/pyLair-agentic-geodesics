@@ -2,9 +2,8 @@
 
 Nothing in this chapter is a new pyLair feature. Chapters 3 through 10 already gave you every tool this chapter uses — polyhedron choice, subdivision class, elongation, truncation. What this chapter teaches instead is how a real commission actually arrives: never as "build a Class III dome," always as "build a dome that survives *down there*, or *up there*, or *in there*." A satisfied supervillain client base spans essentially every environment capable of generating a strongly worded eviction notice, and every one of them thinks their site is the special case. Six stops, one design lens, applied deliberately each time — proof that it's the lens doing the work, not six unrelated one-off tricks.
 
-*(Figure 11-1: All six of this chapter's stops, real `design_dome` builds, plotted at a single shared scale so their true relative sizes and proportions are honestly comparable — not six independently-scaled images that would each look similarly sized regardless of their actual dimensions.)*
-
-![Six real dome configurations at a shared scale: a squashed sphere, a wide oblate disc, two low flat caps, a tall narrow spire, and one tiny closet-sized dome](examples/images/environments_gallery.png)
+**[IMAGE: examples/images/environments_gallery.png | Six real dome configurations at a shared scale: a squashed sphere, a wide oblate disc, two low flat caps, a tall narrow spire, and one tiny closet-sized dome]**
+**[CAPTION: All six of this chapter's stops, real `design_dome` builds, plotted at a single shared scale so their true relative sizes and proportions are honestly comparable — not six independently-scaled images that would each look similarly sized regardless of their actual dimensions.]**
 
 ## Stop One: The Under-the-Ocean Prototype, Completed
 
@@ -64,9 +63,8 @@ Every other stop in this chapter reaches for a flattened, low-profile shape. Thi
 {"footprint_diameter": 1.2000, "height": 3.6000, "total_strut_length": 223.6843}
 ```
 
-*(Figure 11-2: Footprint diameter versus total strut length across all six stops — real `design_dome` output, not estimated. Notice the Mesa Spire's bar pair: the smallest footprint of any stop in this chapter, paired with the second-highest strut total. A compact footprint and a cheap build are not the same claim.)*
-
-![A bar chart comparing footprint diameter and total strut length across all six environments](examples/images/environments_comparison_chart.png)
+**[IMAGE: examples/images/environments_comparison_chart.png | A bar chart comparing footprint diameter and total strut length across all six environments]**
+**[CAPTION: Footprint diameter versus total strut length across all six stops — real `design_dome` output, not estimated. Notice the Mesa Spire's bar pair: the smallest footprint of any stop in this chapter, paired with the second-highest strut total. A compact footprint and a cheap build are not the same claim.]**
 
 That comparison is this stop's own real lesson, worth stating plainly: the Mesa Spire has the *smallest* footprint of any stop in this chapter, and very nearly the *highest* total strut length — more material than the much wider Under-the-Ocean Prototype, for a noticeably smaller footprint. "What does this environment demand" and "what does this villain want" are genuinely different, sometimes directly opposed inputs to the same design tool, and this stop is the chapter's clearest proof that the second one has real, measurable material costs the first would never have chosen to pay.
 

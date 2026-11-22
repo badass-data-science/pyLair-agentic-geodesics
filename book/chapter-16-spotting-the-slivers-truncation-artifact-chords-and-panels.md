@@ -39,9 +39,8 @@ And two real flagged panel shapes, both genuinely degenerate in different ways:
 
 **What It Means:** The first panel is what you'd call a fully-degenerate sliver — all three edges collapsed to near-nothing, essentially a single point pretending to be a triangle. The second is a "needle": two of its edges are perfectly ordinary strut lengths (`0.206`, matching real panels elsewhere on the same dome), but its third edge has been squeezed down to a sixth of a millionth of that scale — a triangle so thin it would be functionally a slit, not a panel, if anyone tried to actually cut it. Both are mathematically valid triangles. Neither is buildable.
 
-*(Figure 16-1: A real, normal panel from this dome (left) next to two real sliver artifacts at the identical scale (center: a "needle," essentially invisible at this zoom; right: a fully-degenerate sliver, still invisible at the dome's own scale even after zooming in 100,000×). Nothing here is exaggerated for effect — every triangle shown is a real, computed panel from this exact dome.)*
-
-![A normal panel next to a needle sliver (invisible at scale) and a fully-degenerate sliver (still tiny even zoomed in 100,000x)](examples/images/sliver_panels.png)
+**[IMAGE: examples/images/sliver_panels.png | A normal panel next to a needle sliver (invisible at scale) and a fully-degenerate sliver (still tiny even zoomed in 100,000x)]**
+**[CAPTION: A real, normal panel from this dome (left) next to two real sliver artifacts at the identical scale (center: a "needle," essentially invisible at this zoom; right: a fully-degenerate sliver, still invisible at the dome's own scale even after zooming in 100,000×). Nothing here is exaggerated for effect — every triangle shown is a real, computed panel from this exact dome.]**
 
 ## Even the "Safe" Cutoff Isn't Immune Here
 

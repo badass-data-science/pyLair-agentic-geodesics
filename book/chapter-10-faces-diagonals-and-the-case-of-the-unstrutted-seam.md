@@ -8,9 +8,8 @@ Every face on a geodesic sphere is a triangle. Truncation's cutoff plane can cli
 
 pyLair's bill of materials, its DXF/STL/OBJ exports, and its cutting templates all assume every panel is a simple, three-edge triangle — so a clipped quad can't just be reported as-is. `_clip_face` handles it by splitting that quadrilateral into two triangles along a diagonal, drawn from one of the two new edge-crossing points:
 
-*(Figure 10-1: A single triangular panel, magnified, showing exactly this case. Left: one corner about to be clipped by a cutoff plane. Right: the resulting quadrilateral, split into two triangles along a new diagonal — the seam this entire chapter is about.)*
-
-![A clipped triangle corner becoming a quadrilateral, then split into two triangles along a new diagonal](examples/images/diagonal_seam.png)
+**[IMAGE: examples/images/diagonal_seam.png | A clipped triangle corner becoming a quadrilateral, then split into two triangles along a new diagonal]**
+**[CAPTION: A single triangular panel, magnified, showing exactly this case. Left: one corner about to be clipped by a cutoff plane. Right: the resulting quadrilateral, split into two triangles along a new diagonal — the seam this entire chapter is about.]**
 
 Two details are worth being precise about here, because getting either one wrong would silently corrupt the output. First: the two new corner points (`Pa`, `Pb` in the figure) are computed via the exact same edge-crossing function Chapter 9's chord-clipping uses — `_edge_crossing`, shared between the chord path and the face-clipping path specifically so that a strut running along a cut and the panel corner sitting at that same physical point land on the *identical* coordinate, not two independently-rounded near-duplicates that happen to be extremely close. Second: the diagonal itself — `Pa` to `kept2` in the figure — isn't a rendering artifact or a triangulation convenience. Both of the two resulting sub-triangles lie exactly in the same flat plane as the *original*, undivided triangle (a straight cut through a flat shape can only ever produce more flat shapes, never bend anything), which means this diagonal is a real, physically bracable edge, exactly as load-bearing as any strut that was part of the original design.
 

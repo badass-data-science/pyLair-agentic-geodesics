@@ -11,9 +11,8 @@ pyFit has no code dependency on pyLair at all. It reads DXF files — pyLair's p
 
 **What Comes Back** (a real `preview_nest` render):
 
-*(Figure 19-1: A real pyFit nesting result — henchman-uniform patches and throwing-star stencils, nothing to do with any geodesic dome, at `23.7%` real utilization on a `12×8` sheet. Proof, before this chapter ever nests a single pyLair panel, that pyFit owes nothing to pyLair's own geometry.)*
-
-![A real standalone pyFit nesting job: patch and stencil shapes with no connection to any dome](examples/images/standalone_patch_stencil_nest.png)
+**[IMAGE: examples/images/standalone_patch_stencil_nest.png | A real standalone pyFit nesting job: patch and stencil shapes with no connection to any dome]**
+**[CAPTION: A real pyFit nesting result — henchman-uniform patches and throwing-star stencils, nothing to do with any geodesic dome, at `23.7%` real utilization on a `12×8` sheet. Proof, before this chapter ever nests a single pyLair panel, that pyFit owes nothing to pyLair's own geometry.]**
 
 ## The Question Underneath: The No-Fit-Polygon
 
@@ -31,9 +30,8 @@ no_fit_polygon([(0,0),(1,0),(1,1),(0,1)], [(0,0),(1,0),(1,1),(0,1)])
 # -> [[(1.0, 1.0), (-1.0, 1.0), (-1.0, -1.0), (1.0, -1.0)]]
 ```
 
-*(Figure 19-2: The real, computed no-fit-polygon of two unit squares — exactly the 2×2 square from `(-1,-1)` to `(1,1)`, with the moving square shown touching the NFP boundary at one legal position.)*
-
-![A real no-fit-polygon computation: two unit squares producing exactly the expected 2x2 boundary](examples/images/nfp_unit_squares.png)
+**[IMAGE: examples/images/nfp_unit_squares.png | A real no-fit-polygon computation: two unit squares producing exactly the expected 2x2 boundary]**
+**[CAPTION: The real, computed no-fit-polygon of two unit squares — exactly the 2×2 square from `(-1,-1)` to `(1,1)`, with the moving square shown touching the NFP boundary at one legal position.]**
 
 **What It Means:** By hand: if a unit square's reference corner is anywhere inside a `2×2` square centered on the stationary square's own center, the two overlap; right at that boundary, they touch edge-to-edge; anywhere outside it, they're clear. The code's real output matches that exactly, with no rounding required — the same style of hand-checkable sanity test Chapter 6 used for Class III's own construction, applied here to a completely different geometric primitive.
 
@@ -46,9 +44,8 @@ On top of the NFP, pyFit runs a **bottom-left-fill heuristic**: place the larges
 
 **What Comes Back** (a real `get_nest_report` result, plotted in placement order):
 
-*(Figure 19-3: A real placement sequence — five unit squares, numbered in the actual order pyFit placed them, each red dot marking that part's chosen reference point. Notice the pattern: fill the bottom row left to right, then the next row up, exactly "leftmost, then bottommost.")*
-
-![Five real placements on a 3x2 sheet, numbered in actual placement order, filling bottom-left first](examples/images/bottom_left_fill_order.png)
+**[IMAGE: examples/images/bottom_left_fill_order.png | Five real placements on a 3x2 sheet, numbered in actual placement order, filling bottom-left first]**
+**[CAPTION: A real placement sequence — five unit squares, numbered in the actual order pyFit placed them, each red dot marking that part's chosen reference point. Notice the pattern: fill the bottom row left to right, then the next row up, exactly "leftmost, then bottommost."]**
 
 **Prompt:**
 > Explain, in your own words, why nesting a set of triangles onto plywood is a harder problem than computing their shapes in the first place.
@@ -71,7 +68,7 @@ One more thing worth stating as a scope decision, not a shortcoming to apologize
 **Prompt:**
 > Nest this batch of patch/stencil blanks — nothing to do with any dome — just to see pyFit work on its own terms first.
 
-**What Comes Back:** Figure 19-1, above, from `preview_nest` — a real, legal, if not perfectly tight, layout. Nothing about that result depended on pyLair, a geodesic dome, or anything this book has built in its first eighteen chapters. That's deliberate: pyFit's next chapter is where it finally meets pyLair's own output, but this one exists to prove, first, that it doesn't need to.
+**What Comes Back:** Figure 19.1, above, from `preview_nest` — a real, legal, if not perfectly tight, layout. Nothing about that result depended on pyLair, a geodesic dome, or anything this book has built in its first eighteen chapters. That's deliberate: pyFit's next chapter is where it finally meets pyLair's own output, but this one exists to prove, first, that it doesn't need to.
 
 ## What's Next
 

@@ -21,9 +21,8 @@ That "all of them" is itself worth a footnote, because it wasn't always true of 
 
 Panel templates follow the identical logic on the shape side: this same dome's `260` total panels collapse to `52` distinct `_facetype*.dxf` files.
 
-*(Figure 15-1: Six of this dome's real, distinct panel cutting templates, drawn directly from their actual edge-length data — genuinely different shapes, even though several look superficially similar at a glance, which is exactly why a shape-matching algorithm, not a human eyeballing a pile of triangles, is doing this grouping.)*
-
-![Six real distinct panel cutting template shapes, each labeled with its real panel count](examples/images/panel_templates_gallery.png)
+**[IMAGE: examples/images/panel_templates_gallery.png | Six real distinct panel cutting template shapes, each labeled with its real panel count]**
+**[CAPTION: Six of this dome's real, distinct panel cutting templates, drawn directly from their actual edge-length data — genuinely different shapes, even though several look superficially similar at a glance, which is exactly why a shape-matching algorithm, not a human eyeballing a pile of triangles, is doing this grouping.]**
 
 ## The Empirically-Tuned Number Behind the Clustering
 

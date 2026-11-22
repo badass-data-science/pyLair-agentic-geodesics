@@ -29,9 +29,8 @@ avoid this degenerate case.
 
 This isn't a bug — it's `truncate()` refusing to do something it can't do safely. A chord that runs exactly flat along the cutoff plane (both endpoints at precisely the same coordinate on the truncation axis) has no well-defined single crossing point: dividing by that chord's near-zero extent along the cutoff axis would otherwise produce an `inf`/`nan` vertex silently, rather than failing loudly. `truncate()` checks for exactly this degenerate case and refuses outright instead.
 
-*(Figure 9-1: Every one of the real frequency-6 sphere's 362 vertices, plotted by their Z-coordinate. Left: the full range. Right: zoomed to ±10⁻⁵ around Z=0 — 30 real vertices sit at *exactly* Z=0, which is precisely where a cutoff of `0.5` lands. The documented safe cutoff, `0.499999`, clears that entire ring by only `2×10⁻⁶` — a hair's breadth, not a generous margin.)*
-
-![30 vertices sitting exactly on Z=0, with an unsafe 0.5 cutoff landing on all of them and a safe 0.499999 cutoff clearing them by a tiny margin](examples/images/truncation_safe_vs_unsafe.png)
+**[IMAGE: examples/images/truncation_safe_vs_unsafe.png | 30 vertices sitting exactly on Z=0, with an unsafe 0.5 cutoff landing on all of them and a safe 0.499999 cutoff clearing them by a tiny margin]**
+**[CAPTION: Every one of the real frequency-6 sphere's 362 vertices, plotted by their Z-coordinate. Left: the full range. Right: zoomed to ±10⁻⁵ around Z=0 — 30 real vertices sit at *exactly* Z=0, which is precisely where a cutoff of `0.5` lands. The documented safe cutoff, `0.499999`, clears that entire ring by only `2×10⁻⁶` — a hair's breadth, not a generous margin.]**
 
 Why does frequency 6 specifically produce a vertex ring exactly at the equator? A quick sweep across frequencies shows the pattern plainly: `truncation_z=0.5` fails at every *even* frequency (2, 4, 6, 8, 10...) and succeeds at every *odd* one, for this base construction — an even frequency's grid happens to land a full ring of vertices exactly on the midplane, where an odd one doesn't. This is exactly why pyLair's own documentation recommends `0.499999` or `0.333333` over rounder-looking numbers: both are chosen specifically to avoid landing exactly on a vertex ring at the frequencies this construction typically produces one at.
 
@@ -51,14 +50,17 @@ The dome this book has been building — Class III at `(m,n)=(4,1)` (Chapter 6),
 
 **What Comes Back** (a real `preview_dome` render):
 
-*(Figure 9-2: The Actual Secret Lair, finally ground-flush — Class III, elongated, and now truncated at the documented safe cutoff. This is the first time in the book this shape has looked like a building rather than a suspended shape.)*
-
-![The Actual Secret Lair, elongated and now truncated into a ground-flush dome](examples/images/truncated-secret-lair.png)
+**[IMAGE: examples/images/truncated-secret-lair.png | The Actual Secret Lair, elongated and now truncated into a ground-flush dome]**
+**[CAPTION: The Actual Secret Lair, finally ground-flush — Class III, elongated, and now truncated at the documented safe cutoff. This is the first time in the book this shape has looked like a building rather than a suspended shape.]**
 
 For a second, independently-produced reference showing the same kind of result — a correctly truncated dome loaded back into a CAD viewer — see pyLair's own earlier documentation images:
 
-![A truncated dome, as it appears in a CAD import](../blog-posts/edited_truncated.png)
-![The same kind of truncated dome, focused view in a CAD viewer](../blog-posts/truncated_qcad_focused.png)
+**[IMAGE: ../blog-posts/edited_truncated.png | A truncated dome, as it appears in a CAD import]**
+**[CAPTION: TODO-CAPTION]**
+
+**[IMAGE: ../blog-posts/truncated_qcad_focused.png | The same kind of truncated dome, focused view in a CAD viewer]**
+**[CAPTION: TODO-CAPTION]**
+
 
 ## Combining Axes: Order Is Fixed, and It Matters
 

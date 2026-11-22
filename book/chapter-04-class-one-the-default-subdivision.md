@@ -12,9 +12,8 @@ This matters for more than just efficiency. It means that whatever is *true* of 
 
 pyLair's default subdivision — the one you get if you don't specify `dome_class` at all, or pass `dome_class=1` explicitly — is called **Class I**, historically also known as the "Alternate" method. Its symmetry triangle is built the most straightforward way imaginable: draw a grid of lines parallel to the face's own three edges, evenly spaced according to the requested frequency. Here is exactly that grid, computed by pyLair's own `ClassOneMethodOneSymmetryTriangle` for one face at frequency 4 — not a hand-drawn approximation, but the real internal vertex/chord data plotted flat, before it's ever replicated or projected onto anything:
 
-*(Figure 4-1: One bare Class I symmetry triangle, frequency 4 — the single piece of geometry pyLair computes directly. Chapters 5 and 6 each get their own version of this same figure, so the three classes' grids can be compared side by side.)*
-
-![A single triangular face subdivided into a grid parallel to its own edges](examples/images/class1_symmetry_triangle.png)
+**[IMAGE: examples/images/class1_symmetry_triangle.png | A single triangular face subdivided into a grid parallel to its own edges]**
+**[CAPTION: One bare Class I symmetry triangle, frequency 4 — the single piece of geometry pyLair computes directly. Chapters 5 and 6 each get their own version of this same figure, so the three classes' grids can be compared side by side.]**
 
 Count what's there: 15 vertices, 30 chords, 16 small triangular faces — and in general, at frequency `f`, a Class I symmetry triangle has `(f+1)(f+2)/2` vertices and `f²` small faces (16 at `f=4`, matching the figure exactly). Once this one triangle is computed, `GeodesicSphere` takes over: it copies a rotated version of this exact grid onto every face of the base polyhedron, merges the vertices that land on shared edges between faces (Chapter 7 covers exactly how), and projects the whole result outward onto a sphere of the requested radius.
 
@@ -55,9 +54,8 @@ Every dome this book builds toward in earnest — the one Part V finally exports
 
 **What Comes Back** (a real `preview_dome` render, `dome_class=1`, `frequency=6`, `polyhedron="icosahedron"`, `radius=1.0`):
 
-*(Figure 4-2: The Actual Secret Lair's first appearance — a plain Class I icosahedral sphere at frequency 6. Nothing about this shape is final yet: Chapter 5 will show the same nominal frequency rebuilt entirely differently under Class II, Chapter 6 will replace this subdivision with a genuinely chiral one, and Chapters 8 through 10 will elongate and truncate whatever subdivision survives that choice.)*
-
-![A frequency-6 Class I icosahedral sphere](examples/images/class1-secret-lair.png)
+**[IMAGE: examples/images/class1-secret-lair.png | A frequency-6 Class I icosahedral sphere]**
+**[CAPTION: The Actual Secret Lair's first appearance — a plain Class I icosahedral sphere at frequency 6. Nothing about this shape is final yet: Chapter 5 will show the same nominal frequency rebuilt entirely differently under Class II, Chapter 6 will replace this subdivision with a genuinely chiral one, and Chapters 8 through 10 will elongate and truncate whatever subdivision survives that choice.]**
 
 Nothing here is the final design — that's rather the point of introducing it this early. Every later chapter that reshapes this dome is reshaping *this* shape specifically, so that the running example accumulates real decisions instead of resetting to a fresh, unrelated dome each time a new concept needs demonstrating.
 

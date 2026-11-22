@@ -30,9 +30,8 @@ Here's the Actual Secret Lair — Class III `(4,1)`, elongated, truncated at `0.
 {"bom_rounding_precision": 1, "distinct_rows": 2}
 ```
 
-*(Figure 13-1: The same 415 struts on the same dome, clustered at the default `bom_rounding_precision=9` (left, 79 distinct rows — mostly groups of 5, matching this dome's own local symmetry) versus a deliberately coarse `bom_rounding_precision=2` (right, 20 distinct rows, several groups now 50–60 struts wide). Nothing changed about the dome itself between the two charts — only how aggressively nearby lengths get treated as "the same.")*
-
-![Two bar charts showing the same 415 struts clustered into 79 rows at b=9 versus 20 rows at b=2](examples/images/strut_clustering_comparison.png)
+**[IMAGE: examples/images/strut_clustering_comparison.png | Two bar charts showing the same 415 struts clustered into 79 rows at b=9 versus 20 rows at b=2]**
+**[CAPTION: The same 415 struts on the same dome, clustered at the default `bom_rounding_precision=9` (left, 79 distinct rows — mostly groups of 5, matching this dome's own local symmetry) versus a deliberately coarse `bom_rounding_precision=2` (right, 20 distinct rows, several groups now 50–60 struts wide). Nothing changed about the dome itself between the two charts — only how aggressively nearby lengths get treated as "the same."]**
 
 **Prompt:**
 > Generate the bill of materials at the default rounding, then again at `bom_rounding_precision=2`. Do any distinct strut lengths get merged together at the coarser setting?

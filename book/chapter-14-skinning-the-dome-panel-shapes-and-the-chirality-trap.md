@@ -24,9 +24,8 @@ Here's the part worth pausing on: you don't need Class III's chiral construction
 
 **What Comes Back:** Yes — on this exact dome, 2 of 6 total panel shape groups are flagged `chiral`. The largest one, edge lengths `(0.198, 0.203, 0.206)`, has 240 total panels split *exactly* 120/120 between two genuinely different winding-order orientations. Here they are, both real, both drawn from this exact dome's actual panel data:
 
-*(Figure 14-1: The same three edge lengths — `0.203` along the base in both — but the `0.198` and `0.206` edges swap sides between the two. Same SSS signature, same cutting outline once you allow flipping the template over; genuinely different panels if you can't.)*
-
-![Two triangles with identical edge lengths but swapped winding order, shown side by side as true mirror images](examples/images/panel_chirality_pair.png)
+**[IMAGE: examples/images/panel_chirality_pair.png | Two triangles with identical edge lengths but swapped winding order, shown side by side as true mirror images]**
+**[CAPTION: The same three edge lengths — `0.203` along the base in both — but the `0.198` and `0.206` edges swap sides between the two. Same SSS signature, same cutting outline once you allow flipping the template over; genuinely different panels if you can't.]**
 
 **What It Means:** You were about to order a run of wood-grain veneer panels, count the largest shape group at `240` total, and cut all `240` from a single template, oriented the same way every time. Half of them — the `120` panels in "Orientation 2" — would come out with the grain running the wrong direction relative to the other half, because they are not, in fact, the same shape traced twice. They're mirror images, and no amount of careful cutting from a single-orientation template fixes that; the template itself has to be flipped for half the batch.
 

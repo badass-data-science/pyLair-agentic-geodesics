@@ -6,9 +6,8 @@ Chapter 4 taught the simplest possible symmetry triangle: a grid drawn parallel 
 
 Class I subdivides a polyhedron face directly. Class II does something else first: before any frequency-based grid gets laid down at all, **each polyhedron face is split into 6 smaller right triangles arranged around its own centroid** — one for each combination of a face vertex and an adjacent edge's midpoint. Here is exactly that split, computed from one real icosahedron face:
 
-*(Figure 5-1, left: One polyhedron face split into its 6 LCD ["lowest common denominator"] sub-triangles — the step Class II takes before any frequency grid is applied at all. Right: one of those 6 sub-triangles, with its own frequency-3 grid laid over it — the actual symmetry triangle Class II computes and then replicates 6 times per original face, not once. Compare this grid's visibly skewed shape against Chapter 4's equilateral one in Figure 4-1 — the two classes' symmetry triangles aren't just differently divided, they're differently *shaped* triangles to begin with.)*
-
-![One polyhedron face split into six LCD sub-triangles, and one of those sub-triangles' own frequency-3 grid](examples/images/class2_symmetry_triangle.png)
+**[IMAGE: examples/images/class2_symmetry_triangle.png | One polyhedron face split into six LCD sub-triangles, and one of those sub-triangles' own frequency-3 grid]**
+**[CAPTION: One polyhedron face split into its 6 LCD ["lowest common denominator"] sub-triangles — the step Class II takes before any frequency grid is applied at all. Right: one of those 6 sub-triangles, with its own frequency-3 grid laid over it — the actual symmetry triangle Class II computes and then replicates 6 times per original face, not once. Compare this grid's visibly skewed shape against Chapter 4's equilateral one in Figure 4.1 — the two classes' symmetry triangles aren't just differently divided, they're differently *shaped* triangles to begin with.]**
 
 Look closely at what each of those 6 wedges actually is: a right triangle, with legs running from a face vertex to an adjacent edge's midpoint, and from that midpoint to the face's centroid. (The right angle sits at the midpoint precisely because a triangle's median is also its altitude — a fact about equilateral triangles specifically, not a coincidence.) pyLair's own `build_lcd_faces` builds exactly these 6 triangles per face; `ClassTwoMethodOneSymmetryTriangle` then computes a frequency-`m` grid for **one** of them, the same "compute one, replicate the rest" principle Chapter 4 introduced — except now there are 6 replicated copies per original polyhedron face instead of 1.
 
@@ -75,9 +74,8 @@ The dome Chapter 4 introduced gets rebuilt here, at the identical nominal freque
 
 **What Comes Back** (a real `preview_dome` render, `dome_class=2`, `frequency=6`):
 
-*(Figure 5-2: The Actual Secret Lair, same nominal frequency as Figure 4-2, rebuilt under Class II. Visibly denser than its Class I counterpart — 1080 faces against 720 — which is exactly the "same frequency number, more detail" surprise this chapter's golden-value table predicts.)*
-
-![The same nominal frequency, rebuilt under Class II — visibly denser than the Class I version](examples/images/class2-secret-lair.png)
+**[IMAGE: examples/images/class2-secret-lair.png | The same nominal frequency, rebuilt under Class II — visibly denser than the Class I version]**
+**[CAPTION: The Actual Secret Lair, same nominal frequency as Figure 4.2, rebuilt under Class II. Visibly denser than its Class I counterpart — 1080 faces against 720 — which is exactly the "same frequency number, more detail" surprise this chapter's golden-value table predicts.]**
 
 Neither version is "more correct" than the other — they're two different, both entirely valid, subdivision strategies for the same starting polyhedron. Which one the Actual Secret Lair actually ships with isn't decided until Chapter 6 offers a third, more dramatically different option still.
 

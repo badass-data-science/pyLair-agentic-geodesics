@@ -6,13 +6,11 @@ Every chapter in Part IV answers the same underlying question: given a finished,
 
 At every hub, each connecting strut gets two numbers. The **tangent-plane deflection angle** measures how far a connector bends *inward* to receive that strut — the angle between the strut itself and the plane tangent to the dome's surface at that hub. The **spoke angle** measures something different: how far *around* the hub, in that same tangent plane, one strut sits relative to another, using one connecting strut as an arbitrarily chosen zero-degree reference.
 
-*(Figure 12-1: The tangent-plane deflection angle, illustrated — the view faces directly along the tangent plane, so it appears as a line. Two chords are shown for clarity; a real hub typically has five or six.)*
+**[IMAGE: ../blog-posts/tangent_angle_image_CROPPED.png | Diagram of the angle between a chord and its hub's tangent plane]**
+**[CAPTION: The tangent-plane deflection angle, illustrated — the view faces directly along the tangent plane, so it appears as a line. Two chords are shown for clarity; a real hub typically has five or six.]**
 
-![Diagram of the angle between a chord and its hub's tangent plane](../blog-posts/tangent_angle_image_CROPPED.png)
-
-*(Figure 12-2: The spoke angle, illustrated — this time viewed orthogonally to the same tangent plane, showing each chord projected onto it and measured against a chosen reference chord.)*
-
-![Diagram of spoke angles measured around a hub's tangent plane](../blog-posts/spoke_angle_image_CROPPED.png)
+**[IMAGE: ../blog-posts/spoke_angle_image_CROPPED.png | Diagram of spoke angles measured around a hub's tangent plane]**
+**[CAPTION: The spoke angle, illustrated — this time viewed orthogonally to the same tangent plane, showing each chord projected onto it and measured against a chosen reference chord.]**
 
 Put plainly: the tangent-plane angle is the cut that lets a connector plate sit flush against a curved surface instead of poking through it; the spoke angle is the rotation that puts each of that connector's several strut-sockets in the right place around the hub. A fabricator needs both — a connector cut at the right inward angle but rotated wrong will still refuse to accept its struts in the right positions, and one rotated correctly but cut at the wrong angle will sit proud of the surface instead of flush against it.
 
@@ -36,8 +34,12 @@ Here's both angle types, reported for a real hub on the Actual Secret Lair — C
 
 This matches what those numbers actually look like printed as a real report, the same way pyLair's own documentation has shown them from the start:
 
-![Real terminal output showing tangent-plane angles in a pyLair report](../blog-posts/STDOUT_tangent_angles.png)
-![Real terminal output showing spoke angles in a pyLair report](../blog-posts/STDOUT_spoke_angles.png)
+**[IMAGE: ../blog-posts/STDOUT_tangent_angles.png | Real terminal output showing tangent-plane angles in a pyLair report]**
+**[CAPTION: TODO-CAPTION]**
+
+**[IMAGE: ../blog-posts/STDOUT_spoke_angles.png | Real terminal output showing spoke angles in a pyLair report]**
+**[CAPTION: TODO-CAPTION]**
+
 
 ## Why Elongation Changes the Whole Pattern, Not Just the Numbers
 

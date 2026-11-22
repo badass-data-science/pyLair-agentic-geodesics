@@ -196,9 +196,8 @@ design_dome result:
 
 Look at the shape directly rather than only trusting the summary:
 
-*(Figure 2-1: The Proof-of-Concept Yurt, a real `preview_dome` render — a frequency-2 Class I icosahedral sphere, unremarkable on purpose.)*
-
-![The Proof-of-Concept Yurt wireframe preview](examples/images/poc-yurt.png)
+**[IMAGE: examples/images/poc-yurt.png | The Proof-of-Concept Yurt wireframe preview]**
+**[CAPTION: The Proof-of-Concept Yurt, a real `preview_dome` render — a frequency-2 Class I icosahedral sphere, unremarkable on purpose.]**
 
 **Prompt:**
 > Now confirm the pyFit MCP server is running and list every tool it exposes. Run `design_nest` on six unit squares and a 3×2 sheet — a case small enough to check by hand — just to prove that connection works too.
@@ -217,9 +216,8 @@ design_nest result:
 
 **What It Means:** Four more real tools, from a second real subprocess — and a result that's genuinely checkable by hand: six unit squares have a combined area of 6, a 3×2 sheet has an area of exactly 6, and pyFit's own README states this exact case tiles perfectly. `utilization_by_sheet: [1.0]` — 100% — confirms it did, on the very first sheet, with none left over. This is this book's version of Chapter 1's own promise: a boring, hand-verifiable result, shown here specifically because there's nowhere for a packing mistake to hide in it.
 
-*(Figure 2-2: The Proof-of-Concept Nesting Job, a real `preview_nest` render — six unit squares tiling a 3×2 sheet at exactly 100% utilization.)*
-
-![Six unit squares perfectly tiling a 3x2 sheet](examples/images/poc-nest_sheet1.png)
+**[IMAGE: examples/images/poc-nest_sheet1.png | Six unit squares perfectly tiling a 3x2 sheet]**
+**[CAPTION: The Proof-of-Concept Nesting Job, a real `preview_nest` render — six unit squares tiling a 3×2 sheet at exactly 100% utilization.]**
 
 One more thing worth confirming while you're here, since Chapter 1 made a point of it: the MCP tools enforce validation, not just convenience — nothing about calling `design_dome` instead of a command line lets an invalid configuration slip through.
 

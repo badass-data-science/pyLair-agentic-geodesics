@@ -1,3 +1,3 @@
 This is VERY MUCH a work in progress...
 
-TO DO:  Ensure the book assembly script DOES NOT accidentally include this README.md file!
+Build the book with `book-assembly/assemble_book.py` (see `book-assembly/README.md`). It reads only the front matter, chapter, and appendix files it names, so this README, `outline.md`, and `AGENTS.md` are never included.
