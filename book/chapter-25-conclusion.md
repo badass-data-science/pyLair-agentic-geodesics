@@ -1,36 +1,44 @@
 # Chapter 25: Conclusion
 
-Twenty-three chapters ago, this book opened on a studio apartment that had run out of room for an Ultimate Cunning Master Plan&trade;. It closes here, with a real dome, real templates, and a real cut plan — not a hypothetical one, and not one this book asked you to take on faith anywhere along the way.
+The third letter from the homeowners' association arrived on a Thursday, on heavy cream paper, with a lawyer's name at the bottom, exactly as our Heroine had predicted in Chapter 1. It was addressed to the sub-basement, which by then contained a broom, a forgotten roll of tape, and a faint smell of coolant. The HOA president delivered it in person, found the door open and the room empty, and stood for some time looking at the clean rectangle on the wall where a whiteboard had hung.
 
-## The Full Pipeline, in Light of Everything It Turned Out to Hide
+The whiteboard was in a crater, inside a dome.
 
-Pick a polyhedron (Chapter 3) — an icosahedron, most of the time, for the same reason it's most domes' default: more faces per frequency, and a genuinely different vertex structure near the equator than an octahedron's exact ring or a tetrahedron's total absence of one — unless what the design actually needs is that exact equatorial ring (the octahedron), or the fewest possible distinct struts and panels at a given frequency (the tetrahedron). Subdivide it (Chapters 4–6) — Class I's simple parallel grid, Class II's centroid-radiating one, or Class III's genuinely chiral construction, the last of which cost this book its single sharpest lesson: a construction that passed every count-based check available and was still wrong. Project it onto a sphere (Chapter 7), merging seams with a KD-tree fast enough that a naive comparison would have made this book's own examples impractical to write. Shape it — elongate (Chapter 8), truncate (Chapter 9), and account for the one specific seam that shaping creates (Chapter 10). Practice applying all of it against a real design goal, six times over, in six different hostile or ridiculous environments (Chapter 11).
+Twenty-four chapters ago, this book opened on a studio apartment that had run out of room for an Ultimate Cunning Master Plan™. It closes with a dome, its templates, and its cut plan: not a hypothetical one, and not one the book asked you to take on trust.
 
-Account for what you built — hub angles that need the true ellipsoid normal, not the naive shortcut (Chapter 12); strut lengths clustered by a tolerance that does two jobs at once (Chapter 13); panel shapes that can hide a genuine mirror image behind an identical edge-length signature (Chapter 14); cutting templates clustered by a rotation-invariant signature tuned against a real, measured noise floor (Chapter 15); and the slivers a too-close truncation cutoff leaves behind, flagged rather than silently dropped (Chapter 16). Get it out the door — four export formats, each for a genuinely different job (Chapter 17) — and learn to iterate for free before ever committing a file to disk (Chapter 18).
+## The Full Pipeline, and What It Turned Out to Hide
 
-And then, because a design isn't a building: hand its panels to a second, genuinely independent toolkit (Chapter 19), build a job spec from the first toolkit's own bill of materials with nothing hand-typed (Chapter 20), and close the loop with the same iterate-then-commit discipline, plus one new idea neither dome ever needed — progress on a job long enough to require it (Chapter 21).
+Pick a polyhedron (Chapter 3): usually the icosahedron, the roundest and most uniform start, unless the design needs an exact ring of vertices on the equator (the octahedron) or the fewest pieces at a given frequency (the tetrahedron). Subdivide it (Chapters 4 through 6): Class I's parallel grid, Class II's centroid-radiating wedges, or Class III's chiral lattice, the last of which supplied the book's sharpest lesson, a construction that passed every count check and was still wrong. Project it onto a sphere (Chapter 7), merging seams with a spatial index fast enough to make high frequencies practical. Shape it: stretch it (Chapter 8), cut it (Chapter 9), and brace the seams the cut creates (Chapter 10). Then practice all of it against six clients' environments (Chapter 11).
 
-## A Closing Status Update
+Account for what you built: hub angles that need the true ellipsoid normal (Chapter 12); strut lengths clustered by a setting that does two jobs (Chapter 13); panel shapes that can hide a mirror image behind identical edge lengths (Chapter 14); cutting templates grouped by a fingerprint tuned against a measured noise floor (Chapter 15); and slivers from a too-close cut, flagged rather than silently dropped (Chapter 16). Get it out the door in the right format for each job (Chapter 17), and iterate for free before writing a single file (Chapter 18).
 
-**The Actual Secret Lair** is designed, verified, exported, and — new, as of Part VI — actually nested: real panel templates, a real job spec built from them, a real multi-sheet cut plan sitting ready for a henchman to load into a laser cutter. This is the dome the companion blog post's heroine set out to build, and the one this book has spent 25 chapters actually finishing, not just describing.
+Then, because a design isn't a building: hand the panels to a second, independent toolkit (Chapter 19), build its job spec from the first toolkit's bill of materials with nothing typed by hand (Chapter 20), keep the same iterate-then-commit discipline on the nesting side, with progress reports for jobs long enough to need them (Chapter 21), and label every piece so the crew knows where it goes (Chapter 22).
 
-**The Under-the-Ocean Prototype** remains, honestly, just a prototype. Its panels got nested for real in Chapter 20 — real templates, a real `allow_mirror` decision, a real and genuinely surprising result — but its actual construction, like any sensible secret laboratory's, stays exactly as secret as the blog post always promised it would.
+## A Closing Status Report
 
-## Where Each Toolkit Itself Goes Next
+**The Actual Secret Lair** is designed, checked, exported, nested, labeled, and standing: 156 hubs, 415 struts, and 260 panels on the floor of a dormant volcano, ring by ring from the base. The Foreman signed off on it with the same question he'd asked in Chapter 4 ("Does it close?") and answered it himself, with a tape measure, at every hub of the base ring.
 
-Pulled honestly from each project's own real, currently-open items — not invented for a tidy ending:
+**The Under-the-Ocean Prototype** remains a prototype. Its panels were nested in Chapter 20, with an `allow_mirror` decision made for a one-sided coating, and the Junior Henchman's rewritten prompts from Chapter 23 are queued for its next design session. Its construction, like any sensible secret laboratory's, stays secret.
 
-**pyLair's** own stated next steps: proactive truncation-risk warnings *before* export, rather than the current after-the-fact artifact flags this book's Chapter 16 already covers; an optional boundary cap, triangulating a truncated dome's open edge into real panels for anyone building a fully enclosed structure rather than an open-bottomed one; and — the one our heroine herself is least sure will work, but thinks worth trying — asking an AI coding assistant to review pyLair's own source and design an actual door-frame modification, because doorways are famously hostile territory for any geodesic design.
+**Chapter 11's clients** received their designs, their invoices, and the CFV's disclaimer. The Mesa Spire's owner paid the vanity surcharge without comment.
 
-**pyFit's** own stated next steps, the ones not yet marked done in its own blog post: a proper refinement pass — simulated annealing, or a genetic reordering of the placement sequence — on top of its current base bottom-left-fill heuristic, likely closing a meaningful part of the real gap between "a good heuristic" and "actually optimal," per Chapter 19's own honest framing of what that heuristic does and doesn't promise; and support for real, non-rectangular stock — irregular sheet shapes, existing cutouts, offcuts from a previous job — none of which this MVP attempts yet.
+**The Rival Supervillain** sent a message through the disgruntled henchman, who was by now doing a brisk trade in both directions. He wanted to borrow the templates. Our Heroine sent back a copy of Chapter 24 instead, and the address of pyLair's repository.
 
-Neither project has been published to PyPI as of this writing. Both are real, working, installable-from-source tools with that step still ahead of them — an honest, unglamorous fact this book's own Chapter 2 already told you plainly, rather than one worth dressing up for a closing chapter.
+## Where Each Toolkit Goes Next
+
+These come from each project's own list of open work, not invented for a tidy ending.
+
+**pyLair's** blog post lists its next steps: warning about a risky truncation cutoff *before* export, rather than only flagging slivers afterward as Chapter 16 describes; an optional cap that triangulates a truncated dome's open base into panels, for a fully enclosed structure; and an experiment our Heroine admits she isn't sure will work, asking an AI coding assistant to review pyLair's source and design a door-frame modification, because doorways are notoriously hard on geodesic designs. And publishing to PyPI.
+
+**pyFit's** blog post lists, among items not yet done: a refinement pass, such as simulated annealing or a genetic reordering of the placement sequence, on top of the bottom-left-fill heuristic, which would likely close part of the gap between "a good heuristic" and "optimal" that Chapter 19 described; a fuller search for candidate positions; and support for stock that isn't rectangular: irregular sheets, sheets with cutouts, and offcuts from a previous job.
+
+Neither project has been published to PyPI as of this writing. Both are working tools installed from source, with that step still ahead of them, as Chapter 2 said.
 
 **Prompt:**
-> Summarize everything you now know about the Actual Secret Lair's design and its nesting plan across every stage of both pipelines, as if handing off to whoever actually builds it.
+> Summarize everything you now know about the Actual Secret Lair's design and its cutting plan, across every stage of both pipelines, as if handing off to whoever builds the next one.
 
-**What It Means:** If you can answer that prompt confidently, using real field names and real numbers rather than vague gestures at "the dome" and "the panels" — this book did its job.
+**What It Means:** If you can answer that prompt confidently, with field names and numbers rather than gestures at "the dome" and "the panels," this book has done its job.
 
 ---
 
-Our heroine's secret laboratory, geodesically sound and fully nested onto real sheet stock, is (of course) still being kept secret. The mojitos, per the companion blog post, remain fully optional, but encouraged.
+Our Heroine's secret laboratory, geodesically sound and cut from a nested plan, is of course still secret. The AI Henchman has a new terminal, by the pool. The mojitos, per pyLair's blog post, remain optional, but encouraged.
