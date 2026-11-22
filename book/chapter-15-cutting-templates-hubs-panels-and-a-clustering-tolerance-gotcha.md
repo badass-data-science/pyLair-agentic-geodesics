@@ -6,7 +6,9 @@ Four chapters of geometry (subdivision, projection, shaping, and now hub angles,
 
 ## What "Same Shape" Means Here
 
-A geodesic dome has far more hubs and panels than distinct *shapes*, and Chapter 12 showed why comparing hubs is tricky: each hub's spoke angles depend on an arbitrary reference strut. `group_hub_types` removes that arbitrariness. Instead of comparing raw, reference-dependent lists, it builds a fingerprint that doesn't care where you start: the hub's valence (how many struts meet there), plus the sequence of pairs (angular gap to the next strut, that strut's tilt) all the way around the hub in angular order. It then tries every rotation of that sequence and keeps the one that sorts first alphabetically, so to speak. Two hubs with the same physical shape, rotated relative to each other, are guaranteed the *same* fingerprint, because a flat connector template's rotation on the page never mattered; only the angles *between* struts do. `group_face_types` does the equivalent for panels, with edge lengths (Chapter 14).
+A geodesic dome has far more hubs and panels than distinct *shapes*, and Chapter 12 showed why comparing hubs is tricky: each hub's spoke angles depend on an arbitrary reference strut. `group_hub_types` removes that arbitrariness. Instead of comparing raw, reference-dependent lists, it builds a fingerprint that doesn't care where you start: the hub's valence (how many struts meet there), plus the sequence of pairs (angular gap to the next strut, that strut's tilt) all the way around the hub in angular order.
+
+It then tries every rotation of that sequence and keeps the one that sorts first alphabetically, so to speak. Two hubs with the same physical shape, rotated relative to each other, are guaranteed the *same* fingerprint, because a flat connector template's rotation on the page never mattered; only the angles *between* struts do. `group_face_types` does the equivalent for panels, with edge lengths (Chapter 14).
 
 ## Templates for the Actual Secret Lair
 
@@ -17,7 +19,9 @@ Here is the payoff on the Actual Secret Lair: Class III `(4,1)`, stretched `1.8`
 
 **What Comes Back** (summarizing the `export_dome` result, which lists 86 files written: the default VRML and DXF, 32 hub templates, and 52 panel templates): this dome has `156` hubs. `group_hub_types` finds `32` distinct shapes among them, and all `32` get a `_hubtype*.dxf` file, since every hub has at least two struts and therefore an angular pattern to draw.
 
-"All of them" deserves a footnote, because it wasn't always true for this dome. `get_bill_of_materials` skips any hub-shape group with a valence of 1 or less before writing files: a plate with one socket has no angular pattern to draw, so the skip is correct, defensive code. It used to trigger here. An earlier version of `truncate()` never gave a boundary triangle's cut-plane edge a chord, so the `50` hubs on the dome's cut base ring connected only *upward*, never to their neighbors around the ring, and `25` of them were stuck at a valence of `1`. Once the fix shipped, those `50` hubs became two ordinary shapes, `25` at valence `3` and `25` at valence `4`, each closed into its ring neighbors on both sides. Chapter 22 tells how that bug was caught, by a check that wasn't looking for it.
+"All of them" deserves a footnote, because it wasn't always true for this dome. `get_bill_of_materials` skips any hub-shape group with a valence of 1 or less before writing files: a plate with one socket has no angular pattern to draw, so the skip is correct, defensive code. It used to trigger here.
+
+An earlier version of `truncate()` never gave a boundary triangle's cut-plane edge a chord, so the `50` hubs on the dome's cut base ring connected only *upward*, never to their neighbors around the ring, and `25` of them were stuck at a valence of `1`. Once the fix shipped, those `50` hubs became two ordinary shapes, `25` at valence `3` and `25` at valence `4`, each closed into its ring neighbors on both sides. Chapter 22 tells how that bug was caught, by a check that wasn't looking for it.
 
 **What It Means:** `156` physical hubs collapse to `32` connector designs, every one a buildable plate. A builder orders 32 part numbers, in the quantities each group reports, not one custom plate per joint. The Foreman got his list.
 
