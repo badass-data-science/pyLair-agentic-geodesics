@@ -576,7 +576,7 @@ def _with_title_page_image(content, out_dir):
     rel_path = os.path.relpath(TITLE_PAGE_IMAGE, out_dir)
     block = (
         "```{=latex}\n\\begin{center}\n"
-        f"\\includegraphics[width=0.8\\textwidth,height=0.4\\textheight,keepaspectratio]{{{rel_path}}}\n"
+        f"\\includegraphics[width=0.8\\textwidth,height=0.27\\textheight,keepaspectratio]{{{rel_path}}}\n"
         "\\end{center}\n```"
     )
     lines = content.strip().split("\n")
