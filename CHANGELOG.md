@@ -35,6 +35,17 @@ lives under `[Unreleased]` against the `0.1.0` version in `pyproject.toml`.
 - `graphify-out/` knowledge-graph outputs (`GRAPH_REPORT.md`, `graph.json`,
   `graph.html`) generated via `/graphify`.
 - CLI/Python/license badges on the README.
+- `book/book-assembly/assemble_book.py`, a new build script for the book
+  (Markdown, PDF, and EPUB), adapted from the series' later volumes, with
+  checks for figure paths, "Figure N.M" references, and chapter-number
+  ranges. It replaces `book/examples/assemble_book.py`.
+- A revision of the book, "Agentic Geodesic Lair Design for Supervillains":
+  a running story through every chapter, a style pass, figures as
+  numbered IMAGE/CAPTION tags, every example re-run against current pyLair
+  and pyFit, and factual corrections (among them: pyLair's Class II is not
+  the m=n Goldberg-Coxeter case; bottom-left fill fills columns first;
+  `face_output` is not needed for STL/OBJ/templates; seven pyLair MCP
+  tools, not four). See `book/AGENTS.md`.
 - A book outline proposal, "Agentic Geodesic Lair Design for Supervillains"
   (`book/outline.md`), plus an environment-design practicum chapter.
 - MCP server interface (`pylair-mcp`): `design_dome`, `preview_dome`,

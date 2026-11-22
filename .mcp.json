@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "pylair": {
+      "command": "/home/emily/venvs/core/bin/pylair-mcp",
+      "args": []
+    }
+  }
+}
