@@ -1,6 +1,6 @@
 # Appendix B: CLI and MCP Tool Reference
 
-Every CLI flag and MCP tool this book actually used, for both toolkits, with a one-line description and the chapter(s) that cover it — a fast lookup once you're designing and nesting your own domes instead of this book's own examples.
+Every CLI option and MCP tool in both toolkits, with a one-line description and the chapters that cover it: a quick lookup for when you're designing and nesting your own domes. The CLI options mirror each project's README, which remains the complete reference.
 
 ## pyLair CLI (`pylair`)
 
@@ -13,14 +13,14 @@ Every CLI flag and MCP tool this book actually used, for both toolkits, with a o
 | `-c` | `--class` | Subdivision class: `1`, `2`, or `3`. | 4, 5, 6 |
 | `-n` | `--n-frequency` | Second frequency for `-c 3`'s `(m,n)` pair. | 6 |
 | `-t` | `--truncation` | Z-axis truncation cutoff fraction. | 9 |
-| `-x` | `--truncation-x` | X-axis truncation cutoff fraction. | 9, 10 |
+| `-x` | `--truncation-x` | X-axis truncation cutoff fraction. | 9, 10, 17 |
 | `-y` | `--truncation-y` | Y-axis truncation cutoff fraction. | 9 |
 | `-v` | `--vthreshold` | Vertex-deduplication distance threshold. | 4, 7 |
 | `-b` | `--bom-rounding` | BOM display precision and merge tolerance. | 13 |
-| `-m` | `--material-cost` | Price per unit strut length. | 11 |
+| `-m` | `--material-cost` | Price per unit strut length. | — |
 | `-e` | `--elongation` | Per-axis elongation factors `"fx,fy,fz"`. | 8 |
-| `-F` | `--face` | Emit face data (face-inclusive VRML, no DXF). | 10, 17 |
-| `-P` | `--preview` | Save a wireframe preview PNG. | throughout |
+| `-F` | `--face` | Write a VRML of the faces instead of the wireframe, and no DXF. | 17 |
+| `-P` | `--preview` | Save a wireframe preview PNG. | 17 |
 | `-s` | `--stl` | Save an STL surface mesh. | 17 |
 | `-O` | `--obj` | Save an OBJ surface mesh. | 17 |
 | `-H` | `--hub-templates` | Save one DXF per distinct hub connector shape. | 15 |
@@ -38,12 +38,12 @@ Every CLI flag and MCP tool this book actually used, for both toolkits, with a o
 
 | Tool | Purpose | Writes files? | Chapter(s) |
 |---|---|---|---|
-| `design_dome` | Cheap summary (counts, footprint, height, strut length) for comparing configurations. | No | 2, 18, 23 |
-| `preview_dome` | Inline wireframe render. | No | 18 |
-| `get_bill_of_materials` | Full BOM as structured data (struts, hub angles, panels, chirality flags, artifact warnings). | No | 18, 23 |
-| `export_dome` | Writes DXF/VRML/STL/OBJ/templates to disk; the only file-writing tool of the four. | Yes | 17, 18, 21 |
+| `design_dome` | Cheap summary (counts, footprint, height, strut length) for comparing configurations. | No | 2–11, 18, 23 |
+| `preview_dome` | Inline wireframe render. | No | 2–6, 8, 9, 18 |
+| `get_bill_of_materials` | Full bill of materials as structured data (struts, hub angles, panels, chirality flags, artifact warnings). | No | 8, 10–16, 18, 23 |
+| `export_dome` | Writes DXF, VRML, STL, OBJ, and template files; the only file-writing tool of the design loop's four. | Yes | 15, 17, 18, 20 |
 | `get_assembly_manifest` | Per-instance assembly manifest, no files — every hub/strut/panel with its own stable label and real adjacency, unlike the BOM's type-grouped counts. | No | 22 |
-| `export_assembly_job_spec` | Writes real cutting templates and a per-instance pyFit job spec built from them (`kind="panels"` or `"hubs"`). | Yes | 22 |
+| `export_assembly_job_spec` | Writes cutting templates and returns a per-instance pyFit job spec built from them (`kind="panels"` or `"hubs"`). | Yes | 22 |
 | `render_assembly_schematic` | Inline depth-cued wireframe with optional per-hub/strut/panel labels drawn at their positions. | No | 22 |
 
 ## pyFit CLI (`pyfit`)
@@ -52,17 +52,17 @@ Every CLI flag and MCP tool this book actually used, for both toolkits, with a o
 |---|---|---|---|
 | `-j` | `--job` | Path to the job spec JSON file; required. | 19, 20 |
 | `-o` | `--output` | Output path prefix; required. | 19, 20 |
-| `-R` | `--rotation-step` | Degrees between candidate rotation angles; default `15`. | 19, 20 |
+| `-R` | `--rotation-step` | Degrees between candidate rotation angles; default `15`. | 20, 21 |
 | `-P` | `--preview` | Save a 2D preview PNG per sheet. | 19, 20 |
-| `-q` | `--quiet` | Suppress the stderr progress heartbeat. | 20, 21 |
+| `-q` | `--quiet` | Suppress the progress heartbeat printed to standard error. | — |
 
 ## pyFit MCP Tools (`pyfit-mcp`)
 
 | Tool | Purpose | Writes files? | Chapter(s) |
 |---|---|---|---|
-| `design_nest` | Cheap summary (sheets used, per-sheet utilization). | No | 21, 23 |
-| `preview_nest` | Inline per-sheet layout render. | No | 21 |
-| `get_nest_report` | Full placement report as structured data (sheet index, position, rotation, mirror flag per part instance). | No | 21 |
+| `design_nest` | Cheap summary (sheets used, per-sheet utilization). | No | 2, 20, 21, 23 |
+| `preview_nest` | Inline per-sheet layout render. | No | 2, 19, 20, 21 |
+| `get_nest_report` | Full placement report as structured data (sheet index, position, rotation, mirror flag per part instance). | No | 19, 21 |
 | `export_nest` | Writes one DXF (and optionally PNG) per sheet actually used; the only file-writing tool of the four. | Yes | 21 |
 
 ## Job Spec Fields (pyFit)
@@ -72,6 +72,6 @@ Every CLI flag and MCP tool this book actually used, for both toolkits, with a o
 | `sheet.width`, `sheet.height` | Sheet stock dimensions. | 19, 20 |
 | `parts[].name` | Part identifier. | 19, 20 |
 | `parts[].dxf` | Path to a DXF file containing exactly one closed loop. | 20 |
-| `parts[].polygon` | An inline list of `[x, y]` points, as an alternative to `dxf`. | 19 |
-| `parts[].quantity` | How many copies of this shape to nest. | 20 |
-| `parts[].allow_mirror` | Whether the packer may flip this shape's template; default `true`. | 14, 20 |
+| `parts[].polygon` | An inline list of `[x, y]` points, as an alternative to `dxf`. | 2, 22 |
+| `parts[].quantity` | How many copies of this shape to nest. | 20, 22 |
+| `parts[].allow_mirror` | Whether the packer may flip this shape's template; default `true`. | 20, 22 |
