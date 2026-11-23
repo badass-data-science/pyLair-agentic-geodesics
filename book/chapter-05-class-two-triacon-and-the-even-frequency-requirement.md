@@ -1,6 +1,6 @@
 # Chapter 5: Class II — Triacon and the Even-Frequency Requirement
 
-A copy of the Rival's vertex list reached the Secret Lab™ by the usual channels: a disgruntled henchman, a USB stick, a modest fee. The Foreman counted its vertices, edges, and faces with the patience of a man who had been lied to by spreadsheets before, and wrote the arithmetic on the whiteboard: vertices minus edges plus faces came to 14. "For a closed dome," he said, "that number is 2. It is always 2." The Rival's dome had failed before a single strut was cut. Nobody had done the subtraction.
+A copy of the Rival's vertex list reached the Secret Lab™ by the usual channels: a disgruntled henchman, a USB stick, a modest fee. The Unbending Foreman counted its vertices, edges, and faces with the patience of a man who had been lied to by spreadsheets before, and wrote the arithmetic on the whiteboard: vertices minus edges plus faces came to 14. "For a closed dome," he said, "that number is 2. It is always 2." The Rival's dome had failed before a single strut was cut. Nobody had done the subtraction.
 
 Chapter 4 taught the simplest symmetry triangle: a grid drawn parallel to a face's edges. This chapter's subdivision, Class II, historically called the "Triacon" method, starts from a different idea, not just a different-looking grid. It's also where the book teaches its first correctness check worth carrying well beyond pyLair: using Euler's formula to catch a bug a glance at a rendered dome would never reveal.
 
@@ -25,7 +25,8 @@ An odd frequency has no valid `m` for Class II to use, and pyLair refuses rather
 **What Comes Back** (the same error through the CLI or through `design_dome`, since both share `pylair/api.py`'s validation; through MCP it carries Chapter 2's "Error executing tool" prefix):
 
 ```
--c 2 (Class II / Triacon) requires an even --frequency. Exiting.
+-c 2 (Class II / Triacon) requires an even
+--frequency. Exiting.
 ```
 
 **What It Means:** Frequency 3 has no integer `m` (`m = f/2 = 1.5`), and there's no sensible way to lay a fractional grid over an LCD triangle. The fix is never to round. Pick the even frequency that reflects the detail you want (2 or 4, not 3), knowing Class II's `m` will be half of it.
@@ -45,27 +46,41 @@ Compare Chapter 4's Class I table at the *same nominal frequency*, `f=6`: Class 
 **Prompt:**
 > Check this Class II result against Euler's formula by hand. Does `V - E + F` equal 2?
 
-**What Comes Back** (a `design_dome` result, Class II, `f=6`, trimmed to the counts):
+**What Comes Back** (a snapshot of the `design_dome` result, Class II, `f=6`):
 
 ```json
-{"vertex_count": 542, "edge_count": 1620, "face_count": 1080}
+{
+  "vertex_count": 542,
+  "edge_count": 1620,
+  "face_count": 1080,
+  "truncated": false,
+  "bounding_box": {"x": [-0.9982, 0.9982],
+                   "y": [-1.0, 1.0],
+                   "z": [-1.0, 1.0]},
+  "height": 2.0,
+  "footprint_diameter": 2.0,
+  "total_strut_length": 291.4954,
+  "resolved_parameters": {
+    "radius": 1.0, "frequency": 6,
+    "polyhedron": "icosahedron", "dome_class": 2,
+    ...
+  }
+}
 ```
 
 **What It Means:** `542 - 1620 + 1080 = 2`. **Euler's formula**, published by Leonhard Euler in the 1750s, says that for any closed surface topologically equivalent to a sphere, vertices minus edges plus faces equals 2, and it holds here exactly. A second, independent identity is worth checking beside it: every face is a triangle with 3 edges, and every edge borders exactly 2 faces, so a closed triangulated mesh must have `2 × edges = 3 × faces`. Here, `2(1620) = 3240` and `3(1080) = 3240`. Neither check is specific to pyLair or to domes. They're general facts about closed triangulated surfaces, which is what makes them useful: a bug that fools pyLair's own bookkeeping still has to fool two independent mathematical facts.
 
-## The Bug These Two Checks Caught
+## Where Class II Needs the Check Most
 
-That isn't hypothetical for this codebase. An earlier version of `ClassTwoMethodOneSymmetryTriangle` had a real bug, and how it was found shows *why* Euler's formula is worth checking rather than trusting a rendered preview.
-
-Here is the comment that now sits in `ClassTwoMethodOneSymmetryTriangle` (`pylair/symmetry_triangle.py`):
+Class II has a specific reason to want these checks. Here is the comment in `ClassTwoMethodOneSymmetryTriangle` (`pylair/symmetry_triangle.py`):
 
 > Unlike Class I's equilateral triangle (where vertex-to-centroid happens to be perpendicular to the opposite edge, since median=altitude there), this LCD triangle's x_dir/y_dir are NOT orthogonal, so solve for each point's (a, b) in that actual oblique basis rather than assuming an orthonormal one.
 
-pyLair places each grid point by moving along two direction vectors from an origin. In Class I's equilateral triangle, the two natural directions happen to be at right angles, so placing points as if they were independent, perpendicular axes just works. Class II's LCD triangle is a 30-60-90 right triangle, and its two natural directions are *not* perpendicular. An earlier implementation reused Class I's perpendicular-axes approach anyway, assuming the same convenient coincidence would hold. It doesn't.
+pyLair places each grid point by moving along two direction vectors from an origin. In Class I's equilateral triangle, the two natural directions happen to be at right angles, so placing points as if they were independent, perpendicular axes just works. Class II's LCD triangle is a 30-60-90 right triangle, and its two natural directions are *not* perpendicular. pyLair builds the two direction vectors as they are and solves a 2×2 linear system (`np.linalg.solve(basis, ...)`) for each grid point's position in that oblique basis.
 
-The result wasn't a crash or a visibly mangled shape; a preview would have looked plausible enough to wave through. What it failed was **Euler's formula** and `2E = 3F`, immediately, the moment anyone checked, as the repository's README records, before the golden-value formulas above were even known. That's why this chapter teaches the check as a habit rather than a footnote: a construction can be wrong in a way that looks fine and still fail a five-second arithmetic check, and the only way to catch it is to run the check.
+Treat those axes as perpendicular and the result isn't a crash or a visibly mangled shape: a preview looks plausible enough to wave through. The points from neighboring triangles stop meeting, the mesh gains edges it shouldn't have, and `V - E + F` stops coming out to 2. That's why this chapter teaches the check as a habit rather than a footnote: a construction can be wrong in a way that looks fine and still fail a five-second arithmetic check.
 
-The fix replaced the assumption with the real geometry: build the LCD triangle's two direction vectors as they are, and solve a 2×2 linear system (`np.linalg.solve(basis, ...)`) for each grid point's position in that oblique basis. Euler's formula has held on every Class II configuration checked since, a stronger claim than "it held once."
+pyLair's test suite runs the check rather than trusting it. It requires `V - E + F = 2` and `2E = 3F` on Class II spheres at frequencies 2, 4, 6, and 8; it compares vertex, edge, and face counts with the golden-value formulas above on both the icosahedron and the octahedron; and it confirms that every vertex sits at the requested radius and that no two vertices occupy the same point. Each test asks a different question, so a mistake that slips past one still has to get past the others.
 
 ## Continuing the Actual Secret Lair
 
@@ -74,15 +89,15 @@ The dome from Chapter 4 is rebuilt here, at the same nominal frequency, under Cl
 **Prompt:**
 > Rebuild that same dome (frequency 6, icosahedron, radius 1.0), but switch it to Class II and preview it.
 
-**What Comes Back** (a `preview_dome` render, `dome_class=2`, `frequency=6`):
+**What Comes Back** (a `preview_dome` render, `dome_class=2`, `frequency=6`, captioned "542 vertices, 1620 struts"; this is the dome whose `design_dome` JSON is shown above, so its summary is that snapshot):
 
 **[IMAGE: examples/images/class2-secret-lair.png | A depth-cued wireframe sphere, visibly denser than the Class I sphere at the same frequency, with clusters of triangles radiating from points where six or five struts meet.]**
 **[CAPTION: The Actual Secret Lair, same nominal frequency as Figure 4.2, rebuilt under Class II: 1,080 faces against 720, the "same frequency number, more detail" surprise the golden-value table predicts.]**
 
-Neither version is more correct; they're two valid subdivision strategies for the same polyhedron. They do differ in a way the Foreman cares about, though, and it shows up in the hubs. In the Class I sphere, every hub joins five or six struts. In the Class II sphere, the 30 points that sit on the original icosahedron's edge midpoints join only four, and the 12 points where the icosahedron's own vertices were join *ten*, the meeting point of ten LCD triangles. (Counting struts per vertex in the chord list shows it: 12 ten-strut hubs, 30 four-strut hubs, and 500 six-strut hubs at `f=6`.) A ten-socket connector is a harder part to make than a five-socket one. Which subdivision the Actual Secret Lair ships with isn't settled until Chapter 6 offers a third.
+Neither version is more correct; they're two valid subdivision strategies for the same polyhedron. They do differ in a way the Unbending Foreman cares about, though, and it shows up in the hubs. In the Class I sphere, every hub joins five or six struts. In the Class II sphere, the 30 points that sit on the original icosahedron's edge midpoints join only four, and the 12 points where the icosahedron's own vertices were join *ten*, the meeting point of ten LCD triangles. (Counting struts per vertex in the chord list shows it: 12 ten-strut hubs, 30 four-strut hubs, and 500 six-strut hubs at `f=6`.) A ten-socket connector is a harder part to make than a five-socket one. Which subdivision the Actual Secret Lair ships with isn't settled until Chapter 6 offers a third.
 
 ## What's Next
 
-The Foreman added a line to the whiteboard under the Rival's 14: "V − E + F = 2, and 2E = 3F. Check both. Every time." The AI Henchman, asked to add both checks to its routine, did so without being told twice, and then, unprompted, checked Chapter 4's dome as well.
+The Unbending Foreman added a line to the whiteboard under the Rival's 14: "V − E + F = 2, and 2E = 3F. Check both. Every time." The AI Henchman, asked to add both checks to its routine, did so without being told twice, and then, unprompted, checked Chapter 4's dome as well.
 
 Chapter 6 introduces Class III, a subdivision whose grid is **handed**: its mirror image is a different, equally valid dome, not the same one rotated. It's also home to the book's most important gotcha, one that passes both of this chapter's checks and is still wrong.

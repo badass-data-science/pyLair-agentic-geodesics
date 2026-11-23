@@ -1,6 +1,6 @@
 # Chapter 20: From Bill of Materials to Job Spec — Nesting the Actual Secret Lair's Panels
 
-The CFV's concern about plywood had sharpened into a concern about trucks. Every sheet had to reach a dormant volcano by road, and a convoy of lumber trucks climbing toward an uninhabited crater is precisely the kind of thing that raises the Interpol heat. "Fewer sheets," she said, "is fewer trucks, is fewer questions." She wanted a number, and she wanted it before anyone ordered anything.
+The Chief Financial Villain's concern about plywood had sharpened into a concern about trucks. Every sheet had to reach a dormant volcano by road, and a convoy of lumber trucks climbing toward an uninhabited crater is precisely the kind of thing that raises the Interpol heat. "Fewer sheets," she said, "is fewer trucks, is fewer questions." She wanted a number, and she wanted it before anyone ordered anything.
 
 Chapter 19 showed pyFit working on its own terms. This chapter puts it to work on pyLair's: a job spec built straight from the Actual Secret Lair's bill of materials, with no quantity typed by hand, and the numbers that come back once real dome panels, not unit squares, are being nested.
 
@@ -9,19 +9,29 @@ Chapter 19 showed pyFit working on its own terms. This chapter puts it to work o
 Chapter 15 already produces the files pyFit needs: `face_templates=True` writes one DXF per distinct panel shape, and the same report carries a **"Panel Cutting Templates"** section pairing each file with its panel count. Here is the first entry, for the Lair at its build radius of 2.5 meters (one of 52):
 
 ```json
-{"template_file": "lair_facetype1.dxf", "edge_lengths": [0.621, 0.705, 0.843], "panel_count": 5,
- "face_indices": [0, 17, 47, 72, 97], "chiral": false, "orientations": null}
+{"template_file": "lair_facetype1.dxf",
+ "edge_lengths": [0.621, 0.705, 0.843],
+ "panel_count": 5,
+ "face_indices": [0, 17, 47, 72, 97],
+ "chiral": false, "orientations": null}
 ```
 
 A pyFit job spec's `"parts"` list needs two things per shape, a `"dxf"` path and a `"quantity"`, and the report supplies both, already paired, for all 52 shapes:
 
 ```python
-templates = report["pyLair report"]["Panel Cutting Templates"]
+report = report["pyLair report"]
+templates = report[
+    "Panel Cutting Templates"]
 parts = [
-    {"name": f"facetype{i+1}", "dxf": t["template_file"], "quantity": t["panel_count"], "allow_mirror": True}
+    {"name": f"facetype{i+1}",
+     "dxf": t["template_file"],
+     "quantity": t["panel_count"],
+     "allow_mirror": True}
     for i, t in enumerate(templates)
 ]
-job = {"sheet": {"width": 2.44, "height": 1.22}, "parts": parts}
+job = {"sheet": {"width": 2.44,
+                 "height": 1.22},
+       "parts": parts}
 ```
 
 **260 panels, 52 shapes, no number typed by hand**: every quantity traces to a count pyLair computed. That's the point of two projects sharing only a file format. pyLair never needs to know pyFit exists, and the job spec needs nothing from pyLair but files it was writing anyway. (`allow_mirror: True` is fine here: the Lair has no chiral panels, Chapter 14 found, and its panels are plain plywood.)
@@ -33,11 +43,21 @@ The sheet is `2.44 m × 1.22 m`, a standard 8-by-4-foot panel in meters. Start w
 **Prompt:**
 > Nest all 260 of the Lair's panels on 2.44 by 1.22 sheets with `design_nest`. Then try a 45-degree rotation step. How many sheets, and how long does each take?
 
-**What Comes Back** (two runs of `run_nest`, the engine under `design_nest`, timed; utilization summarized):
+**What Comes Back** (two `design_nest` results, at 15° and then 45°, each a snapshot whose `utilization_by_sheet` shows its first four sheets and its last; the runs took about 1,017 and 318 seconds):
 
 ```json
-{"rotation_step_degrees": 15, "sheets_used": 30, "best_sheet": 0.895, "last_sheet": 0.108, "seconds": 1017}
-{"rotation_step_degrees": 45, "sheets_used": 32, "best_sheet": 0.841, "last_sheet": 0.185, "seconds": 318}
+{
+  "sheets_used": 30,
+  "utilization_by_sheet": [
+    0.8953, 0.8548, 0.7995, 0.816, ..., 0.1076
+  ]
+}
+{
+  "sheets_used": 32,
+  "utilization_by_sheet": [
+    0.8407, 0.8262, 0.7562, 0.7211, ..., 0.1849
+  ]
+}
 ```
 
 **What It Means:** Thirty sheets at the default step, against a floor of 21: most sheets come out between 55% and 90% full, and the last holds a few stragglers. The default took about 17 minutes (on a machine also running the other job), and the 45° step about 5 minutes for two more sheets. That is the lived version of a warning in pyFit's documentation: every part tries each already-opened sheet before a new one opens, and each try is a full no-fit-polygon search against everything on that sheet, so a big sheet that holds many panels makes every placement more expensive. It's the same shape of tradeoff Chapter 13 taught for `bom_rounding_precision`: more permissive isn't simply better.
@@ -51,9 +71,9 @@ The sheet is `2.44 m × 1.22 m`, a standard 8-by-4-foot panel in meters. Start w
 **What Comes Back:**
 > `rotation_step_degrees` is the direct lever. The default, `15°`, tries 24 orientations per part (twice that when mirroring is allowed); `45°` tries 8. You give up packing quality, usually a little: on this job, two extra sheets for about a third of the time. It's not a correctness problem, since every placement is still checked. On a job this size, try a coarser step before assuming something is stuck, and go back to the default for the run you'll actually cut from.
 
-The first draft of this book recorded one more surprise: a crash, `shapely.errors.GEOSException: TopologyException: side location conflict`, from inside `no_fit_polygon`, at one combination of a coarse rotation step and a smaller sheet with real dome panels. None of this revision's runs reproduced it. Geometry libraries do have edge cases that only irregular, real shapes reach; if you hit one, report the job spec that triggered it rather than assuming your design is at fault.
+Geometry libraries have edge cases that only irregular, real shapes reach, and pyFit stands on two of them (`pyclipper` and `shapely`). If a nesting run ever fails with an error from inside `no_fit_polygon` rather than a clear message about your job spec, report the job spec that triggered it rather than assuming your design is at fault.
 
-The CFV took the 30. At ten sheets to a truck, that's three trucks, which she could disguise as a hardware delivery. Thirty-two would have needed a fourth truck, and she pointed out that it's always the fourth truck that someone remembers.
+The Chief Financial Villain took the 30. At ten sheets to a truck, that's three trucks, which she could disguise as a hardware delivery. Thirty-two would have needed a fourth truck, and she pointed out that it's always the fourth truck that someone remembers.
 
 ## The Chirality Flag, Now a Packing Decision
 
@@ -64,11 +84,23 @@ Chapter 14 flagged panel shapes as chiral, mirror-image orientations sharing one
 **Prompt:**
 > Nest it once with mirroring allowed and once without. How much does disallowing mirroring change the sheet count or utilization?
 
-**What Comes Back** (two runs of `run_nest`, the engine under `design_nest`, timed; utilization rounded):
+**What Comes Back** (two `design_nest` results, each shown whole: mirroring allowed, then forbidden; the runs took about 835 and 448 seconds):
 
 ```json
-{"allow_mirror": true,  "sheets_used": 8, "utilization_by_sheet": [0.657, 0.686, 0.648, 0.635, 0.659, 0.642, 0.640, 0.156], "seconds": 835}
-{"allow_mirror": false, "sheets_used": 7, "utilization_by_sheet": [0.696, 0.660, 0.723, 0.705, 0.705, 0.667, 0.569], "seconds": 448}
+{
+  "sheets_used": 8,
+  "utilization_by_sheet": [
+    0.657, 0.6859, 0.6484, 0.6354, 0.659, 0.6424,
+    0.6405, 0.1564
+  ]
+}
+{
+  "sheets_used": 7,
+  "utilization_by_sheet": [
+    0.6959, 0.6602, 0.7231, 0.7053, 0.7049, 0.6667,
+    0.5689
+  ]
+}
 ```
 
 **[IMAGE: examples/images/ocean_nest_mirror_true.png | A pyFit preview of one small square sheet packed with about a dozen triangular panels, some of them flipped.]**
@@ -88,6 +120,6 @@ Chapter 19 explains why it can happen. pyFit is a bottom-left-fill *heuristic*, 
 
 ## What's Next
 
-Three trucks left for the crater on three different days, with three different hardware-store logos on their doors. The Interpol heat, by the CFV's own index, did not move.
+Three trucks left for the crater on three different days, with three different hardware-store logos on their doors. The Interpol heat, by the Chief Financial Villain's own index, did not move. The Powers That Be™, whose satellites photograph every road that leads to a volcano, filed the convoy under home improvement: an analyst concluded that someone up there was redoing a kitchen. Three trucks of plywood is a kitchen. Four is a question.
 
 Chapter 21 covers pyFit's four MCP tools, the same iterate-then-commit shape Chapter 18 taught for pyLair, plus one idea no dome design ever needed: progress reports on a job long enough to need them, like the 17-minute one above. It closes with one complete session spanning both toolkits, from a bare polyhedron to a ready-to-cut sheet layout.

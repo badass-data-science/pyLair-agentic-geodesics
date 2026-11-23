@@ -1,6 +1,6 @@
 # Chapter 19: Introducing pyFit — Nesting as a Second Geometry Problem
 
-The Junior Henchman stood in front of the first sheet of plywood with 52 panel templates, a pencil, and a question nobody in Parts II through V had answered: where does each piece *go*? They tried laying the templates out by hand. The first sheet held nine panels and a great deal of offcut. The CFV, passing through, did the arithmetic for 260 panels and stopped passing through.
+The Junior Henchman stood in front of the first sheet of plywood with 52 panel templates, a pencil, and a question nobody in Parts II through V had answered: where does each piece *go*? They tried laying the templates out by hand. The first sheet held nine panels and a great deal of offcut. The Chief Financial Villain, passing through, did the arithmetic for 260 panels and stopped passing through.
 
 Every dome in this book now has an answer for its shape, its subdivision, its struts and panels, and its files. What none of that answers is the question a henchman in front of a sheet of plywood has. This part of the book is about **pyFit**, a separate project from pyLair that shares nothing with it but a file format, built to answer that question.
 
@@ -9,12 +9,30 @@ Every dome in this book now has an answer for its shape, its subdivision, its st
 pyFit has no code dependency on pyLair. It reads DXF files (pyLair's panel templates, another program's, or a hand-drawn shape) or plain lists of corner points, and arranges however many copies of each you need onto rectangular sheets, wasting as little material as it can. A henchman payroll generates plenty of 2D cutting problems unrelated to domes (uniform patches need cutting in bulk, and a good throwing-star stencil doesn't lay itself out), and pyFit doesn't care what the shapes are. Before touching a dome panel, here is pyFit on something that has nothing to do with domes.
 
 **Prompt:**
-> Nest a batch of henchman-uniform patch blanks and throwing-star stencils, two shapes and ten parts in all, on a 12×8 sheet, and preview the result.
+> Nest a batch of henchman-uniform patch blanks and throwing-star stencils on a 12×8 sheet: four patches, each a regular pentagon 1.25 units from center to corner, and six stencils, each an equilateral triangle 1.7 units on a side. Preview the result, and give me the placement report.
 
-**What Comes Back** (a `preview_nest` render):
+**What Comes Back** (a `preview_nest` render captioned "sheet 1: 10 parts, 23.3% utilized", then a snapshot of `get_nest_report`'s JSON for the same job):
 
 **[IMAGE: examples/images/standalone_patch_stencil_nest.png | A 12-by-8 sheet with ten shapes packed against its left edge, four pentagonal patch blanks and six triangular stencil blanks, leaving most of the sheet empty.]**
-**[CAPTION: A pyFit nesting result with nothing to do with domes: pentagonal henchman-uniform patches and triangular throwing-star stencil blanks on a `12×8` sheet, at `23.7%` utilization. pyFit owes nothing to pyLair's geometry.]**
+**[CAPTION: A pyFit nesting result with nothing to do with domes: pentagonal henchman-uniform patches and triangular throwing-star stencil blanks on a `12×8` sheet, at `23.3%` utilization. pyFit owes nothing to pyLair's geometry.]**
+
+```json
+{
+  "sheets_used": 1,
+  "utilization_by_sheet": [0.233],
+  "placements": [
+    {"part_name": "patch", "sheet_index": 0,
+     "position": [-0.4463, 1.3333],
+     "rotation_degrees": 210.0, "mirrored": true},
+    {"part_name": "patch", "sheet_index": 0,
+     "position": [-0.4463, 3.6071],
+     "rotation_degrees": 210.0, "mirrored": true},
+    ...
+  ]
+}
+```
+
+The report has one entry per part, ten in all: which sheet it landed on, where its reference point sits, how far it was turned, and whether it was flipped. Every number in the picture comes from it.
 
 ## The Question Underneath: The No-Fit Polygon
 
@@ -28,8 +46,10 @@ pyFit computes the NFP as a **Minkowski sum**, `NFP(A, B) = A ⊕ (−B)`: the f
 **What Comes Back** (pyFit's `no_fit_polygon` function, called directly on two unit squares):
 
 ```python
-no_fit_polygon([(0,0),(1,0),(1,1),(0,1)], [(0,0),(1,0),(1,1),(0,1)])
-# -> [[(1.0, 1.0), (-1.0, 1.0), (-1.0, -1.0), (1.0, -1.0)]]
+square = [(0, 0), (1, 0), (1, 1), (0, 1)]
+no_fit_polygon(square, square)
+# -> [[(1.0, 1.0), (-1.0, 1.0),
+#      (-1.0, -1.0), (1.0, -1.0)]]
 ```
 
 **[IMAGE: examples/images/nfp_unit_squares.png | A fixed unit square at the center of a larger 2-by-2 square outline, the no-fit polygon, with a second unit square drawn touching it from outside.]**
@@ -44,7 +64,33 @@ On top of the NFP, pyFit runs a **bottom-left-fill** heuristic: take the largest
 **Prompt:**
 > Nest five identical unit squares on a 3×2 sheet, and give me the full placement report so I can see the order they were placed in.
 
-**What Comes Back** (a `get_nest_report` result, plotted in placement order; the report lists positions `(0,0)`, `(0,1)`, `(1,0)`, `(1,1)`, `(2,0)`):
+**What Comes Back** (the `get_nest_report` result, shown whole, then plotted in placement order):
+
+```json
+{
+  "sheets_used": 1,
+  "utilization_by_sheet": [0.8333],
+  "placements": [
+    {"part_name": "square", "sheet_index": 0,
+     "position": [-0.0, -0.0],
+     "rotation_degrees": 0.0, "mirrored": false},
+    {"part_name": "square", "sheet_index": 0,
+     "position": [-0.0, 1.0],
+     "rotation_degrees": 0.0, "mirrored": false},
+    {"part_name": "square", "sheet_index": 0,
+     "position": [1.0, 0.0],
+     "rotation_degrees": 0.0, "mirrored": false},
+    {"part_name": "square", "sheet_index": 0,
+     "position": [1.0, 1.0],
+     "rotation_degrees": 0.0, "mirrored": false},
+    {"part_name": "square", "sheet_index": 0,
+     "position": [2.0, 1.84e-16],
+     "rotation_degrees": 270.0, "mirrored": true}
+  ]
+}
+```
+
+Read it as the positions `(0,0)`, `(0,1)`, `(1,0)`, `(1,1)`, `(2,0)`: `-0.0` and `1.84e-16` are floating-point zeros, and a square turned 270° and flipped is the same square.
 
 **[IMAGE: examples/images/bottom_left_fill_order.png | Five unit squares on a 3-by-2 sheet, numbered 1 to 5: 1 and 2 stacked in the left column, 3 and 4 in the middle column, 5 at the bottom right; the top-right cell is empty.]**
 **[CAPTION: A placement sequence: five unit squares, numbered in the order pyFit placed them, red dots marking each part's reference point. Leftmost first, then lowest: pyFit fills the left column bottom to top, then the next column.]**
@@ -59,11 +105,13 @@ Notice that "bottom-left" here means *left first*: square 2 goes on top of squar
 
 **What It Means:** It's a different kind of correctness claim from anything pyLair makes. A pyLair dome matches its golden values or it doesn't: closed-form, checkable, unambiguous. A pyFit layout is never "the" correct layout, only *a* legal one. Every placement is re-checked for overlap and containment before it's accepted, so pyFit's guarantee is "this layout is valid," never "this layout is optimal." Chapter 24 compares the two kinds of correctness side by side.
 
-## A Documented Gotcha, Told the Way pyLair's Are
+## A Documented Gotcha, and How pyFit Checks Its Way Past It
 
-`pyclipper.MinkowskiSum` doesn't return one clean polygon. It returns the *raw* swept outlines, and when a small shape is swept around a larger one, one of those outlines can wind the opposite way and *look* like it marks a hole. It can't: the Minkowski sum of two convex, filled shapes is itself convex, and a convex shape has no holes. pyFit's fix (`pyfit/nfp.py`) treats every returned outline as a solid region and merges them with the `shapely` library, ignoring the winding direction.
+`pyclipper.MinkowskiSum` doesn't return one clean polygon. It returns the *raw* swept outlines, and when a small shape is swept around a larger one, one of those outlines can wind the opposite way and *look* like it marks a hole. It can't: the Minkowski sum of two convex, filled shapes is itself convex, and a convex shape has no holes. pyFit (`pyfit/nfp.py`) treats every returned outline as a solid region and merges them with the `shapely` library, ignoring the winding direction.
 
-What makes it worth telling, the way this book has told pyLair's bugs: **this issue passed its first hand-computable test, the two unit squares, cleanly**, and appeared only on a second case with shapes of different sizes (pyFit's `AGENTS.md` records it). One verified case is not a verified method. Chapter 24 sets this beside Class III's stitching bug, which passed checks that were too few in the same way, in an unrelated part of an unrelated codebase.
+Notice what the two unit squares can't tell you here. Two shapes of the same size never produce the misleading outline, so a no-fit polygon that passes the unit-square test could still mishandle a small panel against a large one. **One verified case is not a verified method.**
+
+pyFit's authors checked the merge three ways: the hand-computable unit squares; a second hand-computable case, a half-unit square around a 2×2 one, whose no-fit polygon must span exactly `-0.5` to `2` on each axis; and, on a small-around-large case, the convex hull of every pairwise sum of corner points, a different way of computing the same Minkowski sum that never consults Clipper's outlines at all. The test suite also confirms that a touching position lands on the polygon's boundary and an overlapping one inside it. Chapter 24 sets these beside pyLair's Class III checks, the same lesson in an unrelated codebase.
 
 ## What the Search Doesn't Try
 

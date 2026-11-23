@@ -1,6 +1,6 @@
 # Chapter 15: Cutting Templates — Hubs, Panels, and a Clustering-Tolerance Gotcha
 
-The Foreman's request was simple: part numbers. He did not want 156 custom connector plates, one per joint, each a snowflake. He wanted a short list of plate *designs*, a count for each, and a drawing he could hand to the cutting crew. The CFV wanted the same list for a different reason: every distinct design was a setup charge.
+The Unbending Foreman's request was simple: part numbers. He did not want 156 custom connector plates, one per joint, each a snowflake. He wanted a short list of plate *designs*, a count for each, and a drawing he could hand to the cutting crew. The Chief Financial Villain wanted the same list for a different reason: every distinct design was a setup charge.
 
 Four chapters of geometry (subdivision, projection, shaping, and now hub angles, strut clustering, and panel shapes) converge here on the two kinds of file a fabricator needs: one cutting template per distinct hub-connector shape, and one per distinct panel shape. This chapter is also the bridge to Part VI: every panel-template DXF that `export_dome` writes with `face_templates=True` is the kind of file a pyFit nesting job (Chapter 20) takes as input.
 
@@ -17,13 +17,77 @@ Here is the payoff on the Actual Secret Lair: Class III `(4,1)`, stretched `1.8`
 **Prompt:**
 > Export this dome with hub and panel templates, `hub_templates=True` and `face_templates=True`. How many distinct hub shapes are there, against the total number of hubs?
 
-**What Comes Back** (summarizing the `export_dome` result, which lists 86 files written: the default VRML and DXF, 32 hub templates, and 52 panel templates): this dome has `156` hubs. `group_hub_types` finds `32` distinct shapes among them, and all `32` get a `_hubtype*.dxf` file, since every hub has at least two struts and therefore an angular pattern to draw.
+**What Comes Back** (a snapshot of the `export_dome` result, written with `output_path="lair"`: its file list, 86 files in all, the default VRML and DXF, 32 hub templates, and 52 panel templates, then the bill of materials, which gains a section for each kind of template):
 
-"All of them" deserves a footnote, because it wasn't always true for this dome. `get_bill_of_materials` skips any hub-shape group with a valence of 1 or less before writing files: a plate with one socket has no angular pattern to draw, so the skip is correct, defensive code. It used to trigger here.
+```json
+{
+  "files_written": ["lair.wrl", "lair.dxf",
+                    "lair_hubtype1.dxf",
+                    "lair_hubtype2.dxf", ...],
+  "bill_of_materials": {
+    "pyLair report": {
+      "Bill of materials": {
+        "Chord Lengths and Counts": [
+          {"length": 0.4748, "count": 5,
+           "chord_indices": [207, ...]},
+          ...
+        ],
+        "Warning": "Small length chords...",
+        "Possible truncation-artifact chords": []
+      },
+      "Total material": {
+        "Total strut length": 121.0815
+      },
+      "Hub Connector Templates": [
+        {"template_file": "lair_hubtype1.dxf",
+         "struts_per_hub": 7, "hub_count": 5, ...},
+        ...
+      ],
+      "Angles at hub between outbound cords and tangential plane": [
+        {"hub": 0, "connecting hub": 1,
+         "angle (degrees)": 10.8994, ...},
+        ...
+      ],
+      "Spoke angles": [
+        {"index": 0, "hub": 0, "connecting hub": 1,
+         ...},
+        ...
+      ],
+      "Panel shapes and counts": {
+        "Panel Types and Counts": [
+          {"edge_lengths": [0.248, 0.282, 0.337],
+           "area": 0.034, "count": 5, ...},
+          ...
+        ],
+        "Warning": "Panels sharing the same...",
+        "Possible truncation-artifact panels": []
+      },
+      "Total panel material": {
+        "Total panel area": 9.6766
+      },
+      "Bevel angles at panel edges": [
+        {"vertex 1": 0, "vertex 2": 1, "face 1": 30,
+         ...},
+        ...
+      ],
+      "Panel Cutting Templates": [
+        {"template_file": "lair_facetype1.dxf",
+         "edge_lengths": [0.248, 0.282, 0.337],
+         "panel_count": 5, ...},
+        ...
+      ]
+    }
+  }
+}
+```
 
-An earlier version of `truncate()` never gave a boundary triangle's cut-plane edge a chord, so the `50` hubs on the dome's cut base ring connected only *upward*, never to their neighbors around the ring, and `25` of them were stuck at a valence of `1`. Once the fix shipped, those `50` hubs became two ordinary shapes, `25` at valence `3` and `25` at valence `4`, each closed into its ring neighbors on both sides. Chapter 22 tells how that bug was caught, by a check that wasn't looking for it.
+This dome has `156` hubs. `group_hub_types` finds `32` distinct shapes among them, and all `32` get a `_hubtype*.dxf` file, since every hub has at least two struts and therefore an angular pattern to draw.
 
-**What It Means:** `156` physical hubs collapse to `32` connector designs, every one a buildable plate. A builder orders 32 part numbers, in the quantities each group reports, not one custom plate per joint. The Foreman got his list.
+"All of them" deserves a footnote. `get_bill_of_materials` skips any hub-shape group with a valence of 1 or less before writing files: a plate with one socket has no angular pattern to draw, so the skip is correct, defensive code. It's also silent, which is why it matters that it never fires here.
+
+The `50` hubs on the dome's cut base ring are where it could. They connect upward into the dome and sideways to their neighbors around the ring, and the sideways connections exist only because `truncate()` gives every clipped triangle's cut-plane edge a strut of its own. With those struts, the `50` hubs are two ordinary shapes, `25` at valence `3` and `25` at valence `4`, each closed into its ring neighbors on both sides. Without them, half the ring would be one-socket hubs, quietly skipped. Chapter 22 shows the check that confirms every cut edge gets its strut.
+
+**What It Means:** `156` physical hubs collapse to `32` connector designs, every one a buildable plate. A builder orders 32 part numbers, in the quantities each group reports, not one custom plate per joint. The Unbending Foreman got his list.
 
 Panels follow the same logic: this dome's `260` panels collapse to `52` distinct `_facetype*.dxf` files.
 
@@ -61,8 +125,8 @@ Chapter 14 promised to show what the chirality flag means for the template count
 
 ## What These Numbers Don't Answer Yet
 
-One gap, in one sentence: knowing the dome needs `52` panel shapes in specific quantities says nothing about how many sheets of plywood it takes to cut them, a different question Chapter 20 answers. The CFV underlined it twice.
+One gap, in one sentence: knowing the dome needs `52` panel shapes in specific quantities says nothing about how many sheets of plywood it takes to cut them, a different question Chapter 20 answers. The Chief Financial Villain underlined it twice.
 
 ## What's Next
 
-Chapter 16 covers the last gotcha in this dome's bill of materials: truncation slivers, struts and panels shrunk to almost nothing by an unlucky cutoff, and why pyLair flags them rather than silently dropping them. Part V then writes every template here to disk, and Part VI takes up the CFV's underlined question.
+Chapter 16 covers the last gotcha in this dome's bill of materials: truncation slivers, struts and panels shrunk to almost nothing by an unlucky cutoff, and why pyLair flags them rather than silently dropping them. Part V then writes every template here to disk, and Part VI takes up the Chief Financial Villain's underlined question.

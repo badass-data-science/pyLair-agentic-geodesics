@@ -51,7 +51,8 @@ This is the sharpest trap, because the prompt sounds answerable by one tool and 
 Take four of the Actual Secret Lair's panel shapes, 20 panels in all, the batch Chapter 21 nests, on small `0.6 × 0.5` sheets:
 
 ```json
-{"theoretical_panel_area": 0.79, "sheets_used": 5, "real_sheet_area_purchased": 1.50, "ratio": 1.90}
+{"theoretical_panel_area": 0.79, "sheets_used": 5,
+ "real_sheet_area_purchased": 1.50, "ratio": 1.90}
 ```
 
 **What It Means:** pyLair's theoretical figure, the sum of those 20 panels' areas, is `0.79` square units. The material a builder has to buy is `5` whole sheets of `0.6 × 0.5`, or `1.50` square units, because sheets are sold whole and nesting never reaches perfect utilization (`design_nest` reports four sheets between 55% and 60% full and a fifth at 34%). The real figure is **nearly double** the theoretical one: not a rounding difference, but an answer to a different question.

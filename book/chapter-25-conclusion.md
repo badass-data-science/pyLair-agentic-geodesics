@@ -16,11 +16,11 @@ Then, because a design isn't a building: hand the panels to a second, independen
 
 ## A Closing Status Report
 
-**The Actual Secret Lair** is designed, checked, exported, nested, labeled, and standing: 156 hubs, 415 struts, and 260 panels on the floor of a dormant volcano, ring by ring from the base. The Foreman signed off on it with the same question he'd asked in Chapter 4 ("Does it close?") and answered it himself, with a tape measure, at every hub of the base ring.
+**The Actual Secret Lair** is designed, checked, exported, nested, labeled, and standing: 156 hubs, 415 struts, and 260 panels on the floor of a dormant volcano, ring by ring from the base. The Unbending Foreman signed off on it with the same question he'd asked in Chapter 4 ("Does it close?") and answered it himself, with a tape measure, at every hub of the base ring.
 
 **The Under-the-Ocean Prototype** remains a prototype. Its panels were nested in Chapter 20, with an `allow_mirror` decision made for a one-sided coating, and the Junior Henchman's rewritten prompts from Chapter 23 are queued for its next design session. Its construction, like any sensible secret laboratory's, stays secret.
 
-**Chapter 11's clients** received their designs, their invoices, and the CFV's disclaimer. The Mesa Spire's owner paid the vanity surcharge without comment.
+**Chapter 11's clients** received their designs, their invoices, and the Chief Financial Villain's disclaimer. The Mesa Spire's owner paid the vanity surcharge without comment.
 
 **The Rival Supervillain** sent a message through the disgruntled henchman, who was by now doing a brisk trade in both directions. He wanted to borrow the templates. Our Heroine sent back a copy of Chapter 24 instead, and the address of pyLair's repository.
 
@@ -41,4 +41,4 @@ Neither project has been published to PyPI as of this writing. Both are working 
 
 ---
 
-Our Heroine's secret laboratory, geodesically sound and cut from a nested plan, is of course still secret. The AI Henchman has a new terminal, by the pool. The mojitos, per pyLair's blog post, remain optional, but encouraged.
+Our Heroine's Secret Lab™, geodesically sound and cut from a nested plan, is of course still secret. The AI Henchman has a new terminal, by the pool. The mojitos, per pyLair's blog post, remain optional, but encouraged.

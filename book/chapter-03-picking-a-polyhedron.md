@@ -15,39 +15,101 @@ Why the starting shape matters is easy to state: the closer the starting polyhed
 pyLair's default, and the shape behind nearly every geodesic dome you've seen a photograph of, is the **icosahedron**: 20 triangular faces, 12 vertices, 30 edges.
 
 **Prompt:**
-> Preview a bare, frequency-1 icosahedron for me, no subdivision yet, just the base shape, so I can see what pyLair's default polyhedron looks like.
+> Preview a bare, frequency-1 icosahedron for me, no subdivision yet, just the base shape, so I can see what pyLair's default polyhedron looks like. Give me its `design_dome` summary too.
 
-**What Comes Back** (a `preview_dome` render, `polyhedron="icosahedron"`, `frequency=1`, `radius=1.0`):
+**What Comes Back** (a `preview_dome` render, `polyhedron="icosahedron"`, `frequency=1`, `radius=1.0`, captioned "12 vertices, 30 struts"; then a snapshot of `design_dome`'s JSON for the same shape):
 
 **[IMAGE: examples/images/base-icosahedron.png | A wireframe icosahedron: 12 vertices joined by 30 edges into 20 triangles, with nearer edges drawn darker.]**
 **[CAPTION: A bare, unsubdivided icosahedron, pyLair's default base polyhedron.]**
 
+```json
+{
+  "vertex_count": 12,
+  "edge_count": 30,
+  "face_count": 20,
+  "truncated": false,
+  "bounding_box": {"x": [-0.8944, 0.8944],
+                   "y": [-0.8507, 0.8507],
+                   "z": [-1.0, 1.0]},
+  "height": 2.0,
+  "footprint_diameter": 1.7889,
+  "total_strut_length": 31.5439,
+  "resolved_parameters": {
+    "radius": 1.0, "frequency": 1,
+    "polyhedron": "icosahedron", "dome_class": 1,
+    ...
+  }
+}
+```
+
 The second option is the **octahedron**: 8 triangular faces, 6 vertices, 12 edges, a coarser starting point, selected with `polyhedron="octahedron"`.
 
 **Prompt:**
-> Now preview the same thing with the octahedron instead, same frequency and radius.
+> Now preview the same thing with the octahedron instead, same frequency and radius, with its summary.
 
-**What Comes Back** (a `preview_dome` render, `polyhedron="octahedron"`, `frequency=1`, `radius=1.0`):
+**What Comes Back** (a `preview_dome` render, `polyhedron="octahedron"`, `frequency=1`, `radius=1.0`, captioned "6 vertices, 12 struts"; then a snapshot of `design_dome`'s JSON):
 
 **[IMAGE: examples/images/base-octahedron.png | A wireframe octahedron: two square pyramids joined base to base, 6 vertices and 8 triangular faces.]**
 **[CAPTION: A bare octahedron, at the same frequency and radius as Figure 3.1 for direct comparison.]**
 
+```json
+{
+  "vertex_count": 6,
+  "edge_count": 12,
+  "face_count": 8,
+  "truncated": false,
+  "bounding_box": {"x": [-1.0, 1.0],
+                   "y": [-1.0, 1.0],
+                   "z": [-1.0, 1.0]},
+  "height": 2.0,
+  "footprint_diameter": 2.0,
+  "total_strut_length": 16.9706,
+  "resolved_parameters": {
+    "radius": 1.0, "frequency": 1,
+    "polyhedron": "octahedron", "dome_class": 1, ...
+  }
+}
+```
+
 The third and coarsest is the **tetrahedron**: 4 triangular faces, 4 vertices, 6 edges, the fewest of anything pyLair can start from, selected with `polyhedron="tetrahedron"`.
 
 **Prompt:**
-> Now preview the tetrahedron, same frequency and radius as the other two.
+> Now preview the tetrahedron, same frequency and radius as the other two, with its summary.
 
-**What Comes Back** (a `preview_dome` render, `polyhedron="tetrahedron"`, `frequency=1`, `radius=1.0`):
+**What Comes Back** (a `preview_dome` render, `polyhedron="tetrahedron"`, `frequency=1`, `radius=1.0`, captioned "4 vertices, 6 struts"; then a snapshot of `design_dome`'s JSON):
 
 **[IMAGE: examples/images/base-tetrahedron.png | A wireframe tetrahedron: 4 vertices and 6 edges forming 4 triangular faces.]**
 **[CAPTION: A bare tetrahedron, at the same frequency and radius as Figures 3.1 and 3.2.]**
 
-Here are the three as `design_dome` results at frequency 1, meaning no subdivision at all, just the base polyhedron, reported through the same pipeline as every other dome in this book:
+```json
+{
+  "vertex_count": 4,
+  "edge_count": 6,
+  "face_count": 4,
+  "truncated": false,
+  "bounding_box": {"x": [-0.5774, 0.5774],
+                   "y": [-0.5774, 0.5774],
+                   "z": [-0.5774, 0.5774]},
+  "height": 1.1547,
+  "footprint_diameter": 1.1547,
+  "total_strut_length": 9.798,
+  "resolved_parameters": {
+    "radius": 1.0, "frequency": 1,
+    "polyhedron": "tetrahedron", "dome_class": 1,
+    ...
+  }
+}
+```
+
+Side by side, the three summaries' counts at frequency 1, meaning no subdivision at all, just the base polyhedron, reported through the same pipeline as every other dome in this book:
 
 ```json
-{"polyhedron": "icosahedron",  "vertex_count": 12, "edge_count": 30, "face_count": 20}
-{"polyhedron": "octahedron",   "vertex_count": 6,  "edge_count": 12, "face_count": 8}
-{"polyhedron": "tetrahedron",  "vertex_count": 4,  "edge_count": 6,  "face_count": 4}
+{"polyhedron": "icosahedron", "vertex_count": 12,
+ "edge_count": 30, "face_count": 20}
+{"polyhedron": "octahedron", "vertex_count": 6,
+ "edge_count": 12, "face_count": 8}
+{"polyhedron": "tetrahedron", "vertex_count": 4,
+ "edge_count": 6, "face_count": 4}
 ```
 
 Twenty faces, against eight, against four, before any subdivision. That gap doesn't close as frequency rises; it multiplies.
@@ -85,12 +147,35 @@ What it offers is the fewest physical pieces pyLair can produce at a given frequ
 **Prompt:**
 > Using `design_dome`, compare an icosahedron, an octahedron, and a tetrahedron at the same frequency. How different are the resulting face counts, and why?
 
-**What Comes Back** (three `design_dome` results, `frequency=4`, all Class I, otherwise identical):
+**What Comes Back** (three `design_dome` results, `frequency=4`, all Class I, otherwise identical: a snapshot of the first, then the counts from all three):
 
 ```json
-{"polyhedron": "icosahedron",  "vertex_count": 162, "edge_count": 480, "face_count": 320}
-{"polyhedron": "octahedron",   "vertex_count": 66,  "edge_count": 192, "face_count": 128}
-{"polyhedron": "tetrahedron",  "vertex_count": 34,  "edge_count": 96,  "face_count": 64}
+{
+  "vertex_count": 162,
+  "edge_count": 480,
+  "face_count": 320,
+  "truncated": false,
+  "bounding_box": {"x": [-1.0, 1.0],
+                   "y": [-1.0, 1.0],
+                   "z": [-1.0, 1.0]},
+  "height": 2.0,
+  "footprint_diameter": 2.0,
+  "total_strut_length": 143.204,
+  "resolved_parameters": {
+    "radius": 1.0, "frequency": 4,
+    "polyhedron": "icosahedron", "dome_class": 1,
+    ...
+  }
+}
+```
+
+```json
+{"polyhedron": "icosahedron", "vertex_count": 162,
+ "edge_count": 480, "face_count": 320}
+{"polyhedron": "octahedron", "vertex_count": 66,
+ "edge_count": 192, "face_count": 128}
+{"polyhedron": "tetrahedron", "vertex_count": 34,
+ "edge_count": 96, "face_count": 64}
 ```
 
 **What It Means:** `320` faces against `128` against `64` at the same frequency, a ratio of `20:8:4`, or `5:2:1`, unchanged from frequency 1, because all three scale by the same `f²`. None of the numbers is wrong; each answers "how many faces does *this* base shape have at this frequency," and the three never had the same number to begin with. Swap `polyhedron` expecting "the same dome from a different starting point" and you'll get a much coarser (octahedron, tetrahedron) or finer (icosahedron) structure at the same frequency number. Know that before comparing two designs that only look as if they should match.
@@ -113,7 +198,7 @@ What it offers is the fewest physical pieces pyLair can produce at a given frequ
 
 ## A Note to File Away Now
 
-pyLair refers to vertices, chords, and faces internally by 0-indexed position in a Python list: vertex `0`, not vertex `1`. This wasn't always true. An earlier version of the codebase numbered vertices from 1 and subtracted 1 wherever they were used, a footgun since cleaned up and recorded in the repository's `README.md` and `AGENTS.md`. Nothing in this chapter depends on that history, but every vertex index this book shows from here on starts at 0, and it's better to find that unsurprising now than to rediscover it three chapters from now.
+pyLair refers to vertices, chords, and faces internally by 0-indexed position in a Python list: vertex `0`, not vertex `1`. Every vertex index this book shows from here on starts at 0, and it's better to find that unsurprising now than to rediscover it three chapters from now.
 
 ## What's Next
 

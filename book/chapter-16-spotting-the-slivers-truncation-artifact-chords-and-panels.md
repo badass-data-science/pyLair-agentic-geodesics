@@ -1,6 +1,6 @@
 # Chapter 16: Spotting the Slivers — Truncation-Artifact Chords and Panels
 
-The Junior Henchman came to the Foreman with a cutting list for a test dome and one question. Line six asked for ten struts, each 0.000000236 units long. At a 2.5-meter radius that is about six ten-thousandths of a millimeter: well under the width of a human hair, and smaller than the sawdust the cut would make. "Do I cut these," the Junior Henchman asked, "or do I just say I did?"
+The Junior Henchman came to the Unbending Foreman with a cutting list for a test dome and one question. Line six asked for ten struts, each 0.000000236 units long. At a 2.5-meter radius that is about six ten-thousandths of a millimeter: well under the width of a human hair, and smaller than the sawdust the cut would make. "Do I cut these," the Junior Henchman asked, "or do I just say I did?"
 
 Chapter 9's flat-chord error refuses outright when a truncation cutoff lands *exactly* on a vertex ring. This chapter is about the case one step away: a cutoff extremely close to a ring but not on it. That's mathematically valid, structurally absurd, and, unlike Chapter 9's failure, something pyLair lets through. Why it lets it through, and how it flags the result instead, is this chapter's subject.
 
@@ -19,11 +19,69 @@ Here is that case on a frequency-6 Class I icosahedral sphere, the construction 
 **Prompt:**
 > Truncate this dome at a cutoff suspiciously close to a vertex ring. Does the report flag any artifact chords or panels?
 
-**What Comes Back** (counting the "Possible truncation-artifact chords" and "Possible truncation-artifact panels" lists in `get_bill_of_materials`, with a cutoff well clear of the ring for comparison):
+**What Comes Back** (a snapshot of the `get_bill_of_materials` report at `truncation_z=0.4999999`, with both artifact lists shown; then those two lists counted, beside a cutoff well clear of the ring for comparison):
 
 ```json
-{"truncation": 0.4999999, "artifact_chords": 6, "artifact_panels": 3}
-{"truncation": 0.45,      "artifact_chords": 0, "artifact_panels": 0}
+{
+  "pyLair report": {
+    "Bill of materials": {
+      "Chord Lengths and Counts": [
+        {"length": 0.2166, "count": 60,
+         "chord_indices": [23, ...]},
+        ...
+      ],
+      "Warning": "Small length chords...",
+      "Possible truncation-artifact chords": [
+        {"length": 2.36e-07, "count": 10,
+         "chord_indices": [555, ...]},
+        {"length": 2.35e-07, "count": 20,
+         "chord_indices": [557, ...]},
+        ...
+      ]
+    },
+    "Total material": {
+      "Total strut length": 123.5689
+    },
+    "Angles at hub between outbound cords and tangential plane": [
+      {"hub": 0, "connecting hub": 1,
+       "angle (degrees)": 4.6624, ...},
+      ...
+    ],
+    "Spoke angles": [
+      {"index": 0, "hub": 0, "connecting hub": 1,
+       ...},
+      ...
+    ],
+    "Panel shapes and counts": {
+      "Panel Types and Counts": [
+        {"edge_lengths": [0.198, 0.203, 0.206],
+         "area": 0.018, "count": 120, ...},
+        ...
+      ],
+      "Warning": "Panels sharing the same...",
+      "Possible truncation-artifact panels": [
+        {"edge_lengths": [0.0, 0.206, 0.206],
+         "area": 0.0, "count": 40, ...},
+        ...
+      ]
+    },
+    "Total panel material": {
+      "Total panel area": 6.2299
+    },
+    "Bevel angles at panel edges": [
+      {"vertex 1": 0, "vertex 2": 1, "face 1": 0,
+       ...},
+      ...
+    ]
+  }
+}
+```
+
+```json
+{"truncation": 0.4999999, "artifact_chords": 6,
+ "artifact_panels": 3}
+{"truncation": 0.45, "artifact_chords": 0,
+ "artifact_panels": 0}
 ```
 
 One of the flagged chord rows, the one on the Junior Henchman's cutting list:
@@ -32,14 +90,17 @@ One of the flagged chord rows, the one on the Junior Henchman's cutting list:
 {"length": 2.36e-07, "count": 10}
 ```
 
-Some of the flagged struts close the dome's base ring. Since the base-ring fix Chapter 15 mentioned, every cut edge gets a strut, and at a cutoff this close to a ring, several struts leaving one ring vertex downward all cross the cut within a ten-millionth of that vertex. The base-ring segments joining those crossing points are near zero too. It's the same near-degenerate ring causing the same kind of sliver, in one more place.
+Some of the flagged struts close the dome's base ring. Every cut edge gets a strut (Chapter 15), and at a cutoff this close to a ring, several struts leaving one ring vertex downward all cross the cut within a ten-millionth of that vertex. The base-ring segments joining those crossing points are near zero too. It's the same near-degenerate ring causing the same kind of sliver, in one more place.
 
 The three flagged panel shapes are degenerate in two different ways. Their edge lengths, measured from the dome's face data (the report itself prints panel edges to three decimals, so these show there as `0.0`), are:
 
 ```json
-{"edge_lengths": [2.31e-07, 0.206, 0.206], "count": 40}
-{"edge_lengths": [2.31e-07, 2.34e-07, 2.35e-07], "count": 30}
-{"edge_lengths": [2.35e-07, 0.215, 0.215], "count": 20}
+{"edge_lengths": [2.31e-07, 0.206, 0.206],
+ "count": 40}
+{"edge_lengths": [2.31e-07, 2.34e-07, 2.35e-07],
+ "count": 30}
+{"edge_lengths": [2.35e-07, 0.215, 0.215],
+ "count": 20}
 ```
 
 **What It Means:** The second shape is a fully degenerate sliver: all three edges collapsed to almost nothing, a point pretending to be a triangle. The first and third are "needles": two ordinary edges (`0.206` or `0.215`, matching real panels elsewhere on the dome) and a third squeezed to about a millionth of their length, a triangle so thin it would be a slit, not a panel. All three are mathematically valid triangles. None is buildable. The Junior Henchman's answer was "neither": these lines don't describe parts.
@@ -54,18 +115,76 @@ This is a stronger and more honest claim than "use `0.499999` and you're covered
 **Prompt:**
 > Now re-cut at the documented safe cutoff instead. Did the flagged lists shrink, and did they disappear entirely?
 
-**What Comes Back** (the same two lists, counted, at both cutoffs):
+**What Comes Back** (a snapshot of the report at `truncation_z=0.499999`, then the same two lists counted at both cutoffs):
 
 ```json
-{"truncation": 0.499999,  "artifact_chords": 8, "artifact_panels": 3}
-{"truncation": 0.4999999, "artifact_chords": 6, "artifact_panels": 3}
+{
+  "pyLair report": {
+    "Bill of materials": {
+      "Chord Lengths and Counts": [
+        {"length": 0.2166, "count": 60,
+         "chord_indices": [23, ...]},
+        ...
+      ],
+      "Warning": "Small length chords...",
+      "Possible truncation-artifact chords": [
+        {"length": 2.36e-06, "count": 10,
+         "chord_indices": [555, ...]},
+        {"length": 2.35e-06, "count": 10,
+         "chord_indices": [587, ...]},
+        ...
+      ]
+    },
+    "Total material": {
+      "Total strut length": 123.569
+    },
+    "Angles at hub between outbound cords and tangential plane": [
+      {"hub": 0, "connecting hub": 1,
+       "angle (degrees)": 4.6624, ...},
+      ...
+    ],
+    "Spoke angles": [
+      {"index": 0, "hub": 0, "connecting hub": 1,
+       ...},
+      ...
+    ],
+    "Panel shapes and counts": {
+      "Panel Types and Counts": [
+        {"edge_lengths": [0.198, 0.203, 0.206],
+         "area": 0.018, "count": 120, ...},
+        ...
+      ],
+      "Warning": "Panels sharing the same...",
+      "Possible truncation-artifact panels": [
+        {"edge_lengths": [0.0, 0.206, 0.206],
+         "area": 0.0, "count": 40, ...},
+        ...
+      ]
+    },
+    "Total panel material": {
+      "Total panel area": 6.2299
+    },
+    "Bevel angles at panel edges": [
+      {"vertex 1": 0, "vertex 2": 1, "face 1": 0,
+       ...},
+      ...
+    ]
+  }
+}
+```
+
+```json
+{"truncation": 0.499999, "artifact_chords": 8,
+ "artifact_panels": 3}
+{"truncation": 0.4999999, "artifact_chords": 6,
+ "artifact_panels": 3}
 ```
 
 **What It Means:** The slivers grew by a factor of ten, from about `2.4×10⁻⁷` to about `2.4×10⁻⁶`, because the safe cutoff sits ten times further from the ring, but they did **not** disappear. Both cutoffs are within a millionth of the range of this frequency's equatorial ring, close enough that slivers survive either way. A clean result, with both lists empty, came only at a cutoff well clear of the ring (`0.45`), and would at an odd frequency, which puts no ring on the equator.
 
 "Reduces the risk" and "eliminates the risk" are different claims, and this book won't blur them, even about its own advice. `0.499999` is a sensible default because it's *usually* far enough from wherever a ring lands, and it reliably avoids Chapter 9's refusal. But "usually" is doing work in that sentence, and this frequency is a reproducible case where it isn't enough. The habit to keep isn't "trust the safe value"; it's "generate the report and look at whether the artifact lists are empty," whatever cutoff got you there.
 
-The Actual Secret Lair passes. At `truncation_z=0.499999`, its Class III `(4,1)` lattice, stretched 1.8×, has no ring near the cut, and both of its artifact lists come back empty. The Foreman checked them anyway, which was the point.
+The Actual Secret Lair passes. At `truncation_z=0.499999`, its Class III `(4,1)` lattice, stretched 1.8×, has no ring near the cut, and both of its artifact lists come back empty. The Unbending Foreman checked them anyway, which was the point.
 
 ## Two Safety Nets, Not One
 

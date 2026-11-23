@@ -59,15 +59,10 @@ Every result in this book, every "What Comes Back" block in the chapters ahead, 
 Put together, a JSON object looks like this, an excerpt from what pyLair's `design_dome` tool returns for a frequency-4 icosahedral sphere:
 
 ```json
-{
-  "vertex_count": 162,
-  "edge_count": 480,
-  "face_count": 320,
-  "truncated": false,
-  "height": 2.0,
-  "footprint_diameter": 2.0,
-  "total_strut_length": 143.20402572929999
-}
+{"vertex_count": 162, "edge_count": 480,
+ "face_count": 320, "truncated": false,
+ "height": 2.0, "footprint_diameter": 2.0,
+ "total_strut_length": 143.20402572929999}
 ```
 
 Seven labeled values, each of a type that isn't in question. There is no ambiguity about what `162` refers to, because it sits next to the label `"vertex_count"`, not three sentences later in a paragraph.
@@ -103,7 +98,8 @@ Chapter 3 is where you'll pick a polyhedron and get a dome back. Here is the fie
   "footprint_diameter": ...,
   "total_strut_length": ...,
   "resolved_parameters": {
-    "radius": ..., "frequency": ..., "polyhedron": ..., "dome_class": ..., ...
+    "radius": ..., "frequency": ...,
+    "polyhedron": ..., "dome_class": ..., ...
   }
 }
 ```
@@ -111,10 +107,7 @@ Chapter 3 is where you'll pick a polyhedron and get a dome back. Here is the fie
 And here is its counterpart one problem over, the skeleton of `design_nest`, which you'll meet in Part VI:
 
 ```json
-{
-  "sheets_used": ...,
-  "utilization_by_sheet": [...]
-}
+{"sheets_used": ..., "utilization_by_sheet": [...]}
 ```
 
 The two answer different questions but share a form: flat, labeled, and ready to act on, `vertex_count` next to `face_count`, `sheets_used` next to `utilization_by_sheet`. It is the same rule in both toolkits: **a result worth trusting is one you can name a field in, not a sentence you have to interpret.** You'll see both skeletons filled in as soon as Chapter 2's installation smoke test, and with a real design behind them for the rest of the book.
@@ -123,7 +116,7 @@ The two answer different questions but share a form: flat, labeled, and ready to
 
 Every dome and nesting job in this book belongs to *somebody*, and that somebody wants it for a specific, defensible, only slightly unhinged reason. A design constraint stops being abstract the moment it's *your* pressure hull, *your* launch mass, *your* henchmen waiting on a cutting template. Villainy isn't the garnish here. It's the load case.
 
-The people first. **Our Heroine** designs by prompting and reads the JSON herself. **The AI Henchman** calls the tools. **The Foreman**, head of the construction crew, owns the tape measure and trusts nothing he can't measure; most of the questions a builder asks in this book are his. **The Chief Financial Villain** (CFV) counts struts, sheets, and money. **The Junior Henchman** runs the laser cutter, enthusiastically and literally. And somewhere offstage, **the Rival Supervillain** is still standing in his field.
+The people first. **Our Heroine** designs by prompting and reads the JSON herself. **The AI Henchman** calls the tools. **The Unbending Foreman**, head of the construction crew, owns the tape measure and trusts nothing he can't measure; most of the questions a builder asks in this book are his. **The Chief Financial Villain** counts struts, sheets, and money. **The Junior Henchman** runs the laser cutter, enthusiastically and literally. And somewhere offstage, **the Rival Supervillain** is still standing in his field.
 
 Then the designs, each introduced properly when it comes up:
 
@@ -143,6 +136,6 @@ None of these briefs makes the mathematics less rigorous. Euler's formula holds 
 
 ## What's Next
 
-Chapter 2 installs pyLair and pyFit, connects both to an agentic platform (OpenClaw, Claude Code, Hermes, Claude Desktop, or another MCP client), and proves each connection with one deliberately trivial tool call. The Foreman insisted on that order. "Nobody," he said, looking at the framed photograph on our Heroine's desk, "designs a lair on equipment they haven't tested."
+Chapter 2 installs pyLair and pyFit, connects both to an agentic platform (OpenClaw, Claude Code, Hermes, Claude Desktop, or another MCP client), and proves each connection with one deliberately trivial tool call. The Unbending Foreman insisted on that order. "Nobody," he said, looking at the framed photograph on our Heroine's desk, "designs a lair on equipment they haven't tested."
 
 After that, Part II starts the design for real, with the first geometric question: not "does the connection work," but "which shape should this start from, and why."
