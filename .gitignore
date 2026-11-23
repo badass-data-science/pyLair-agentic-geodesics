@@ -9,3 +9,7 @@ graphify-out/.graphify_python
 graphify-out/.graphify_root
 graphify-out/.graphify_labels.json
 dist/
+
+# Local-only files (never commit)
+.mcp.json
+*do-not-commit*
