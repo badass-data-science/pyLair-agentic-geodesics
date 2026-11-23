@@ -2,7 +2,7 @@ pyLair - An Agentic Geodesic Structure Designer
 ======
 
 [![CI](https://github.com/badass-data-science/pyLair-agentic-geodesics/actions/workflows/ci.yml/badge.svg)](https://github.com/badass-data-science/pyLair-agentic-geodesics/actions/workflows/ci.yml)
-[![Python 3.9 | 3.10 | 3.11 | 3.12 | 3.13](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue)](pyproject.toml)
+[![Python 3.10 | 3.11 | 3.12 | 3.13](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue)](pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 ![dome-image](blog-posts/edited_truncated.png)
@@ -15,7 +15,7 @@ For the geometric method (icosahedron/octahedron/tetrahedron subdivision, projec
 
 ## Installation
 
-Requires Python 3.9+.
+Requires Python 3.10+.
 
 ```
 pip install -e .
