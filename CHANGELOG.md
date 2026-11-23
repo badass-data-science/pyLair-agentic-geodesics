@@ -28,7 +28,7 @@ lives under `[Unreleased]` against the `0.1.0` version in `pyproject.toml`.
 - OpenClaw skill (`SKILL.md` + `openclaw.config.snippet.jsonc`) so an
   [OpenClaw](https://openclaw.ai/) agent can drive the `pylair` CLI directly,
   since OpenClaw has no MCP client of its own.
-- GitHub Actions CI pipeline (`cli-smoke` job plus a Python 3.9-3.13 test
+- GitHub Actions CI pipeline (`cli-smoke` job plus a Python 3.10-3.13 test
   matrix).
 - `AGENTS.md`, an agent-facing guide to the repo layout, test conventions,
   and geometry-pipeline caveats.
@@ -67,6 +67,10 @@ lives under `[Unreleased]` against the `0.1.0` version in `pyproject.toml`.
 
 ### Changed
 
+- Dropped Python 3.9 support: `requires-python` is now `>=3.10`, and 3.9 is
+  removed from the CI test matrix. Python 3.9 reached end-of-life in October
+  2025, GitHub's current `ubuntu-latest` runner image (Ubuntu 26.04) no longer
+  provides it, and the `mcp` extra never supported it.
 - Renamed the project from pyDome to pyLair.
 - Relicensed from GPL-3.0-or-later to MIT.
 - Restructured the codebase into a proper `pydome/`-then-`pylair/` package.
