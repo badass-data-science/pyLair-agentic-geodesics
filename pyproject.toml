@@ -11,7 +11,7 @@ license = { text = "MIT" }
 authors = [
   { name = "Emily Williams" },
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
   "numpy",
   "pandas",

@@ -24,8 +24,7 @@ client, so that skill wraps the CLI rather than `pylair-mcp`.
 pip install -e ".[test]"
 ```
 
-Optional extras: `mcp` (MCP server deps; no published release supports Python
-3.9; pinned to `<2.0` because 2.0.0 removed `mcp.server.fastmcp` entirely —
+Optional extras: `mcp` (MCP server deps; pinned to `<2.0` because 2.0.0 removed `mcp.server.fastmcp` entirely —
 `pylair/mcp_server.py`'s `FastMCP`/`Image` imports and
 `tests/test_mcp_server.py`'s `mcp.shared.memory.create_connected_server_and_client_session`
 both 404 on 2.0.0's new module layout; migrating to whatever replaces
