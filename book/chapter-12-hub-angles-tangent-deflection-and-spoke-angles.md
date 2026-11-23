@@ -1,6 +1,6 @@
 # Chapter 12: Hub Angles — Tangent Deflection and Spoke Angles
 
-The Foreman brought a hub connector to the design meeting: a steel disc with six slotted sockets welded around its edge, each one tilted slightly inward. He set it on the table beside the Rival's photographs. "Two numbers per socket," he said. "How far it tilts. Where it sits around the disc. Get either one wrong on one socket and that strut doesn't go in. Get it wrong on every hub, like *he* did," a nod at the photographs, "and you have a field full of sticks."
+The Unbending Foreman brought a hub connector to the design meeting: a steel disc with six slotted sockets welded around its edge, each one tilted slightly inward. He set it on the table beside the Rival's photographs. "Two numbers per socket," he said. "How far it tilts. Where it sits around the disc. Get either one wrong on one socket and that strut doesn't go in. Get it wrong on every hub, like *he* did," a nod at the photographs, "and you have a field full of sticks."
 
 Every chapter in Part IV answers one question: given a finished, shaped dome, what does a builder need to know to *fabricate* it? This chapter starts at the joints, the hubs where struts meet, and the two angles pyLair reports for each strut there. Together they're what makes a bill of materials buildable rather than a list of lengths with nothing to say about how the pieces come together.
 
@@ -14,7 +14,7 @@ At every hub, each connecting strut gets two numbers. The **tangent-plane deflec
 **[IMAGE: ../blog-posts/spoke_angle_image_CROPPED.png | A diagram looking straight down onto a hub's tangent plane, with each strut projected onto the plane as a spoke and the angle of each spoke measured from a reference spoke.]**
 **[CAPTION: The spoke angle, viewed perpendicular to the same tangent plane: each strut projected onto the plane and measured from a chosen reference strut.]**
 
-In the Foreman's terms: the tangent-plane angle is the tilt that lets a socket meet its strut along the strut's own line instead of at a kink; the spoke angle is the rotation that puts each socket in the right place around the disc. A connector needs both. Tilted right but rotated wrong, it won't accept its struts in the right positions; rotated right but tilted wrong, the struts meet it bent.
+In the Unbending Foreman's terms: the tangent-plane angle is the tilt that lets a socket meet its strut along the strut's own line instead of at a kink; the spoke angle is the rotation that puts each socket in the right place around the disc. A connector needs both. Tilted right but rotated wrong, it won't accept its struts in the right positions; rotated right but tilted wrong, the struts meet it bent.
 
 ## A Worked Example
 
@@ -56,7 +56,7 @@ Chapter 8 showed that elongating a sphere breaks the convenient fact that the su
 {"elongation": "1.0,1.0,1.8", "vertex": [0.894, 0.0, 0.805], "tangent_angles": [4.1481, 5.6306, 4.7556, 6.5689, 4.0230]}
 ```
 
-**What It Means:** On the sphere, this hub is a point of five-fold symmetry, and all five struts report the same tilt, `6.1061°`. Stretched, the symmetry is gone: five *different* tilts, from `4.02°` to `6.57°`, because the true ellipsoid normal (Chapter 8's formula) now depends on which way each strut runs relative to the stretch, not just on the hub's distance from the center. That's why Chapter 8 insisted on the true normal. With the position-vector shortcut, this hub would be reported as five identical sockets when it needs five different ones, and the Foreman would weld a connector that fits a sphere nobody is building.
+**What It Means:** On the sphere, this hub is a point of five-fold symmetry, and all five struts report the same tilt, `6.1061°`. Stretched, the symmetry is gone: five *different* tilts, from `4.02°` to `6.57°`, because the true ellipsoid normal (Chapter 8's formula) now depends on which way each strut runs relative to the stretch, not just on the hub's distance from the center. That's why Chapter 8 insisted on the true normal. With the position-vector shortcut, this hub would be reported as five identical sockets when it needs five different ones, and the Unbending Foreman would weld a connector that fits a sphere nobody is building.
 
 ## The Number That Isn't What It Looks Like
 
@@ -68,6 +68,6 @@ So comparing two hubs row by row against their raw spoke angles is not a reliabl
 
 ## What's Next
 
-The Foreman took the hub-1 numbers to his workbench and welded a test connector. Six struts slid into it. He set it on the shelf beside the cardboard models from Chapter 6, which was becoming a small museum of things that had gone right.
+The Unbending Foreman took the hub-1 numbers to his workbench and welded a test connector. Six struts slid into it. He set it on the shelf beside the cardboard models from Chapter 6, which was becoming a small museum of things that had gone right.
 
 Chapter 13 moves from the joints to the struts: not their angles but how their lengths are grouped into bill-of-materials rows, and the deliberate tradeoff in the one setting that controls both that grouping and how many decimal places print.

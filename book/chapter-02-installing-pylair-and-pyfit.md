@@ -1,6 +1,6 @@
 # Chapter 2: Installing pyLair and pyFit (OpenClaw, Claude Code, Hermes, Claude Desktop, and Any MCP Framework)
 
-The Foreman's first act as head of construction was to refuse to look at any dome. He wanted a shed first: something small enough to check by hand, built on the new equipment, before anyone's lair depended on it. "The Rival's crew trusted the first thing the machine said," he pointed out. "Make the machine say something we can check."
+The Unbending Foreman's first act as head of construction was to refuse to look at any dome. He wanted a shed first: something small enough to check by hand, built on the new equipment, before anyone's lair depended on it. "The Rival's crew trusted the first thing the machine said," he pointed out. "Make the machine say something we can check."
 
 So before Chapter 3 picks a polyhedron, something more tedious happens: the wiring. This chapter has no geometry in it and no nesting either. What it has is a working connection between an AI agent and two small servers that know how to talk to it, plus one installation failure, shown as it happens, because you are going to hit some version of it too, and it is much less alarming once you've seen it coming.
 
@@ -158,7 +158,7 @@ A second, smaller gotcha, for anyone reaching for an older interpreter: **the MC
 
 ## Proof of Life
 
-Installation isn't finished until you've watched tool calls succeed: "the install command didn't error" is a different claim from "the connection works." Here is the Foreman's shed, one for each toolkit, too small to be anyone's lair and unimpressive on purpose, so nothing distracts from watching the wiring work: **the Proof-of-Concept Yurt** for pyLair and **the Proof-of-Concept Nesting Job** for pyFit.
+Installation isn't finished until you've watched tool calls succeed: "the install command didn't error" is a different claim from "the connection works." Here is the Unbending Foreman's shed, one for each toolkit, too small to be anyone's lair and unimpressive on purpose, so nothing distracts from watching the wiring work: **the Proof-of-Concept Yurt** for pyLair and **the Proof-of-Concept Nesting Job** for pyFit.
 
 **Prompt:**
 > Confirm the pyLair MCP server is running and list every tool it exposes. Then run `design_dome` on the smallest, cheapest configuration you can, just to prove the connection works end to end.
@@ -217,7 +217,7 @@ design_nest result:
 }
 ```
 
-**What It Means:** Four more tools, from a second subprocess, and a result you can check by hand: six unit squares have a combined area of 6, a 3×2 sheet has an area of 6, and pyFit's README says this case tiles perfectly. `utilization_by_sheet: [1.0]`, or 100%, confirms it did, on one sheet. It's a boring, hand-checkable result, chosen because there's nowhere for a packing mistake to hide in it. The Foreman checked it with a pencil anyway, and nodded.
+**What It Means:** Four more tools, from a second subprocess, and a result you can check by hand: six unit squares have a combined area of 6, a 3×2 sheet has an area of 6, and pyFit's README says this case tiles perfectly. `utilization_by_sheet: [1.0]`, or 100%, confirms it did, on one sheet. It's a boring, hand-checkable result, chosen because there's nowhere for a packing mistake to hide in it. The Unbending Foreman checked it with a pencil anyway, and nodded.
 
 **[IMAGE: examples/images/poc-nest_sheet1.png | Six unit squares filling a 3-by-2 rectangular sheet in two rows of three, with no gaps.]**
 **[CAPTION: The Proof-of-Concept Nesting Job, rendered by `preview_nest`: six unit squares tiling a 3×2 sheet at 100% utilization.]**

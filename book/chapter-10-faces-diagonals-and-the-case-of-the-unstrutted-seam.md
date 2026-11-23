@@ -53,6 +53,6 @@ One more thing to confirm rather than assume. Chapter 9 showed that sequential c
 
 ## What's Next
 
-The Foreman pinned the Rival's photographs beside the whiteboard, under a new line: "Every quad gets a diagonal. pyLair already knows." The Actual Secret Lair's own base, cut once on Z, has its clipped triangles split the same way.
+The Unbending Foreman pinned the Rival's photographs beside the whiteboard, under a new line: "Every quad gets a diagonal. pyLair already knows." The Actual Secret Lair's own base, cut once on Z, has its clipped triangles split the same way.
 
 Chapter 11 is a practicum rather than a new feature: applying everything from Chapters 3 through 10 (polyhedron, subdivision class, elongation, truncation) to a run of design commissions from other villains, each with its own environment. Part IV then returns to the bill of materials in full, starting with the angles at the hubs.

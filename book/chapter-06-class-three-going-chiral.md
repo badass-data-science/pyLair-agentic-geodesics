@@ -1,6 +1,6 @@
 # Chapter 6: Class III — Going Chiral
 
-The Junior Henchman built two cardboard models over the weekend, one from each of two Class III configurations the AI Henchman had printed out, and set them side by side on the Foreman's workbench. Same number of triangles. Same strut lengths, to the millimeter. They would not line up. Turn one however you liked and its pattern of struts spiraled the wrong way relative to the other, like a pair of gloves. The Foreman put on his reading glasses, looked for a long time, and said the word this chapter is about.
+The Junior Henchman built two cardboard models over the weekend, one from each of two Class III configurations the AI Henchman had printed out, and set them side by side on the Unbending Foreman's workbench. Same number of triangles. Same strut lengths, to the millimeter. They would not line up. Turn one however you liked and its pattern of struts spiraled the wrong way relative to the other, like a pair of gloves. The Unbending Foreman put on his reading glasses, looked for a long time, and said the word this chapter is about.
 
 Every chapter so far has built toward this one. Class I's grid is symmetric under reflection. Class II's is too: six identical wedges around a centroid, with as much mirror symmetry as an equilateral triangle allows. Class III breaks that symmetry on purpose, and with it introduces the idea this book returns to more than any other: **chirality**. This chapter defines it, builds it into a dome, and shows the limit of every check the last two chapters taught you to trust: a dome can pass them all and still be the wrong shape.
 
@@ -95,7 +95,7 @@ The second message is worth reading carefully. It isn't only refusing an edge ca
 
 ## The Actual Secret Lair, Chiral at Last
 
-The running dome gets its subdivision here: Class III, `(4,1)` rather than its mirror `(1,4)`, a deliberate choice, since this chapter has just shown the two are not interchangeable. Our Heroine liked the way its struts spiral. She also liked that every hub joins five or six struts, with no ten-socket connectors for the Foreman to dread.
+The running dome gets its subdivision here: Class III, `(4,1)` rather than its mirror `(1,4)`, a deliberate choice, since this chapter has just shown the two are not interchangeable. Our Heroine liked the way its struts spiral. She also liked that every hub joins five or six struts, with no ten-socket connectors for the Unbending Foreman to dread.
 
 **Prompt:**
 > Switch our running dome to Class III with `(m,n)=(4,1)` (frequency 4, n_frequency 1, icosahedron, radius 1.0) and preview it.
@@ -107,6 +107,6 @@ The running dome gets its subdivision here: Class III, `(4,1)` rather than its m
 
 ## What's Next
 
-The Foreman labeled the two cardboard models "LEFT" and "RIGHT" in marker and put them on a high shelf, where they would come in handy in Chapter 14. "Same parts list," he said, "different building. Remember that when we order panels."
+The Unbending Foreman labeled the two cardboard models "LEFT" and "RIGHT" in marker and put them on a high shelf, where they would come in handy in Chapter 14. "Same parts list," he said, "different building. Remember that when we order panels."
 
 Chapter 7 finishes the pipeline all three classes share: merging the vertices that adjacent faces duplicate, and pushing every still-flat point outward onto a sphere, with Class III's combinatorial matches running alongside the ordinary proximity pass, not instead of it.

@@ -1,6 +1,6 @@
 # Chapter 13: Counting Struts — Clustering, Rounding, and the Merge Tradeoff
 
-The Chief Financial Villain had discovered that every distinct strut length meant a separate saw setup, a separate labeled bin, and a separate line on the cutting crew's timesheet. The bill of materials for the Actual Secret Lair had 79 distinct lengths. She found the setting that controlled the count, turned it down, and came back delighted: two. Two strut types for the whole dome. The Foreman read the report over her shoulder and asked, very politely, which of the two lengths she would like the crown built from, since the real struts there came in about seventy varieties.
+The Chief Financial Villain had discovered that every distinct strut length meant a separate saw setup, a separate labeled bin, and a separate line on the cutting crew's timesheet. The bill of materials for the Actual Secret Lair had 79 distinct lengths. She found the setting that controlled the count, turned it down, and came back delighted: two. Two strut types for the whole dome. The Unbending Foreman read the report over her shoulder and asked, very politely, which of the two lengths she would like the crown built from, since the real struts there came in about seventy varieties.
 
 A bill of materials is useful only if its rows mean what they claim: "cut this many struts to this length." This chapter is about the setting that decides how those rows are formed, `bom_rounding_precision`, and a design choice in how it works that's worth understanding before you ever reach for a non-default value, as the Chief Financial Villain did.
 
@@ -58,6 +58,6 @@ It hurts for the same reason, applied to the wrong case. Lower `bom_rounding_pre
 
 ## What's Next
 
-The Chief Financial Villain set the precision back to 9 and, after some arithmetic with the Foreman about the saw's real tolerance at a 2.5-meter radius, settled on 3, with the dome modeled at its real radius of 2.5 meters so that the tolerance meant half a millimeter of real strut: 70 rows instead of 79, with nothing merged that the saw could tell apart. She considered it a negotiated victory.
+The Chief Financial Villain set the precision back to 9 and, after some arithmetic with the Unbending Foreman about the saw's real tolerance at a 2.5-meter radius, settled on 3, with the dome modeled at its real radius of 2.5 meters so that the tolerance meant half a millimeter of real strut: 70 rows instead of 79, with nothing merged that the saw could tell apart. She considered it a negotiated victory.
 
 Chapter 14 moves from strut lengths to panel shapes and brings back chirality, Chapter 6's whole-dome mirror-image relationship, now at the scale of a single flat triangle, and the trap it sets for anyone about to order directional cladding.

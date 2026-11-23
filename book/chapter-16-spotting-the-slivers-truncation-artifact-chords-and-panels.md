@@ -1,6 +1,6 @@
 # Chapter 16: Spotting the Slivers — Truncation-Artifact Chords and Panels
 
-The Junior Henchman came to the Foreman with a cutting list for a test dome and one question. Line six asked for ten struts, each 0.000000236 units long. At a 2.5-meter radius that is about six ten-thousandths of a millimeter: well under the width of a human hair, and smaller than the sawdust the cut would make. "Do I cut these," the Junior Henchman asked, "or do I just say I did?"
+The Junior Henchman came to the Unbending Foreman with a cutting list for a test dome and one question. Line six asked for ten struts, each 0.000000236 units long. At a 2.5-meter radius that is about six ten-thousandths of a millimeter: well under the width of a human hair, and smaller than the sawdust the cut would make. "Do I cut these," the Junior Henchman asked, "or do I just say I did?"
 
 Chapter 9's flat-chord error refuses outright when a truncation cutoff lands *exactly* on a vertex ring. This chapter is about the case one step away: a cutoff extremely close to a ring but not on it. That's mathematically valid, structurally absurd, and, unlike Chapter 9's failure, something pyLair lets through. Why it lets it through, and how it flags the result instead, is this chapter's subject.
 
@@ -65,7 +65,7 @@ This is a stronger and more honest claim than "use `0.499999` and you're covered
 
 "Reduces the risk" and "eliminates the risk" are different claims, and this book won't blur them, even about its own advice. `0.499999` is a sensible default because it's *usually* far enough from wherever a ring lands, and it reliably avoids Chapter 9's refusal. But "usually" is doing work in that sentence, and this frequency is a reproducible case where it isn't enough. The habit to keep isn't "trust the safe value"; it's "generate the report and look at whether the artifact lists are empty," whatever cutoff got you there.
 
-The Actual Secret Lair passes. At `truncation_z=0.499999`, its Class III `(4,1)` lattice, stretched 1.8×, has no ring near the cut, and both of its artifact lists come back empty. The Foreman checked them anyway, which was the point.
+The Actual Secret Lair passes. At `truncation_z=0.499999`, its Class III `(4,1)` lattice, stretched 1.8×, has no ring near the cut, and both of its artifact lists come back empty. The Unbending Foreman checked them anyway, which was the point.
 
 ## Two Safety Nets, Not One
 

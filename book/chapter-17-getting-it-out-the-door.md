@@ -1,6 +1,6 @@
 # Chapter 17: Getting It Out the Door — DXF, VRML, STL, OBJ
 
-Export day had three customers. The Foreman wanted drawings his fabrication software could open. Our Heroine wanted something she could spin around on a screen and admire. The Junior Henchman wanted a 3D-printed scale model for the Chief Financial Villain's desk, and had promised her "every strut, in miniature." Three different files, it turned out, and one of the three promises was about to be broken.
+Export day had three customers. The Unbending Foreman wanted drawings his fabrication software could open. Our Heroine wanted something she could spin around on a screen and admire. The Junior Henchman wanted a 3D-printed scale model for the Chief Financial Villain's desk, and had promised her "every strut, in miniature." Three different files, it turned out, and one of the three promises was about to be broken.
 
 Everything since Chapter 3 has built toward this: the Actual Secret Lair, subdivided, shaped, and accounted for, written to files that other software can open. This chapter is about matching the file to the job: four export formats with four different purposes, and the one setting that changes which of them you get.
 
@@ -48,7 +48,7 @@ lair.png             180,646 bytes   (preview image)
 
 **What It Means:** All but the preview depend on it. The face VRML, the STL, the OBJ, and the 91 panel templates are built from faces that survived *two* sequential cuts, and the hub templates come from struts that include the diagonal seams of Chapter 10. None errored or produced a broken shape, though both cuts clipped through triangles. 166 files from one call: 91 distinct panel shapes and 71 distinct hub shapes, more than the single-cut dome's 52 and 32, because the second cut adds a whole new boundary of clipped pieces.
 
-For the Foreman's wireframe drawing, the same dome without `face_output`:
+For the Unbending Foreman's wireframe drawing, the same dome without `face_output`:
 
 **Prompt:**
 > Export the same dome again without `face_output`. I want the plain wireframe DXF.

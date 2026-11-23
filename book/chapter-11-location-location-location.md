@@ -104,4 +104,4 @@ Every stop built cleanly, reported sensible numbers, and rendered a plausible sh
 
 The Chief Financial Villain sent out five invoices and one disclaimer, the last bullet list above in a large font. Our Heroine signed the disclaimer herself. A villain who sells someone a dome that collapses gets a reputation; she had a framed photograph of what that looks like.
 
-Part IV returns to the bill of materials in earnest, starting with the two kinds of hub angle every one of these domes already reports. Chapter 12 explains what they mean, why they need the true ellipsoid normal from Chapter 8, and what the Foreman does with them.
+Part IV returns to the bill of materials in earnest, starting with the two kinds of hub angle every one of these domes already reports. Chapter 12 explains what they mean, why they need the true ellipsoid normal from Chapter 8, and what the Unbending Foreman does with them.

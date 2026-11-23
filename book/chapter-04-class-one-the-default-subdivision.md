@@ -1,6 +1,6 @@
 # Chapter 4: Class I — The Default Subdivision
 
-The Foreman had one question about any dome, and he asked it before he asked anything else: "Does it close?" The Rival's didn't. Our Heroine's answer, by the end of this chapter, is a number you can compute on a napkin before pyLair says a word, and a habit of checking it every time.
+The Unbending Foreman had one question about any dome, and he asked it before he asked anything else: "Does it close?" The Rival's didn't. Our Heroine's answer, by the end of this chapter, is a number you can compute on a napkin before pyLair says a word, and a habit of checking it every time.
 
 Chapter 3 picked a starting shape. This chapter is where pyLair starts *computing* something: the first and simplest of the three subdivision methods this book teaches, the one every more complicated version is compared against. It's also where **the Actual Secret Lair**, the dome destined for the volcano's crater and the flagship design of Parts II through V, makes its first appearance, in the plainest form it will ever take.
 
@@ -29,7 +29,7 @@ Chapter 3's table gave the counts for Class I on all three base shapes. For the 
 | Edges | `30f²` | 480 |
 | Faces | `20f²` | 320 |
 
-Use these as the first sanity check on any Class I result before trusting anything downstream. A result that doesn't match means something upstream is already wrong, before a single strut length or hub angle has been computed. This is the Foreman's napkin.
+Use these as the first sanity check on any Class I result before trusting anything downstream. A result that doesn't match means something upstream is already wrong, before a single strut length or hub angle has been computed. This is the Unbending Foreman's napkin.
 
 **Prompt:**
 > Build a Class I icosahedral dome at frequency 4. Does the reported vertex count match the golden-value formula?
@@ -103,6 +103,6 @@ It exists to catch one narrow situation: two vertices that are supposed to be th
 
 ## What's Next
 
-362 vertices, 1,080 edges, 720 faces: the Foreman checked all three on his napkin and declared the sphere closed. He did not yet declare it a building.
+362 vertices, 1,080 edges, 720 faces: the Unbending Foreman checked all three on his napkin and declared the sphere closed. He did not yet declare it a building.
 
 Chapter 5 rebuilds this dome, at the same nominal frequency, under a different construction, Class II, the "Triacon" method, and shows why "same frequency number" between classes doesn't mean "same amount of detail." Chapter 6 goes further, into a subdivision with a handedness, and the instructive bug pyLair's git history has to show for it.

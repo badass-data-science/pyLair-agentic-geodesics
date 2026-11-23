@@ -1,6 +1,6 @@
 # Chapter 15: Cutting Templates — Hubs, Panels, and a Clustering-Tolerance Gotcha
 
-The Foreman's request was simple: part numbers. He did not want 156 custom connector plates, one per joint, each a snowflake. He wanted a short list of plate *designs*, a count for each, and a drawing he could hand to the cutting crew. The Chief Financial Villain wanted the same list for a different reason: every distinct design was a setup charge.
+The Unbending Foreman's request was simple: part numbers. He did not want 156 custom connector plates, one per joint, each a snowflake. He wanted a short list of plate *designs*, a count for each, and a drawing he could hand to the cutting crew. The Chief Financial Villain wanted the same list for a different reason: every distinct design was a setup charge.
 
 Four chapters of geometry (subdivision, projection, shaping, and now hub angles, strut clustering, and panel shapes) converge here on the two kinds of file a fabricator needs: one cutting template per distinct hub-connector shape, and one per distinct panel shape. This chapter is also the bridge to Part VI: every panel-template DXF that `export_dome` writes with `face_templates=True` is the kind of file a pyFit nesting job (Chapter 20) takes as input.
 
@@ -23,7 +23,7 @@ Here is the payoff on the Actual Secret Lair: Class III `(4,1)`, stretched `1.8`
 
 The `50` hubs on the dome's cut base ring are where it could. They connect upward into the dome and sideways to their neighbors around the ring, and the sideways connections exist only because `truncate()` gives every clipped triangle's cut-plane edge a strut of its own. With those struts, the `50` hubs are two ordinary shapes, `25` at valence `3` and `25` at valence `4`, each closed into its ring neighbors on both sides. Without them, half the ring would be one-socket hubs, quietly skipped. Chapter 22 shows the check that confirms every cut edge gets its strut.
 
-**What It Means:** `156` physical hubs collapse to `32` connector designs, every one a buildable plate. A builder orders 32 part numbers, in the quantities each group reports, not one custom plate per joint. The Foreman got his list.
+**What It Means:** `156` physical hubs collapse to `32` connector designs, every one a buildable plate. A builder orders 32 part numbers, in the quantities each group reports, not one custom plate per joint. The Unbending Foreman got his list.
 
 Panels follow the same logic: this dome's `260` panels collapse to `52` distinct `_facetype*.dxf` files.
 

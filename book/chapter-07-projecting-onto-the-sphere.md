@@ -1,6 +1,6 @@
 # Chapter 7: Projecting Onto the Sphere
 
-"Where two faces meet," said the Foreman, "I want one hub. Not two hubs a hair apart." He had seen what happens otherwise: a crew fabricates both, bolts one in, and spends a day looking for where the other goes. In a parts list, a vertex that should have been merged and wasn't is a phantom hub, and every phantom hub is a part somebody will make for nothing.
+"Where two faces meet," said the Unbending Foreman, "I want one hub. Not two hubs a hair apart." He had seen what happens otherwise: a crew fabricates both, bolts one in, and spends a day looking for where the other goes. In a parts list, a vertex that should have been merged and wasn't is a phantom hub, and every phantom hub is a part somebody will make for nothing.
 
 Every subdivision class so far (Class I's parallel grid, Class II's six centroid-radiating wedges, Class III's slanted chiral lattice) ends in the same place: a set of still-flat points on the flat faces of the original polyhedron, not yet anything resembling a dome. This chapter is the step all three share to finish the job: merge what needs merging, then push every point outward onto a sphere.
 
@@ -30,7 +30,7 @@ Both find the same 570 pairs, so the faster method isn't cutting a corner. On th
 
 **What Comes Back:** At frequency 16, Class I icosahedron: `3060` raw vertices (`20` faces × `153` symmetry-triangle vertices each, since a Class I symmetry triangle at frequency `f` has `(f+1)(f+2)/2` of them) collapse to the golden-value `2562` (`10(16)²+2`), a reduction of `498`. That isn't the same as the `570` duplicate *pairs* found above. Each of the icosahedron's 12 original vertices is shared by 5 faces, not 2, so its 5 copies form a cluster with several pairwise links among them, and the whole cluster collapses to one vertex rather than being counted pair by pair. `locate_duplicate_vertices()` handles that by grouping linked pairs into clusters (a union-find structure) and keeping one member of each.
 
-**What It Means:** `498` is a checkable number: raw count minus final count should equal the number of points that needed merging, no more and no less. It's worth checking before trusting a high-frequency result. The Foreman's phantom hubs live in the gap between those two numbers.
+**What It Means:** `498` is a checkable number: raw count minus final count should equal the number of points that needed merging, no more and no less. It's worth checking before trusting a high-frequency result. The Unbending Foreman's phantom hubs live in the gap between those two numbers.
 
 ## The Safe Zone Narrows as Frequency Rises
 
@@ -64,6 +64,6 @@ Here is a practical skill this chapter makes possible. If an exported dome shows
 
 ## What's Next
 
-The Foreman's count of hubs for the Actual Secret Lair, `(4,1)` at `T=21`, came to 212, the golden value, with no phantoms. He wrote it on the whiteboard under the Euler checks.
+The Unbending Foreman's count of hubs for the Actual Secret Lair, `(4,1)` at `T=21`, came to 212, the golden value, with no phantoms. He wrote it on the whiteboard under the Euler checks.
 
 The pipeline every subdivision class shares is complete: pick a polyhedron, subdivide one face, replicate it, merge the seams, project outward. Part III reshapes the finished sphere on purpose. Chapter 8 stretches it into an ellipsoid, and Chapter 9 slices it into a dome that can stand on a crater floor.

@@ -1,6 +1,6 @@
 # Chapter 24: When to Trust the Agent, and When Not To
 
-Every operation at the Secret Lab™ ends with an after-action review, and the Actual Secret Lair's was held in the half-built dome itself, on folding chairs, under a crown hub the Foreman had welded with his own hands. Our Heroine wrote one question on the whiteboard they'd carried up from the sub-basement: *What did we check, and what did we check it against?* The framed photograph of the Rival's field leaned against the whiteboard's leg.
+Every operation at the Secret Lab™ ends with an after-action review, and the Actual Secret Lair's was held in the half-built dome itself, on folding chairs, under a crown hub the Unbending Foreman had welded with his own hands. Our Heroine wrote one question on the whiteboard they'd carried up from the sub-basement: *What did we check, and what did we check it against?* The framed photograph of the Rival's field leaned against the whiteboard's leg.
 
 No new dome and no new nesting job in this chapter: a structured look back at everything Chapters 1 through 23 checked, and the one rule underneath it all, worth taking to any geometry tool this book didn't write.
 
@@ -18,7 +18,7 @@ A check that compares a result only against its own assumptions can catch a **co
 
 **`trimesh` and `ezdxf`** (in pyLair's test suite, run when the `verify` extra is installed) recompute panel areas and angles between panels from pyLair's exported files, check truncated panels against `trimesh`'s own mesh-slicing routine, and read a generated cutting template back in to confirm it reproduces the lengths it claims: a round trip through files, not a re-run of the trigonometry under test.
 
-**The strut–panel cross-reference** (Chapter 22) checks the truncated dome, where no count can, because an open dome has no golden value to contradict. Every panel edge must name its strut, and every strut must border one panel or two. It's the one check on this list that the builder uses too: the same manifest tells the Foreman which piece goes where.
+**The strut–panel cross-reference** (Chapter 22) checks the truncated dome, where no count can, because an open dome has no golden value to contradict. Every panel edge must name its strut, and every strut must border one panel or two. It's the one check on this list that the builder uses too: the same manifest tells the Unbending Foreman which piece goes where.
 
 **pyFit's hand-checkable no-fit polygon** (Chapter 19), two unit squares giving the `2×2` square from `(-1,-1)` to `(1,1)`, is the same kind of check at a smaller scale: a result compared with an answer a person can compute by hand.
 

@@ -1,6 +1,6 @@
 # Chapter 14: Skinning the Dome — Panel Shapes and the Chirality Trap
 
-While the Actual Secret Lair's design was being finalized, the Junior Henchman was given a practice job: skin a lobby display model, a plain frequency-6 Class I sphere, in walnut veneer, so the crew could rehearse on something that didn't matter. The bill of materials said the largest panel group had 240 panels, all the same shape. The Junior Henchman made one template, laid it on the veneer with the grain running point-up, and cut 240 panels. When they went on the model, half of them had their grain running sideways relative to their neighbors, in a neat, maddening pattern. Nobody had cut anything wrong. The Foreman took the LEFT and RIGHT cardboard models down from the shelf.
+While the Actual Secret Lair's design was being finalized, the Junior Henchman was given a practice job: skin a lobby display model, a plain frequency-6 Class I sphere, in walnut veneer, so the crew could rehearse on something that didn't matter. The bill of materials said the largest panel group had 240 panels, all the same shape. The Junior Henchman made one template, laid it on the veneer with the grain running point-up, and cut 240 panels. When they went on the model, half of them had their grain running sideways relative to their neighbors, in a neat, maddening pattern. Nobody had cut anything wrong. The Unbending Foreman took the LEFT and RIGHT cardboard models down from the shelf.
 
 Chapter 13 grouped struts by length. This chapter groups panels by shape, and runs into Chapter 6's chirality again at a smaller scale: a single flat triangle. The result is an easy-to-miss trap for anyone about to order directional cladding, and it turns up where you might least expect it.
 
@@ -57,6 +57,6 @@ So the flag doesn't get over-corrected into twice the work: a DXF cutting templa
 
 ## What's Next
 
-The Junior Henchman recut 120 walnut panels with the template turned face down, and wrote "FLIP" on the template's back in large letters. The lobby model looked splendid. The Foreman added the LEFT and RIGHT cardboard models to the cutting room's wall, at eye level.
+The Junior Henchman recut 120 walnut panels with the template turned face down, and wrote "FLIP" on the template's back in large letters. The lobby model looked splendid. The Unbending Foreman added the LEFT and RIGHT cardboard models to the cutting room's wall, at eye level.
 
 Chapter 15 generates cutting templates for both hubs and panels, and shows how this chapter's chirality flag and Chapter 12's spoke-angle reference gotcha are both resolved at the point where a builder needs a finite, correctly deduplicated set of files for a fabricator.

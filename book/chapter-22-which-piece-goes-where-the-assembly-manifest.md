@@ -1,8 +1,8 @@
 # Chapter 22: Which Piece Goes Where — the Assembly Manifest
 
-The first truckload of cut struts reached the crater on a Tuesday. The Foreman stood over a bin of seventy-odd struts, all close to the same length, all labeled with the same bill-of-materials row, and asked the question no chapter so far had answered: "Which one of these goes *where*?" The Rival's crew had faced the same bin, the disgruntled henchman reported, and had answered it by trial, error, and a mallet.
+The first truckload of cut struts reached the crater on a Tuesday. The Unbending Foreman stood over a bin of seventy-odd struts, all close to the same length, all labeled with the same bill-of-materials row, and asked the question no chapter so far had answered: "Which one of these goes *where*?" The Rival's crew had faced the same bin, the disgruntled henchman reported, and had answered it by trial, error, and a mallet.
 
-Every chapter since Part IV has answered some version of "how many of each thing do I need." Chapter 13 counted struts by length. Chapter 15 counted cutting templates by shape. Chapter 20 turned those counts into a nesting job. None of them answered the Foreman's question. This chapter is about the one thing the pipeline never tracked: not a type, not a count, but an individual piece's identity, and a bug that tracking it caught.
+Every chapter since Part IV has answered some version of "how many of each thing do I need." Chapter 13 counted struts by length. Chapter 15 counted cutting templates by shape. Chapter 20 turned those counts into a nesting job. None of them answered the Unbending Foreman's question. This chapter is about the one thing the pipeline never tracked: not a type, not a count, but an individual piece's identity, and a bug that tracking it caught.
 
 ## Two Questions, Two Shapes of Data
 
@@ -101,6 +101,6 @@ lair_jobspec.json
 
 ## What's Next
 
-The Foreman had every strut stenciled with its `S` number and every hub plate with its `H` number, and printed the schematic one ring at a time. The dome went up ring by ring from the crater floor, the base ring first, all fifty hubs with three or four sockets apiece. Nobody needed a mallet.
+The Unbending Foreman had every strut stenciled with its `S` number and every hub plate with its `H` number, and printed the schematic one ring at a time. The dome went up ring by ring from the crater floor, the base ring first, all fifty hubs with three or four sockets apiece. Nobody needed a mallet.
 
 Part VI closes here. Chapters 3 through 22 have taken a shape from "pick a polyhedron" to "here is the piece a henchman is holding and where it goes": design, shape, account, export, nest, assemble. Part VII steps back. Chapter 23 is a prompting clinic spanning both toolkits, Chapter 24 is the retrospective the book has been building toward since its first gotcha, and Chapter 25 sends the Actual Secret Lair off to be lived in.
