@@ -1,10 +1,12 @@
 # Chapter 2: Installing pyLair and pyFit (OpenClaw, Claude Code, Hermes, Claude Desktop, and Any MCP Framework)
 
-Before Chapter 3 can pick a polyhedron for real, something more tedious has to happen first: the actual wiring. This chapter has no geometry in it, and no nesting either. What it has is a working connection between an AI agent and two small servers that know how to talk to it correctly — and, because this is the kind of book that shows its work, one real installation failure, narrated exactly as it happens, because you are going to hit some version of it too, and it is much less alarming once you've seen it coming.
+The Foreman's first act as head of construction was to refuse to look at any dome. He wanted a shed first: something small enough to check by hand, built on the new equipment, before anyone's lair depended on it. "The Rival's crew trusted the first thing the machine said," he pointed out. "Make the machine say something we can check."
 
-## What You're Actually Installing
+So before Chapter 3 picks a polyhedron, something more tedious happens: the wiring. This chapter has no geometry in it and no nesting either. What it has is a working connection between an AI agent and two small servers that know how to talk to it, plus one installation failure, shown as it happens, because you are going to hit some version of it too, and it is much less alarming once you've seen it coming.
 
-Both pyLair and pyFit are ordinary, installable **Python** packages — Python being the general-purpose programming language both are actually written in, if that word is new to you — as of this writing, neither has been published to PyPI yet (pyLair's own blog post lists that under "Next Steps," and pyFit's `AGENTS.md` is explicit that "nothing has been published to PyPI yet; publishing is a separate, deliberate step"). So for now, both are installed the same way: clone the repository — pyLair's own source lives at [github.com/badass-data-science/pyLair-agentic-geodesics](https://github.com/badass-data-science/pyLair-agentic-geodesics), pyFit's at [github.com/badass-data-science/pyFit-agentic-polygon-nesting](https://github.com/badass-data-science/pyFit-agentic-polygon-nesting) — then install it editable, optionally with the `mcp` extra:
+## What You're Installing
+
+Both pyLair and pyFit are ordinary, installable **Python** packages. As of this writing, neither has been published to PyPI, the Python Package Index that `pip install` normally downloads from (pyLair's blog post lists that under "Next Steps," and pyFit's `AGENTS.md` says "publishing is a separate, deliberate step"). So for now both install the same way: clone the repository (pyLair's lives at [github.com/badass-data-science/pyLair-agentic-geodesics](https://github.com/badass-data-science/pyLair-agentic-geodesics), pyFit's at [github.com/badass-data-science/pyFit-agentic-polygon-nesting](https://github.com/badass-data-science/pyFit-agentic-polygon-nesting)), then install it in editable mode with the `mcp` extra:
 
 ```bash
 git clone https://github.com/badass-data-science/pyLair-agentic-geodesics.git
@@ -18,35 +20,35 @@ cd pyFit-agentic-polygon-nesting
 pip install -e ".[mcp]"
 ```
 
-Each install gives you two **console scripts** — small executable commands — a plain CLI (`pylair`, `pyfit`) and, once the `mcp` extra is in, an MCP server (`pylair-mcp`, `pyfit-mcp`): a lightweight process that speaks the Model Context Protocol (MCP) over standard input and output and, when asked, reports exactly which typed tools it exposes.
+Each install gives you two **console scripts**, small executable commands: a plain CLI (`pylair`, `pyfit`) and, with the `mcp` extra, an MCP server (`pylair-mcp`, `pyfit-mcp`), a lightweight process that speaks the Model Context Protocol over standard input and output and, when asked, reports which typed tools it exposes.
 
-One naming detail worth knowing before you go looking for pyFit on PyPI once it *is* published: the distribution name will be `pyfit-agentic-polygon-nesting` (plain `pyfit` was already taken on PyPI by an unrelated neural-net library), but the importable package, the CLI command, and the MCP console script all stay plain `pyfit`/`pyfit-mcp` regardless. pyLair has no such divergence — distribution name, package name, and CLI command are all just `pylair`.
+One naming detail for when pyFit *is* published: its distribution name is `pyfit-agentic-polygon-nesting` (plain `pyfit` was already taken on PyPI by an unrelated neural-network library), but the importable package, the CLI, and the MCP server stay `pyfit` and `pyfit-mcp`. pyLair has no such split; everything is `pylair`.
 
-Once both are installed, confirm all four console scripts actually landed on your `PATH`:
+Once both are installed, confirm all four console scripts landed on your `PATH`:
 
 ```bash
 which pylair pylair-mcp pyfit pyfit-mcp
 ```
 
-Each one should resolve to a path inside whatever virtual environment you installed into. If any of them come back empty, the install didn't finish cleanly — fix that before going any further, because every installation problem downstream of this point in the chapter is really just a variation on "the agent couldn't find the command."
+Each should resolve to a path inside the virtual environment you installed into. If any comes back empty, the install didn't finish cleanly. Fix that before going further: nearly every installation problem after this point is a variation on "the agent couldn't find the command."
 
-## Understanding the Connection, Not Just Copy-Pasting It
+## Understanding the Connection, Not Just Copying It
 
-Every agentic platform that can use pyLair or pyFit needs to do the same three things, however differently they each phrase it in their own configuration format:
+Every agentic platform that can use pyLair or pyFit does the same three things, however its configuration format phrases them:
 
 1. **Know the command** that starts each server (`pylair-mcp`, `pyfit-mcp`).
-2. **Launch it over stdio** — meaning the platform starts the server as a subprocess and talks to it through its standard input/output streams, not over a network port.
-3. **Discover its tools** by asking the running server what it exposes, rather than the platform having them hardcoded anywhere.
+2. **Launch it over stdio**: the platform starts the server as a subprocess and talks to it through its standard input and output streams, not over a network port.
+3. **Discover its tools** by asking the running server what it exposes, rather than having them hard-coded anywhere.
 
-Once you understand that this is *all* that's actually happening underneath any given platform's configuration screen, installing pyLair or pyFit anywhere stops being platform-specific trivia and becomes "fill in these three things in whatever format this particular tool wants." The rest of this chapter walks through that for a few real platforms, and then for "whatever you're actually using instead," because this book would rather teach you the pattern than assume you're on the one platform it screenshots.
+Once you see that this is *all* that happens underneath any platform's configuration screen, installing pyLair or pyFit stops being platform trivia and becomes "fill in these three things in whatever format this tool wants." The rest of this section walks through a few platforms, and then "whatever you're using instead," because the pattern matters more than any one platform.
 
 ### OpenClaw
 
-OpenClaw doesn't consume MCP servers on its own for these two projects — instead, each ships an **OpenClaw skill**: a Markdown playbook that teaches an OpenClaw agent to drive the plain CLI (`pylair`, `pyfit`) directly, with no MCP server involved at all. This is a genuinely separate integration path from the `pylair-mcp`/`pyfit-mcp` servers below, not a alternate way of reaching the same server, and — worth knowing before you copy one project's setup steps onto the other — **the two skills use different directory conventions**, so following pyLair's own layout for pyFit will leave pyFit's skill undiscovered.
+For [OpenClaw](https://openclaw.ai/), each project ships an **OpenClaw skill** instead of relying on its MCP server: a Markdown playbook that teaches an OpenClaw agent to drive the plain CLI (`pylair`, `pyfit`) directly. (pyLair's repository notes that OpenClaw has no MCP client, which is why its skill wraps the CLI.) This is a separate integration path from the `pylair-mcp` and `pyfit-mcp` servers below, and **the two skills use different directory conventions**, so following pyLair's layout for pyFit will leave pyFit's skill undiscovered.
 
-**pyLair's skill** lives as a single file at the repo root, `SKILL.md`. To install it:
+**pyLair's skill** is a single file at the repository root, `SKILL.md`. To install it:
 
-1. Copy (or symlink) `SKILL.md` into your OpenClaw workspace's skills directory, e.g. `~/.openclaw/workspace/skills/pylair/SKILL.md`.
+1. Copy (or symlink) `SKILL.md` into your OpenClaw workspace's skills directory, for example `~/.openclaw/workspace/skills/pylair/SKILL.md`.
 2. Merge pyLair's `openclaw.config.snippet.jsonc` into `~/.openclaw/openclaw.json`:
 
 ```jsonc
@@ -61,9 +63,9 @@ OpenClaw doesn't consume MCP servers on its own for these two projects — inste
 }
 ```
 
-That's the whole config — pyLair has no API key or environment variable to set. The skill's own frontmatter gates it on the `pylair` binary being on `PATH` (`metadata.openclaw.requires.bins: ["pylair"]`), so this entry just needs to exist and be enabled once the CLI itself is installed.
+That's the whole configuration: pyLair has no API key or environment variable to set. The skill's frontmatter gates it on the `pylair` binary being on `PATH` (`metadata.openclaw.requires.bins: ["pylair"]`), so the entry only needs to exist and be enabled once the CLI is installed.
 
-**pyFit's skill**, by contrast, lives nested at `skills/pyfit/SKILL.md` inside its own repository — OpenClaw discovers skills by scanning configured roots for `<root>/<skill-name>/SKILL.md` up to several levels deep, and pyFit's own config snippet takes advantage of that by pointing straight at the repo's `skills/` directory instead of asking you to copy anything into your OpenClaw workspace at all:
+**pyFit's skill** lives one level down, at `skills/pyfit/SKILL.md` in its repository. OpenClaw discovers skills by scanning configured roots for `<root>/<skill-name>/SKILL.md`, and pyFit's config snippet uses that by pointing at the repository's `skills/` directory instead of asking you to copy anything into your workspace:
 
 ```jsonc
 {
@@ -80,13 +82,13 @@ That's the whole config — pyLair has no API key or environment variable to set
 }
 ```
 
-Merge that into `~/.openclaw/openclaw.json` (replacing the `extraDirs` path with wherever you actually cloned the repo), with `pyfit` itself installed and on `PATH` — again, no API key or environment variable needed, just the same `requires.bins` gate pyLair's own skill uses.
+Merge that into `~/.openclaw/openclaw.json`, replacing the `extraDirs` path with wherever you cloned the repository, with `pyfit` installed and on `PATH`. Again there's no API key, just the same `requires.bins` gate pyLair's skill uses.
 
-Two skills, two real conventions: **copy pyLair's file in; point at pyFit's directory instead.** Getting this backwards — trying to symlink pyFit's nested file the way pyLair's flat one works, or pointing `extraDirs` at pyLair's repo root expecting the same nested-directory discovery — is a real, easy mistake, and the honest fix is just reading each project's own installation section rather than assuming the two mirror each other.
+Two skills, two conventions: **copy pyLair's file in; point at pyFit's directory.** Getting this backwards (symlinking pyFit's nested file the way pyLair's flat one works, or pointing `extraDirs` at pyLair's repository root) is an easy mistake. Read each project's own installation section rather than assuming the two mirror each other.
 
 ### Claude Code
 
-Claude Code registers MCP servers through its own configuration — either a project-level `.mcp.json` file using the same `command`/`args` shape shown throughout this chapter, or via `claude mcp add` from the command line. Because CLI flags are the part of any tool most likely to have changed by the time you're reading this, run `claude mcp add --help` for the exact current syntax rather than trusting a book to have it memorized correctly forever; the important, stable fact is that you're giving it the same information as everywhere else in this chapter — a name, a command, and (empty, here) arguments — once per server:
+Claude Code registers MCP servers either in a project-level `.mcp.json` file, using the same `command`/`args` shape shown throughout this chapter, or with `claude mcp add` from the command line. CLI flags are the part of any tool most likely to have changed by the time you read this, so run `claude mcp add --help` for the current syntax. The stable fact is that you give it the same information as everywhere else: a name, a command, and (here, empty) arguments, once per server:
 
 ```jsonc
 {
@@ -97,15 +99,15 @@ Claude Code registers MCP servers through its own configuration — either a pro
 }
 ```
 
-Both projects' `SKILL.md` files are written in the format OpenClaw consumes natively as a full agentic playbook. Claude Code doesn't necessarily read them the same way, but they remain useful reference material regardless — point your agent at either one when you want it to follow that project's documented CLI workflow precisely.
+Both projects' `SKILL.md` files are written in the format OpenClaw consumes. Claude Code doesn't load them the same way, but they remain useful reference material: point your agent at one when you want it to follow that project's documented CLI workflow.
 
 ### Hermes, and Other MCP-Speaking Agent Frameworks
 
-Rather than guess at a specific proprietary configuration format for a platform this book can't screenshot with confidence, here's the honest version: **if Hermes — or any other agentic framework you're using — can launch a subprocess by command and arguments and speak MCP over stdio, the same three things from earlier in this chapter apply unchanged.** Register `pylair-mcp` and `pyfit-mcp` the same way you would for any other client. Consult that platform's own documentation for where its configuration file lives and what key holds the server list; the *shape* of what goes in it is what this chapter has already taught you.
+Rather than guess at a configuration format this book can't verify, here is the general rule: **if Hermes, or any other agent framework, can launch a subprocess by command and arguments and speak MCP over stdio, the three steps above apply unchanged.** Register `pylair-mcp` and `pyfit-mcp` the way you would any other server. That platform's documentation says where its configuration file lives and which key holds the server list; the *shape* of what goes in it is what this chapter has already shown.
 
 ### Generic MCP Clients (Claude Desktop and Others)
 
-Several general-purpose AI assistants beyond the ones named above also speak MCP directly — Claude Desktop is a common one, configured via a `claude_desktop_config.json` file (location varies by OS) with an `mcpServers` key holding the same `command`/`args` shape one more time:
+Several general-purpose AI assistants also speak MCP directly. Claude Desktop is a common one, configured through a `claude_desktop_config.json` file (its location varies by operating system) whose `mcpServers` key holds the same `command`/`args` shape once more:
 
 ```jsonc
 {
@@ -116,13 +118,13 @@ Several general-purpose AI assistants beyond the ones named above also speak MCP
 }
 ```
 
-If a pattern is starting to feel repetitive by this point in the chapter, that's the point: this is a *standard*, and once you've set pyLair and pyFit up on one MCP client, setting them up on the next one is mostly finding where that client keeps its config file.
+If this is starting to feel repetitive, that's the point: MCP is a *standard*, and once you've set pyLair and pyFit up on one client, setting them up on the next is mostly a matter of finding where it keeps its configuration file.
 
-## The Gotcha, Demonstrated Live
+## The Gotcha, Hit on Purpose
 
-Here is a failure worth hitting on purpose once, in a terminal, before an agentic client ever hides it behind a less legible error — narrated exactly as it happens, because it's the single most common installation problem across both projects, and it looks alarming right up until you know what it is.
+The AI Henchman's first words to the new servers were an apology. "The tool `pylair-mcp` does not exist," it reported, with total confidence, thirty seconds after our Heroine had watched `which` find it. Both of them were right, which is what makes this the most common installation problem across both projects, and worth hitting once on purpose.
 
-The setup: a virtual environment, both projects installed into it with `pip install -e ".[mcp]"`, both console scripts confirmed present with `which pylair-mcp pyfit-mcp`. Then, a client configuration pointing at a server by its bare command name:
+The setup: a virtual environment, both projects installed into it with `pip install -e ".[mcp]"`, both console scripts confirmed with `which pylair-mcp pyfit-mcp`. Then a client configuration that names a server by its bare command:
 
 ```json
 { "mcpServers": { "pylair": { "command": "pylair-mcp", "args": [] } } }
@@ -135,9 +137,9 @@ RuntimeError: Client failed to connect: [Errno 2] No such file or
 directory: 'pylair-mcp'
 ```
 
-Which is deeply confusing the first time you see it, because `pylair-mcp` unquestionably *does* exist — `which pylair-mcp` just said so, in the same terminal, thirty seconds earlier.
+That is confusing the first time, because `pylair-mcp` *does* exist: `which` just said so, in the same terminal.
 
-Here's what's actually going on: when your agentic platform launches a server, it's starting a **new subprocess**, and that subprocess does not automatically inherit the activated virtual environment's `PATH` the way your interactive terminal session does. The bare command name `pylair-mcp` only resolves if the launching process's `PATH` includes your venv's `bin/` directory — and depending on how your agentic platform spawns subprocesses, it may or may not. The exact same thing happens to `pyfit-mcp`, for the exact same reason — this isn't a pyLair-specific or pyFit-specific bug, it's a property of how subprocess launching works, and it's worth fixing for both servers identically rather than being surprised twice.
+Here's what's going on. When your agentic platform launches a server, it starts a **new subprocess**, and that subprocess doesn't necessarily inherit the activated virtual environment's `PATH` the way your interactive terminal does. The bare name `pylair-mcp` resolves only if the launching process's `PATH` includes the environment's `bin/` directory, and depending on how the platform spawns subprocesses, it may not. The same happens to `pyfit-mcp` for the same reason. It isn't a pyLair or pyFit bug; it's how subprocess launching works, so fix it for both servers at once rather than being surprised twice.
 
 The fix is one line per server: use the **absolute path** to the installed console script instead of its bare name.
 
@@ -150,21 +152,22 @@ The fix is one line per server: use the **absolute path** to the installed conso
 }
 ```
 
-Find those exact paths with `which pylair-mcp pyfit-mcp` while your venv is activated, and paste the results in verbatim. This one change resolves the overwhelming majority of "the tool obviously exists but the client can't find it" reports you'll run into across every platform in this chapter.
+Find those paths with `which pylair-mcp pyfit-mcp` while your environment is activated, and paste them in verbatim. This one change resolves most "the tool obviously exists but the client can't find it" reports on every platform in this chapter. (The AI Henchman, once its configuration held absolute paths, withdrew its apology.)
 
-A second, smaller gotcha worth knowing before you build a CI matrix or reach for an older interpreter: **neither `pylair-mcp` nor `pyfit-mcp` has a published release supporting Python 3.9.** Both projects pin `mcp<2.0` for the identical reason — `mcp` 2.0.0 removed `mcp.server.fastmcp` entirely, and both servers' `FastMCP`/`Image` imports depend on it — and no version of `mcp` on PyPI supporting that pinned range also supports 3.9. The plain CLIs (`pylair`, `pyfit`) install and run fine on 3.9; only the `mcp` extra itself requires 3.10+.
+A second, smaller gotcha, for anyone reaching for an older interpreter: **the MCP servers don't run on Python 3.9.** Both projects pin `mcp<2.0`, because `mcp` 2.0.0 removed `mcp.server.fastmcp`, which both servers import, and no published release of `mcp` supports Python 3.9. The plain CLIs (`pylair`, `pyfit`) install and run fine on 3.9; only the `mcp` extra needs 3.10 or later.
 
 ## Proof of Life
 
-Installation isn't actually finished until you've watched real tool calls succeed — "the install command didn't error" is not the same claim as "the connection works," and this book isn't going to let the distinction slide even in the setup chapter. No competent supervillain commissions a circumpolar fortress from a contractor who has never once been asked to build a shed, and our heroine isn't about to either: here's the smoke test for both toolkits, using configurations too small to be anyone's actual secret lair, deliberately unimpressive so that nothing about impressing anyone gets in the way of just watching the wiring work — **the Proof-of-Concept Yurt** for pyLair, and **the Proof-of-Concept Nesting Job** for pyFit.
+Installation isn't finished until you've watched tool calls succeed: "the install command didn't error" is a different claim from "the connection works." Here is the Foreman's shed, one for each toolkit, too small to be anyone's lair and unimpressive on purpose, so nothing distracts from watching the wiring work: **the Proof-of-Concept Yurt** for pyLair and **the Proof-of-Concept Nesting Job** for pyFit.
 
 **Prompt:**
 > Confirm the pyLair MCP server is running and list every tool it exposes. Then run `design_dome` on the smallest, cheapest configuration you can, just to prove the connection works end to end.
 
-**What Comes Back** (a real result, from a real running server — a Class I icosahedral sphere at frequency 2 and radius 1.0, the smallest, plainest configuration this book has a name for: the Proof-of-Concept Yurt):
+**What Comes Back** (from a running server: a Class I icosahedral sphere at frequency 2 and radius 1.0, the Proof-of-Concept Yurt):
 
 ```
-Tools exposed: design_dome, preview_dome, get_bill_of_materials, export_dome
+Tools exposed: design_dome, preview_dome, get_bill_of_materials, export_dome,
+  get_assembly_manifest, export_assembly_job_spec, render_assembly_schematic
 
 design_dome result:
 {
@@ -192,18 +195,17 @@ design_dome result:
 }
 ```
 
-**What It Means:** Four real tools came back from a real subprocess, and `vertex_count`/`edge_count`/`face_count` — 42, 120, 80 — match Chapter 4's own golden-value formula for a Class I icosahedral sphere exactly (`10f²+2 = 10(4)+2 = 42`; `30f² = 120`; `20f² = 80`, at `f=2`). Nothing here is dome-shaped enough to build — a frequency-2 sphere is about as coarse as this construction gets, structurally closer to a yurt than a fortress, which is the whole reason it earned that name — and that's entirely the point: this proves the wiring works, not that the design is good.
+**What It Means:** Seven tools came back from a running subprocess. The first four (design, preview, bill of materials, export) are the core loop Chapter 18 teaches; the last three handle per-piece assembly and arrive in Chapter 22. The counts, 42 vertices, 120 edges, and 80 faces, match Chapter 3's golden-value formulas for a Class I icosahedral sphere at `f=2`: `10f²+2 = 42`, `30f² = 120`, `20f² = 80`. A frequency-2 sphere is about as coarse as this construction gets, closer to a yurt than a fortress, which is how it got its name. It proves the wiring works, not that the design is good.
 
-Look at the shape directly rather than only trusting the summary:
+Look at the shape, too, rather than only trusting the summary:
 
-*(Figure 2-1: The Proof-of-Concept Yurt, a real `preview_dome` render — a frequency-2 Class I icosahedral sphere, unremarkable on purpose.)*
-
-![The Proof-of-Concept Yurt wireframe preview](examples/images/poc-yurt.png)
+**[IMAGE: examples/images/poc-yurt.png | A depth-cued wireframe of a coarse geodesic sphere made of 80 large triangles.]**
+**[CAPTION: The Proof-of-Concept Yurt, rendered by `preview_dome`: a frequency-2 Class I icosahedral sphere, unremarkable on purpose.]**
 
 **Prompt:**
-> Now confirm the pyFit MCP server is running and list every tool it exposes. Run `design_nest` on six unit squares and a 3×2 sheet — a case small enough to check by hand — just to prove that connection works too.
+> Now confirm the pyFit MCP server is running and list every tool it exposes. Run `design_nest` on six unit squares and a 3×2 sheet, a case small enough to check by hand, just to prove that connection works too.
 
-**What Comes Back** (a real result):
+**What Comes Back:**
 
 ```
 Tools exposed: design_nest, preview_nest, get_nest_report, export_nest
@@ -215,25 +217,27 @@ design_nest result:
 }
 ```
 
-**What It Means:** Four more real tools, from a second real subprocess — and a result that's genuinely checkable by hand: six unit squares have a combined area of 6, a 3×2 sheet has an area of exactly 6, and pyFit's own README states this exact case tiles perfectly. `utilization_by_sheet: [1.0]` — 100% — confirms it did, on the very first sheet, with none left over. This is this book's version of Chapter 1's own promise: a boring, hand-verifiable result, shown here specifically because there's nowhere for a packing mistake to hide in it.
+**What It Means:** Four more tools, from a second subprocess, and a result you can check by hand: six unit squares have a combined area of 6, a 3×2 sheet has an area of 6, and pyFit's README says this case tiles perfectly. `utilization_by_sheet: [1.0]`, or 100%, confirms it did, on one sheet. It's a boring, hand-checkable result, chosen because there's nowhere for a packing mistake to hide in it. The Foreman checked it with a pencil anyway, and nodded.
 
-*(Figure 2-2: The Proof-of-Concept Nesting Job, a real `preview_nest` render — six unit squares tiling a 3×2 sheet at exactly 100% utilization.)*
+**[IMAGE: examples/images/poc-nest_sheet1.png | Six unit squares filling a 3-by-2 rectangular sheet in two rows of three, with no gaps.]**
+**[CAPTION: The Proof-of-Concept Nesting Job, rendered by `preview_nest`: six unit squares tiling a 3×2 sheet at 100% utilization.]**
 
-![Six unit squares perfectly tiling a 3x2 sheet](examples/images/poc-nest_sheet1.png)
-
-One more thing worth confirming while you're here, since Chapter 1 made a point of it: the MCP tools enforce validation, not just convenience — nothing about calling `design_dome` instead of a command line lets an invalid configuration slip through.
+One more thing to confirm while you're here, since Chapter 1 made a point of it: calling `design_dome` instead of the command line doesn't let an invalid configuration slip through.
 
 **Prompt:**
-> Ask `design_dome` for a Class II (Triacon) dome at frequency 3 — deliberately invalid, since Class II needs an even frequency. What comes back?
+> Ask `design_dome` for a Class II (Triacon) dome at frequency 3, which is deliberately invalid, since Class II needs an even frequency. What comes back?
 
-**What Comes Back** (a real tool error, not a crash):
+**What Comes Back** (a tool error, not a crash):
 
 ```
--c 2 (Class II / Triacon) requires an even --frequency. Exiting.
+Error executing tool design_dome: -c 2 (Class II / Triacon) requires an
+even --frequency. Exiting.
 ```
 
-**What It Means:** That's the identical message the `pylair` CLI's own `-c 2 -f 3` would give — not a coincidence, and not a looser or differently-worded approximation for the agentic side. One shared engine (`pylair/api.py`, and `pyfit/api.py` on the nesting side) validates every request regardless of which interface it arrived through, which is the whole reason this book trusts an agent's tool calls as much as it trusts a terminal.
+**What It Means:** After the MCP framework's "Error executing tool" prefix, that's the same message the `pylair` CLI gives for `-c 2 -f 3`, flag names and all. It isn't a coincidence: one shared engine (`pylair/api.py`, and `pyfit/api.py` on the nesting side) validates every request, whichever interface it arrived through. That is why this book trusts an agent's tool calls as much as a terminal's. Chapter 5 explains why Class II needs an even frequency.
 
 ## What's Next
 
-The plumbing works, on both toolkits, and Part I closes with it. Part II picks the design problem back up for real: a real base polyhedron, a real subdivision, and the first genuine geometric question this book asks — not "does the connection work," but "which shape should this even start from, and why." Chapter 3 starts there.
+The plumbing works on both toolkits, and Part I closes with it. That evening a third envelope from the HOA appeared under the apartment door. It turned out to be about the recycling bins. Our Heroine took it as a warning anyway.
+
+Part II starts the design: a base polyhedron, a subdivision, and the first geometric question, not "does the connection work," but "which shape should this start from, and why."

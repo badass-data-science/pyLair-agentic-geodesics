@@ -1,37 +1,42 @@
 # Chapter 15: Cutting Templates — Hubs, Panels, and a Clustering-Tolerance Gotcha
 
-Four chapters of geometry work — subdivision, projection, shaping, and now hub angles, strut clustering, and panel shapes — all converge here, on the two file types a fabricator actually needs: one cutting template per genuinely distinct hub connector shape, and one per genuinely distinct panel shape. This chapter is also this book's bridge into Part VI: every panel-template DXF file `export_dome`'s `face_templates=True` writes is exactly the kind of file a pyFit nesting job (Chapter 20) expects as input.
+The Foreman's request was simple: part numbers. He did not want 156 custom connector plates, one per joint, each a snowflake. He wanted a short list of plate *designs*, a count for each, and a drawing he could hand to the cutting crew. The CFV wanted the same list for a different reason: every distinct design was a setup charge.
 
-## Rotation-Invariant Clustering: What "Same Shape" Actually Means Here
+Four chapters of geometry (subdivision, projection, shaping, and now hub angles, strut clustering, and panel shapes) converge here on the two kinds of file a fabricator needs: one cutting template per distinct hub-connector shape, and one per distinct panel shape. This chapter is also the bridge to Part VI: every panel-template DXF that `export_dome` writes with `face_templates=True` is the kind of file a pyFit nesting job (Chapter 20) takes as input.
 
-A geodesic dome has far more physical hubs and panels than genuinely distinct *shapes* — Chapter 12 already hinted at this by showing one hub's own spoke angles depend on an arbitrary reference strut. `group_hub_types` solves that arbitrariness directly: rather than comparing hubs by their raw, reference-dependent spoke-angle lists, it builds a rotation-invariant fingerprint — valence, plus the cyclic sequence of (angular gap to the next strut, that strut's tangential angle) going all the way around the hub in true angular order — and then tries every possible rotation of that sequence, keeping the lexicographically smallest one. Two hubs that are the same physical shape, just rotated relative to each other, are guaranteed to produce the *identical* signature this way, because a laser-cut flat template's absolute rotation on the page never mattered in the first place — only the angles *between* struts do. `group_face_types` (Chapter 14) does the equivalent job for panels, using edge lengths instead of angles.
+## What "Same Shape" Means Here
 
-## Generating Real Templates for the Actual Secret Lair
+A geodesic dome has far more hubs and panels than distinct *shapes*, and Chapter 12 showed why comparing hubs is tricky: each hub's spoke angles depend on an arbitrary reference strut. `group_hub_types` removes that arbitrariness. Instead of comparing raw, reference-dependent lists, it builds a fingerprint that doesn't care where you start: the hub's valence (how many struts meet there), plus the sequence of pairs (angular gap to the next strut, that strut's tilt) all the way around the hub in angular order.
 
-Here's the payoff, run for real on the Actual Secret Lair — Class III `(4,1)`, elongated `1.8`× on Z, truncated at `0.499999`.
+It then tries every rotation of that sequence and keeps the one that sorts first alphabetically, so to speak. Two hubs with the same physical shape, rotated relative to each other, are guaranteed the *same* fingerprint, because a flat connector template's rotation on the page never mattered; only the angles *between* struts do. `group_face_types` does the equivalent for panels, with edge lengths (Chapter 14).
+
+## Templates for the Actual Secret Lair
+
+Here is the payoff on the Actual Secret Lair: Class III `(4,1)`, stretched `1.8`× on Z, truncated at `0.499999`.
 
 **Prompt:**
-> Export this dome with hub and panel templates — `hub_templates=True`, `face_templates=True`. How many genuinely distinct hub shapes are there, versus the total number of hubs?
+> Export this dome with hub and panel templates, `hub_templates=True` and `face_templates=True`. How many distinct hub shapes are there, against the total number of hubs?
 
-**What Comes Back** (a real `export_dome` result): This dome has `156` total hubs. `group_hub_types` finds `32` genuinely distinct shape groups among them, and all `32` actually get a `_hubtype*.dxf` file written — every hub on this dome has at least 2 struts meeting there, and therefore a real angular pattern to draw a template for.
+**What Comes Back** (summarizing the `export_dome` result, which lists 86 files written: the default VRML and DXF, 32 hub templates, and 52 panel templates): this dome has `156` hubs. `group_hub_types` finds `32` distinct shapes among them, and all `32` get a `_hubtype*.dxf` file, since every hub has at least two struts and therefore an angular pattern to draw.
 
-That "all of them" is itself worth a footnote, because it wasn't always true of this exact dome. `get_bill_of_materials` explicitly skips any hub-shape group with `valence <= 1` before writing files — a connector plate with only one strut socket has no angular pattern to draw a template for at all, so that skip is still real, correct, defensive code. It used to actually trigger here: an earlier version of `truncate()` never gave a boundary triangle's own cut-plane edge a chord at all, so the `50` hubs sitting on this dome's cut base ring only ever connected *upward*, never to their own ring-neighbors — `25` of them stuck at a stub valence of `1`, with no defined angle to report. Once that base-ring-strut fix shipped, those same `50` hubs split into two entirely ordinary, template-needing shapes instead: `25` at valence `3`, `25` at valence `4` — the two new struts closing each hub into its ring neighbors on either side.
+"All of them" deserves a footnote, because it wasn't always true for this dome. `get_bill_of_materials` skips any hub-shape group with a valence of 1 or less before writing files: a plate with one socket has no angular pattern to draw, so the skip is correct, defensive code. It used to trigger here.
 
-**What It Means:** `156` physical hubs collapse to `32` real, distinct connector templates — not `156` separate files, and every single one of them a genuine, buildable connector, unlike the earlier, buggier version of this exact dome. A builder ordering connector plates needs 32 distinct part numbers, cut in the quantities each group's `count` reports, not one custom plate per physical joint.
+An earlier version of `truncate()` never gave a boundary triangle's cut-plane edge a chord, so the `50` hubs on the dome's cut base ring connected only *upward*, never to their neighbors around the ring, and `25` of them were stuck at a valence of `1`. Once the fix shipped, those `50` hubs became two ordinary shapes, `25` at valence `3` and `25` at valence `4`, each closed into its ring neighbors on both sides. Chapter 22 tells how that bug was caught, by a check that wasn't looking for it.
 
-Panel templates follow the identical logic on the shape side: this same dome's `260` total panels collapse to `52` distinct `_facetype*.dxf` files.
+**What It Means:** `156` physical hubs collapse to `32` connector designs, every one a buildable plate. A builder orders 32 part numbers, in the quantities each group reports, not one custom plate per joint. The Foreman got his list.
 
-*(Figure 15-1: Six of this dome's real, distinct panel cutting templates, drawn directly from their actual edge-length data — genuinely different shapes, even though several look superficially similar at a glance, which is exactly why a shape-matching algorithm, not a human eyeballing a pile of triangles, is doing this grouping.)*
+Panels follow the same logic: this dome's `260` panels collapse to `52` distinct `_facetype*.dxf` files.
 
-![Six real distinct panel cutting template shapes, each labeled with its real panel count](examples/images/panel_templates_gallery.png)
+**[IMAGE: examples/images/panel_templates_gallery.png | Six triangle outlines in a grid, each a slightly different shape, each labeled with how many panels of that shape the dome needs.]**
+**[CAPTION: Six of the Actual Secret Lair's distinct panel templates, drawn from their edge-length data. Several look alike at a glance, which is why shape matching, not someone eyeballing a pile of triangles, does the grouping.]**
 
-## The Empirically-Tuned Number Behind the Clustering
+## The Tuned Number Behind the Clustering
 
-Both `group_hub_types` and `group_face_types` round angle/length values before comparing them, for the same reason Chapter 13's strut clustering does: the geometry pipeline's own floating-point arithmetic produces tiny amounts of noise between values that are supposed to be identical. The specific tolerance chosen for hub-angle comparison — 3 decimal places — is a real, empirically-tuned number, not a round default reached for out of habit, and it's worth seeing exactly why.
+Both `group_hub_types` and `group_face_types` round values before comparing them, for the same reason Chapter 13's strut clustering does: floating-point arithmetic leaves tiny noise between values that should be identical. The tolerance for hub angles, 3 decimal places, is an empirically tuned number, not a habit, and the reason is worth seeing.
 
-Two hubs from the *exact same symmetry orbit* — physically identical positions on the dome, related by an exact rotational symmetry of the underlying construction — were observed differing by about `2×10⁻⁶` degrees (e.g. `64.465668°` versus `64.465666°`, a difference showing up at the 6th decimal place). A precision of 6 decimal places does *not* absorb that difference — it still reports the two hubs as different shapes, because their 6th-decimal digits genuinely disagree. A precision of 3 comfortably does, since both values round to the identical `64.466°`.
+Two hubs from the *same symmetry orbit*, physically identical positions related by an exact rotation of the construction, were observed differing by about `2×10⁻⁶` degrees (`64.465668°` against `64.465666°`). Six decimal places do *not* absorb that difference and report the hubs as two shapes; three do, since both round to `64.466°`.
 
-This isn't a one-off observation; it was checked empirically across a real range, and this book's own testing confirms the same pattern directly on the Actual Secret Lair:
+The same pattern shows on the Actual Secret Lair, grouping its hubs at each precision:
 
 ```json
 {"angle_precision": 1, "distinct_hub_groups": 32}
@@ -42,22 +47,22 @@ This isn't a one-off observation; it was checked empirically across a real range
 {"angle_precision": 6, "distinct_hub_groups": 40}
 ```
 
-Precision 1 through 4 all agree on the identical, stable count — a genuine plateau, not a coincidence — while precision 5 and 6 start reporting spurious extra groups, purely from noise that a coarser tolerance correctly treats as "the same." `3` is deliberately chosen as a safety margin comfortably inside that stable plateau, not the loosest value that happened to pass a single test.
+Precisions 1 through 4 agree on the same count, a stable plateau, while 5 and 6 report spurious extra groups made purely of noise. The code's comments record the same plateau across frequencies 4 through 16, with 4 sometimes over-splitting on other domes, which is why `3` was chosen: a safety margin inside the plateau, not the loosest value that happened to pass one test.
 
 **Prompt:**
-> If that template count looks suspiciously high for how symmetric this dome should be, what's the first thing you'd check?
+> If the hub-template count looks suspiciously high for how symmetric this dome should be, what's the first thing you'd check?
 
 **What Comes Back:**
-> This specific tolerance isn't exposed as a CLI flag — it's a fixed internal constant, verified stable across frequencies 4 through 16 in pyLair's own test suite. At any frequency within that tested range, floating-point noise inflating the template count past what the dome's real symmetry would suggest is unlikely to be the cause. If you're deliberately working at a frequency well outside that range and a hub-template count looks implausibly large for how symmetric the design should be, this exact noise floor — genuinely identical hubs disagreeing at the 5th or 6th decimal place — is the documented, first thing worth suspecting, even though it isn't something you can currently tune away yourself; it would be worth reporting as a real edge case rather than assuming your dome is secretly less symmetric than it looks.
+> This tolerance isn't a CLI option or tool parameter; it's a fixed internal constant, checked empirically across frequencies 4 through 16 according to the code's comments. Within that range, noise inflating the template count is unlikely to be the cause. If you're working well outside that range and the count looks implausibly large for the design's symmetry, this noise floor (identical hubs disagreeing in the fifth or sixth decimal place) is the first thing to suspect. You can't tune it away yourself, so report it as an edge case rather than assuming your dome is less symmetric than it looks.
 
 ## Panel Templates and Chirality, Paid Off
 
-Chapter 14 raised the chirality flag and promised this chapter would show what it means for template count specifically. Here's the payoff: `face_templates=True` writes **one file per shape group, never per orientation** — a chiral group's `240` panels split `120`/`120` between two true mirror images still produces exactly one `_facetypeN.dxf` file, not two. This isn't an oversight; a physical template can always be flipped over on the material itself, so one file genuinely covers both orientations. The chirality flag stays useful precisely because template *count* doesn't reflect it at all — a builder still needs to know, separately, that half of a given group's panels need that template used flipped, which is exactly the awareness Chapter 14 taught, not something the file count alone would ever reveal.
+Chapter 14 promised to show what the chirality flag means for the template count. Here it is: `face_templates=True` writes **one file per shape group, never one per orientation**. A chiral group of `240` panels split `120` and `120` between mirror images still produces one `_facetypeN.dxf`. That isn't an oversight, since a template can be turned over on the material. The flag stays useful precisely because the file count doesn't show it: a builder still has to know that half the group's panels need the template face down. The Junior Henchman's "FLIP" was written on the template, not the filename.
 
-## What This Chapter's Numbers Don't Yet Answer
+## What These Numbers Don't Answer Yet
 
-One honest gap, worth stating in exactly one sentence before Part VI closes it: knowing that this dome needs `52` distinct panel shapes, in specific quantities each, says nothing at all about how many sheets of actual plywood it takes to cut them all out — that's a materially different question, and Chapter 20 is where it finally gets answered for real.
+One gap, in one sentence: knowing the dome needs `52` panel shapes in specific quantities says nothing about how many sheets of plywood it takes to cut them, a different question Chapter 20 answers. The CFV underlined it twice.
 
 ## What's Next
 
-Chapter 16 covers the last gotcha in this dome's own bill of materials: truncation-boundary slivers — chords and panels shrunk to near-nothing by an unlucky cutoff — and why pyLair flags rather than silently drops them. After that, Part V exports every one of this chapter's real templates to disk for good, and Part VI picks up exactly where this chapter's own open question left off.
+Chapter 16 covers the last gotcha in this dome's bill of materials: truncation slivers, struts and panels shrunk to almost nothing by an unlucky cutoff, and why pyLair flags them rather than silently dropping them. Part V then writes every template here to disk, and Part VI takes up the CFV's underlined question.

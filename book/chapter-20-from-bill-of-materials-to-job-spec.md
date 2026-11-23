@@ -1,20 +1,22 @@
 # Chapter 20: From Bill of Materials to Job Spec — Nesting the Actual Secret Lair's Panels
 
-Chapter 19 proved pyFit works on its own terms. This chapter makes it work on pyLair's: a real job spec, built directly from the Actual Secret Lair's own bill of materials, with zero hand-typed quantities anywhere in it — and the real, sometimes surprising, numbers that come back once actual dome panels, not unit squares, are the shapes being nested.
+The CFV's concern about plywood had sharpened into a concern about trucks. Every sheet had to reach a dormant volcano by road, and a convoy of lumber trucks climbing toward an uninhabited crater is precisely the kind of thing that raises the Interpol heat. "Fewer sheets," she said, "is fewer trucks, is fewer questions." She wanted a number, and she wanted it before anyone ordered anything.
 
-## Building a Job Spec With Zero Hand-Typing
+Chapter 19 showed pyFit working on its own terms. This chapter puts it to work on pyLair's: a job spec built straight from the Actual Secret Lair's bill of materials, with no quantity typed by hand, and the numbers that come back once real dome panels, not unit squares, are being nested.
 
-Chapter 15 already generates exactly the file pyFit needs: `face_templates` writes one DXF per distinct panel shape, and the same report that triggers those files carries a **"Panel Cutting Templates"** section pairing each one with its own real panel count:
+## A Job Spec With No Hand-Typing
+
+Chapter 15 already produces the files pyFit needs: `face_templates=True` writes one DXF per distinct panel shape, and the same report carries a **"Panel Cutting Templates"** section pairing each file with its panel count. Here is the first entry, for the Lair at its build radius of 2.5 meters (one of 52):
 
 ```json
-{"template_file": "lair_facetype1.dxf", "edge_lengths": [0.248, 0.282, 0.337], "panel_count": 5}
-{"template_file": "lair_facetype2.dxf", "edge_lengths": [0.213, 0.337, 0.352], "panel_count": 5}
+{"template_file": "lair_facetype1.dxf", "edge_lengths": [0.621, 0.705, 0.843], "panel_count": 5,
+ "face_indices": [0, 17, 47, 72, 97], "chiral": false, "orientations": null}
 ```
 
-A pyFit job spec's `"parts"` list needs exactly two things per shape — a `"dxf"` path and a `"quantity"` — and this report already hands you both, paired, for every one of this dome's 52 distinct panel shapes:
+A pyFit job spec's `"parts"` list needs two things per shape, a `"dxf"` path and a `"quantity"`, and the report supplies both, already paired, for all 52 shapes:
 
 ```python
-templates = bom_report["pyLair report"]["Panel Cutting Templates"]
+templates = report["pyLair report"]["Panel Cutting Templates"]
 parts = [
     {"name": f"facetype{i+1}", "dxf": t["template_file"], "quantity": t["panel_count"], "allow_mirror": True}
     for i, t in enumerate(templates)
@@ -22,51 +24,70 @@ parts = [
 job = {"sheet": {"width": 2.44, "height": 1.22}, "parts": parts}
 ```
 
-**260 total panels, 52 distinct shapes, zero numbers typed by hand** — every quantity traced directly back to a real count pyLair itself already computed. This is the entire point of the two projects sharing nothing but a file format: pyLair never needs to know pyFit exists, and this job spec never needed anything from pyLair except files it was already writing anyway.
+**260 panels, 52 shapes, no number typed by hand**: every quantity traces to a count pyLair computed. That's the point of two projects sharing only a file format. pyLair never needs to know pyFit exists, and the job spec needs nothing from pyLair but files it was writing anyway. (`allow_mirror: True` is fine here: the Lair has no chiral panels, Chapter 14 found, and its panels are plain plywood.)
 
-## A Real Job, and a Real Lesson About Job Size
+## The Full Job, and a Lesson About Job Size
 
-Running this exact 260-panel, 52-shape job on a full-size `2.44m × 1.22m` sheet (a standard 8-foot-by-4-foot panel, in meters) is where this chapter's first honest lesson shows up, live rather than theoretical. pyFit's own documentation already warns that reusing scrap across sheets costs real search time on large jobs — every part instance tries each already-opened sheet before starting a new one, and each try means a full NFP-based candidate search against everything already placed there. On a sheet this large relative to a `~0.2`-unit panel, dozens of panels can fit before a new sheet ever opens, and the per-sheet candidate search grows with the *square* of how many panels are already placed on it.
-
-This isn't a hypothetical: the exact job above, at the default rotation step, was still running — correctly, not stuck, just genuinely working through an expensive search — several minutes in, having placed only a few dozen of its 260 panels. This is the real, lived version of the tradeoff Chapter 13 already taught for a completely different setting (`bom_rounding_precision`): a bigger, more permissive sheet doesn't just mean more material to work with, it means a much larger search space per sheet before pyFit ever opens the next one.
+The sheet is `2.44 m × 1.22 m`, a standard 8-by-4-foot panel in meters. Start with the floor on the answer: the Lair's panels cover about `60.5` square meters (pyLair's total panel area of `9.677` at radius 1, times `2.5²`), and a sheet is about `2.98`, so no layout can use fewer than 21 sheets.
 
 **Prompt:**
-> If packing feels slow on this many panels, what's the first setting you'd loosen, and what do I give up by loosening it?
+> Nest all 260 of the Lair's panels on 2.44 by 1.22 sheets with `design_nest`. Then try a 45-degree rotation step. How many sheets, and how long does each take?
 
-**What Comes Back:**
-> `rotation_step_degrees` is the direct lever, exactly the way `bom_rounding_precision` was pyLair's own precision/merge lever back in Chapter 13. The default (`15°`) tries 24 candidate orientations per part instance (more, once mirroring is allowed); widening it to `30°` or `45°` roughly halves or quarters that count, at the cost of a somewhat looser packing — real utilization measured a few percentage points lower, not a correctness problem. For a job this size, on a sheet this large relative to the panels, a coarser step is the honest, correct first thing to try before assuming something is stuck.
-
-**A second, real gotcha worth reporting exactly as encountered:** widening the rotation step and shrinking the sheet together, on this exact set of real dome-panel shapes, produced a genuine crash during this book's own testing — a `shapely.errors.GEOSException: TopologyException: side location conflict`, thrown from inside `no_fit_polygon`'s own `unary_union` call, at one specific `(rotation step, sheet size)` combination. It did not reproduce at the default rotation step on the same smaller sheet. This isn't the same, already-fixed Minkowski-sum issue Chapter 19 told in full — that one is resolved and covered by this project's own tests. This is a new, real edge case this book's own testing surfaced while nesting genuine pyLair panel geometry (irregular scalene triangles, not the toy squares Chapter 19 used to teach the underlying concept), worth knowing about rather than papering over: real geometry libraries have real edge cases, and a coarser rotation step occasionally lands on one, the same honest lesson Chapter 24 generalizes from a very different bug in a very different part of this book.
-
-## The Chirality Flag, Now a Packing Decision — With a Real Surprise
-
-Chapter 14 flagged panel shapes as chiral — genuinely different mirror-image orientations sharing one edge-length signature — and promised the flag would matter again once a real material's directionality was in play. Here's where it does: `allow_mirror` on a pyFit job-spec part is exactly this same question, asked at nesting time instead of design time. `true` (the default) lets pyFit flip a shape's template freely while searching for a placement — the right choice for plain, non-directional plywood, since a physical template can always be flipped over on ordinary material with no consequence. `false` forbids that entirely — the right choice for a one-sided pressure coating, a printed pattern, or any material where a mirrored cut is a genuinely different, unusable piece.
-
-**The Under-the-Ocean Prototype** is the real, previously-established reason this matters: Chapter 14 found its own elongated hull genuinely riddled with chiral panel pairs (`30` of its `42` shape groups). Its hull uses a one-sided pressure coating, so `allow_mirror: false` isn't a cautious default here — it's the physically correct one. Nesting a real subset of its own chiral panel shapes (six shape groups, `120` real panels) both ways:
+**What Comes Back** (two runs of `run_nest`, the engine under `design_nest`, timed; utilization summarized):
 
 ```json
-{"allow_mirror": true,  "sheets_used": 3, "utilization_by_sheet": [0.641, 0.611, 0.058]}
-{"allow_mirror": false, "sheets_used": 2, "utilization_by_sheet": [0.656, 0.655]}
+{"rotation_step_degrees": 15, "sheets_used": 30, "best_sheet": 0.895, "last_sheet": 0.108, "seconds": 1017}
+{"rotation_step_degrees": 45, "sheets_used": 32, "best_sheet": 0.841, "last_sheet": 0.185, "seconds": 318}
 ```
 
-*(Figure 20-1: The same real chiral panel batch, nested both ways — `allow_mirror: true` (left, 3 sheets) and `allow_mirror: false` (right, 2 sheets). Both are real, legal layouts; the flag did not cost this batch an extra sheet.)*
+**What It Means:** Thirty sheets at the default step, against a floor of 21: most sheets come out between 55% and 90% full, and the last holds a few stragglers. The default took about 17 minutes (on a machine also running the other job), and the 45° step about 5 minutes for two more sheets. That is the lived version of a warning in pyFit's documentation: every part tries each already-opened sheet before a new one opens, and each try is a full no-fit-polygon search against everything on that sheet, so a big sheet that holds many panels makes every placement more expensive. It's the same shape of tradeoff Chapter 13 taught for `bom_rounding_precision`: more permissive isn't simply better.
 
-![Two real nesting results for the same chiral panel batch, allow_mirror true producing 3 sheets and allow_mirror false producing 2](examples/images/ocean_nest_mirror_true.png)
-![The allow_mirror false version of the same batch, using 2 sheets instead of 3](examples/images/ocean_nest_mirror_false.png)
-
-**Prompt:**
-> Nest it once with mirroring allowed, once without. How much does disallowing mirroring change the sheet count or utilization?
-
-**What Comes Back:** Here's the real, worth-stating-honestly surprise: disallowing mirroring used *fewer* sheets, not more — `2` against `3`, and higher utilization on both sheets it did use. This is the opposite of the intuitive assumption that removing a degree of freedom can only make packing worse.
-
-**What It Means:** Chapter 19 already told you why this can happen, and this is a real, concrete instance of it rather than a hedge: pyFit is a bottom-left-fill *heuristic*, not an exhaustive search, and a heuristic's greedy choices can go in a different, sometimes better, sometimes worse, direction depending on which candidate orientations happen to be available at each step — more legal options at every step doesn't guarantee a better *overall* sequence of greedy choices, only a larger space to choose the next one from. The honest takeaway isn't "disallowing mirroring improves packing" as a rule — a different panel batch, a different sheet size, or a different rotation step could easily flip this result the other way. It's this: **run both, and trust the real reported utilization for your actual job, not an assumption about which direction the flag should push it.**
+**[IMAGE: examples/images/lair_full_nest_sheet1.png | A pyFit preview of one 2.44-by-1.22 sheet packed with large and small triangular dome panels, interlocking point to base; the title reads 89.5 percent utilized.]**
+**[CAPTION: The first of 30 sheets for the Actual Secret Lair at its 2.5-meter radius, at the default 15° rotation step: 89.5% utilized, the best sheet of the job.]**
 
 **Prompt:**
-> If I'm using plain plywood with no grain direction, does the chirality flag actually matter for my build?
+> If packing feels slow on this many panels, what's the first setting you'd loosen, and what do I give up?
 
-**What Comes Back:** No — reusing Chapter 14's own answer to the identical question, unchanged by anything this chapter added: non-directional material can be flipped freely with no physical consequence, so `allow_mirror: true` costs nothing and gains pyFit its full search space. The flag, and this chapter's own surprising result, only matter once the material itself has a real direction that a flipped cut would actually violate.
+**What Comes Back:**
+> `rotation_step_degrees` is the direct lever. The default, `15°`, tries 24 orientations per part (twice that when mirroring is allowed); `45°` tries 8. You give up packing quality, usually a little: on this job, two extra sheets for about a third of the time. It's not a correctness problem, since every placement is still checked. On a job this size, try a coarser step before assuming something is stuck, and go back to the default for the run you'll actually cut from.
+
+The first draft of this book recorded one more surprise: a crash, `shapely.errors.GEOSException: TopologyException: side location conflict`, from inside `no_fit_polygon`, at one combination of a coarse rotation step and a smaller sheet with real dome panels. None of this revision's runs reproduced it. Geometry libraries do have edge cases that only irregular, real shapes reach; if you hit one, report the job spec that triggered it rather than assuming your design is at fault.
+
+The CFV took the 30. At ten sheets to a truck, that's three trucks, which she could disguise as a hardware delivery. Thirty-two would have needed a fourth truck, and she pointed out that it's always the fourth truck that someone remembers.
+
+## The Chirality Flag, Now a Packing Decision
+
+Chapter 14 flagged panel shapes as chiral, mirror-image orientations sharing one edge-length signature, and promised the flag would matter again once a material's direction was in play. Here it does. `allow_mirror` on a job-spec part asks the same question at nesting time. `true` (the default) lets pyFit flip a shape freely while searching, right for plain plywood, where a flipped template is harmless. `false` forbids it, right for a one-sided pressure coating, a printed pattern, or any material where a mirrored cut is a different, unusable piece.
+
+**The Under-the-Ocean Prototype** is where it matters. Its frequency-6 hull, squashed to `0.9` on Z, has 42 panel shape groups, and 30 of them are chiral; it's a Class I sphere, so it contains both hands of every lopsided panel (Chapter 14). Its hull carries a one-sided pressure coating, so `allow_mirror: false` isn't caution; it's the physically correct setting. Take six of its chiral groups, 120 panels, and nest them both ways on `0.61 × 0.61` sheets (two-foot squares; the Prototype is modeled at radius 1):
+
+**Prompt:**
+> Nest it once with mirroring allowed and once without. How much does disallowing mirroring change the sheet count or utilization?
+
+**What Comes Back** (two runs of `run_nest`, the engine under `design_nest`, timed; utilization rounded):
+
+```json
+{"allow_mirror": true,  "sheets_used": 8, "utilization_by_sheet": [0.657, 0.686, 0.648, 0.635, 0.659, 0.642, 0.640, 0.156], "seconds": 835}
+{"allow_mirror": false, "sheets_used": 7, "utilization_by_sheet": [0.696, 0.660, 0.723, 0.705, 0.705, 0.667, 0.569], "seconds": 448}
+```
+
+**[IMAGE: examples/images/ocean_nest_mirror_true.png | A pyFit preview of one small square sheet packed with about a dozen triangular panels, some of them flipped.]**
+**[CAPTION: The first of 8 sheets for six of the Under-the-Ocean Prototype's chiral panel groups with `allow_mirror: true`.]**
+
+**[IMAGE: examples/images/ocean_nest_mirror_false.png | A pyFit preview of one small square sheet packed with triangular panels, none of them flipped.]**
+**[CAPTION: The first of 7 sheets for the same 120 panels with `allow_mirror: false`: fewer sheets, though the packer had fewer options.]**
+
+**What It Means:** Here's the surprise: forbidding mirroring used *fewer* sheets, 7 against 8, with higher utilization on most of them, and it finished in about half the time, since there were half as many orientations to try. That's the opposite of the intuition that removing a degree of freedom can only make packing worse.
+
+Chapter 19 explains why it can happen. pyFit is a bottom-left-fill *heuristic*, not an exhaustive search, and its greedy choices go wherever the available options lead at each step. More legal options at every step doesn't guarantee a better *sequence* of greedy choices, only a bigger menu for the next one. The lesson isn't "disallow mirroring to save plywood": another batch, sheet size, or rotation step could flip the result. It's this: **run both, and trust the measured utilization for your job, not an assumption about which way the setting should push it.**
+
+**Prompt:**
+> If I'm using plain plywood with no grain direction, does the chirality flag matter for my build?
+
+**What Comes Back:** Not physically; that's Chapter 14's answer, unchanged. Non-directional material can be flipped freely, so `allow_mirror: true` costs nothing physically and gives pyFit its full search. The flag, and this chapter's surprise, matter only when the material has a direction that a flipped cut would violate. Even then, the only way to know what it costs you in sheets is to nest both ways and look.
 
 ## What's Next
 
-Chapter 21 covers pyFit's own four MCP tools — the same iterate-then-commit shape Chapter 18 already taught for pyLair, plus a genuinely new idea neither dome design ever needed: MCP progress notifications on a job long enough to need them — and closes with one complete, narrated session spanning both toolkits, from a bare polyhedron choice all the way to a real, ready-to-cut sheet layout.
+Three trucks left for the crater on three different days, with three different hardware-store logos on their doors. The Interpol heat, by the CFV's own index, did not move.
 
+Chapter 21 covers pyFit's four MCP tools, the same iterate-then-commit shape Chapter 18 taught for pyLair, plus one idea no dome design ever needed: progress reports on a job long enough to need them, like the 17-minute one above. It closes with one complete session spanning both toolkits, from a bare polyhedron to a ready-to-cut sheet layout.

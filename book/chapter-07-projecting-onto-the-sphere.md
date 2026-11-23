@@ -1,66 +1,69 @@
 # Chapter 7: Projecting Onto the Sphere
 
-Every subdivision class this book has taught — Class I's parallel grid, Class II's six centroid-radiating wedges, Class III's angled chiral lattice — ends up in the same place: a set of still-flat points, sitting on the flat faces of the original polyhedron, that haven't yet become anything resembling a dome. This chapter is the step all three classes share to finish the job: merge whatever needs merging, then push every point outward onto an actual sphere.
+"Where two faces meet," said the Foreman, "I want one hub. Not two hubs a hair apart." He had seen what happens otherwise: a crew fabricates both, bolts one in, and spends a day looking for where the other goes. In a parts list, a vertex that should have been merged and wasn't is a phantom hub, and every phantom hub is a part somebody will make for nothing.
 
-## Flat, Then Push Outward — In That Order
+Every subdivision class so far (Class I's parallel grid, Class II's six centroid-radiating wedges, Class III's slanted chiral lattice) ends in the same place: a set of still-flat points on the flat faces of the original polyhedron, not yet anything resembling a dome. This chapter is the step all three share to finish the job: merge what needs merging, then push every point outward onto a sphere.
 
-Here's the two-step process, made concrete rather than described in the abstract. First, `GeodesicSphere` takes the single symmetry triangle each class computed and replicates it — rotated into position via each face's own transfer matrix — onto every face of the base polyhedron. The result at this stage is **not yet a sphere**. It's a subdivided version of the original flat-faced polyhedron: every small triangle still lies exactly in the plane of whichever original face it came from, so the whole assembly still has visible flat facets and creases at the original polyhedron's own edges. Only *after* that flat assembly is finished — chords and faces fully wired up, duplicate seam vertices merged — does `project_onto_sphere()` take every surviving vertex, normalize it to a unit vector, and scale it out to the requested radius. Here is exactly that transition, computed from pyLair's own real internal state at a small enough frequency to see clearly:
+## Flat, Then Push Outward, in That Order
 
-*(Figure 7-1: The same Class I icosahedral construction, frequency 3, shown before and after `project_onto_sphere()`. Left: still flat-faced — every small triangle lies in its original face's own plane, and the base icosahedron's 20 facets and creases are still visible. Right: every vertex pushed radially outward to the same fixed radius — the facets are gone, and what's left reads as a genuine sphere.)*
+The process has two steps. First, pyLair's `GeodesicSphere` replicates the symmetry triangle each class computed onto every face of the base polyhedron, rotated into place by each face's transfer matrix. The result is **not yet a sphere**. It's a subdivided version of the original flat-faced polyhedron: every small triangle still lies in the plane of the face it came from, with visible facets and creases along the original edges. Only *after* that flat assembly is finished (chords and faces wired up, duplicate seam vertices merged) does `project_onto_sphere()` take each surviving vertex, normalize it to a unit vector, and scale it to the requested radius. Here is the transition, from pyLair's internal state at a frequency low enough to see clearly:
 
-![The same dome shown flat-faced before projection, and rounded after it](examples/images/projection_before_after.png)
+**[IMAGE: examples/images/projection_before_after.png | Two wireframes side by side. Left: a subdivided icosahedron with flat facets and visible creases along its original edges. Right: the same points pushed out onto a smooth sphere.]**
+**[CAPTION: The same Class I icosahedral construction at frequency 3, before and after `project_onto_sphere()`. Left: every small triangle still lies in its original face's plane, so the icosahedron's 20 facets show. Right: every vertex pushed radially to the same radius; the facets are gone.]**
 
-Notice what has to happen *before* that final push, not after: **chord and face connectivity is entirely settled while the geometry is still flat.** This isn't an arbitrary implementation choice — it's a genuine ordering requirement. Two symmetry-triangle vertices that are supposed to be the same physical point (a shared edge between two adjacent faces, computed independently by each face's own local construction) are only recognizably "close together" while they're still sitting near each other in the flat, unprojected assembly. Projecting first and merging afterward would still work in principle for Class I and Class II, since projection is a smooth, distance-preserving-enough operation at this scale — but Class III's own combinatorial cross-face matches (Chapter 6) are keyed to the flat construction's own `(p,q)` lattice coordinates, which only exist meaningfully before projection has replaced them with 3D sphere positions. Merge first, project second, every time.
+Notice what has to happen *before* the push: **connectivity is settled while the geometry is still flat.** That's an ordering requirement, not an arbitrary choice. Two symmetry-triangle vertices meant to be the same physical point (on an edge shared by two faces, computed independently by each) are recognizably close together only while they sit near each other in the flat assembly. For Classes I and II, merging after projection would still work in principle, since projection moves nearby points to nearby points. But Class III's combinatorial cross-face matches (Chapter 6) are keyed to the flat construction's lattice coordinates, which only mean something before projection replaces them with positions on a sphere. Merge first, project second, every time.
 
-## Why Deduplication Needs a Spatial Index
+## Why Merging Needs a Spatial Index
 
-The merging step itself — `locate_duplicate_vertices()` — has an obvious naive implementation: compare every vertex against every other vertex, and merge any pair closer than `vertex_equal_threshold`. That's an `O(n²)` comparison, and at any frequency worth actually building, it's slow enough to notice. Here's a real, timed comparison, run on the Actual Secret Lair's own construction at frequency 16 — the highest frequency this book (and pyLair's own test suite) actually exercises:
+The merging step, `locate_duplicate_vertices()`, has an obvious naive implementation: compare every vertex with every other, and merge any pair closer than `vertex_equal_threshold`. That's a comparison count that grows with the *square* of the number of vertices, and at frequencies worth building it's slow enough to notice. Here is a timed comparison on a Class I icosahedral sphere at frequency 16, comparing a plain Python loop over every pair with a k-d tree, a data structure that sorts points by position so that only nearby points get compared:
 
 ```
 raw (unprojected) vertex count: 3060
-naive all-pairs comparison: 9.064s, found 570 duplicate pairs
-KD-tree query_pairs:         0.0016s, found 570 duplicate pairs
+pairwise Python loop:  1.75s,   found 570 duplicate pairs
+k-d tree query_pairs:  0.0016s, found 570 duplicate pairs
 ```
 
-Both approaches find the exact same 570 duplicate pairs — this isn't a case of the faster method cutting a corner the slower one didn't. It's roughly **5,700 times faster**, and the gap only widens at higher frequency, since the naive approach's cost grows with the *square* of the vertex count while a KD-tree's grows close to linearly. `locate_duplicate_vertices()` uses `scipy.spatial.cKDTree`'s own `query_pairs` for exactly this reason: at frequency 16, the difference is "instant" versus "long enough to wonder if the process hung."
+Both find the same 570 pairs, so the faster method isn't cutting a corner. On this machine it's about **1,100 times faster** (your timings will differ, the ratio less so), and the gap widens with frequency, because the pairwise loop's cost grows with the square of the vertex count while the tree's grows close to linearly. That's why `locate_duplicate_vertices()` uses `scipy.spatial.cKDTree`'s `query_pairs`.
 
 **Prompt:**
-> At a high frequency, how many vertices get deduplicated during projection, and does that number make sense given the face count?
+> At a high frequency, how many vertices get merged during the build, and does that number make sense given the golden values?
 
-**What Comes Back:** At frequency 16, Class I icosahedron: `3060` raw vertices (`20` faces × `153` symmetry-triangle vertices each, since a Class I symmetry triangle at frequency `f` has `(f+1)(f+2)/2` vertices — `153` at `f=16`) collapse to the golden-value `2562` (`10(16)²+2`), a reduction of `498`. That's not the same as the `570` duplicate *pairs* found above — and the difference is worth understanding rather than shrugging off: an icosahedron's own original 12 vertices are each shared by 5 faces, not 2, so several of those 570 pairwise relationships describe the *same* underlying shared point being duplicated more than once, and a whole cluster of 5 mutually-"duplicate" copies collapses to one final vertex rather than being counted pair by pair. `locate_duplicate_vertices()` handles exactly this with a union-find structure (Chapter 4 already showed you its two failure extremes; here's the ordinary, correct case actually working).
+**What Comes Back:** At frequency 16, Class I icosahedron: `3060` raw vertices (`20` faces × `153` symmetry-triangle vertices each, since a Class I symmetry triangle at frequency `f` has `(f+1)(f+2)/2` of them) collapse to the golden-value `2562` (`10(16)²+2`), a reduction of `498`. That isn't the same as the `570` duplicate *pairs* found above. Each of the icosahedron's 12 original vertices is shared by 5 faces, not 2, so its 5 copies form a cluster with several pairwise links among them, and the whole cluster collapses to one vertex rather than being counted pair by pair. `locate_duplicate_vertices()` handles that by grouping linked pairs into clusters (a union-find structure) and keeping one member of each.
 
-**What It Means:** `498` is a real, checkable number, not a rounding curiosity — and it's the kind of sanity check worth running before trusting a high-frequency result at all: raw count minus final count should always equal exactly the number of points that genuinely needed merging, no more and no less.
+**What It Means:** `498` is a checkable number: raw count minus final count should equal the number of points that needed merging, no more and no less. It's worth checking before trusting a high-frequency result. The Foreman's phantom hubs live in the gap between those two numbers.
 
 ## The Safe Zone Narrows as Frequency Rises
 
-Chapter 4 showed `vertex_equal_threshold`'s two failure extremes at frequency 6: too tight (`0.0`) leaves seams cracked; too loose (`0.2`) collapses the entire dome to one point. The same two failures exist at frequency 16 — but the safe range between them is narrower, and it's worth seeing exactly how much narrower, because it's a real consequence of higher frequency packing vertices more tightly together.
+Chapter 4 showed `vertex_equal_threshold`'s two failures at frequency 6: too tight (`0.0`) leaves seams cracked; too loose (`0.2`) collapses the dome to one point. Both exist at frequency 16 too, but the safe range between them is narrower, because higher frequency packs vertices closer together.
 
 **Prompt:**
 > Set `vertex_equal_threshold=0.1` on both a frequency-6 and a frequency-16 dome. Does it stay safe at both?
 
-**What Comes Back** (two real `design_dome` results):
+**What Comes Back** (two `design_dome` results, with the golden value added for comparison):
 
 ```json
-{"frequency": 6,  "vertex_equal_threshold": 0.10, "vertex_count": 362,  "golden": 362}
-{"frequency": 16, "vertex_equal_threshold": 0.10, "vertex_count": 1,     "golden": 2562}
+{"frequency": 6,  "vertex_equal_threshold": 0.10, "vertex_count": 362, "golden": 362}
+{"frequency": 16, "vertex_equal_threshold": 0.10, "vertex_count": 1,   "golden": 2562}
 ```
 
-The identical threshold, `0.1`, is comfortably safe at frequency 6 and catastrophic at frequency 16 — collapsing the whole sphere to a single vertex, the same total-collapse failure Chapter 4 first showed at a *looser* setting (`0.2`) on the coarser dome. At frequency 16, that same collapse already happens somewhere between `0.05` (still correct) and `0.08` (already collapsed). The documented default, `1e-7`, sits so far below either boundary at any frequency this book or pyLair's own test suite has tried that it never needs to move — but "the safe zone exists and is wide" is a different, weaker claim than "the safe zone is infinitely wide," and a reader who's deliberately widened `vertex_equal_threshold` for some other reason (there isn't a good one, but this book won't assume you'll never try) should know the margin shrinks as frequency grows, not stays fixed.
+**What It Means:** The same threshold is safe at frequency 6 and catastrophic at frequency 16, where it collapses the sphere to a single vertex, the failure Chapter 4 showed only at the looser `0.2` on the coarser dome. At frequency 16 the collapse starts between `0.06` (still correct) and `0.07` (collapsed). The default, `1e-7`, sits so far below either boundary at any frequency this book has tried that it never needs to move. But "the safe zone is wide" is a weaker claim than "the safe zone is infinitely wide": if you widen the threshold for some reason (there isn't a good one), know that the margin shrinks as frequency grows.
 
-## Diagnosing a Cracked Seam: Two Different Root Causes, One Symptom
+## Diagnosing a Cracked Seam: Two Causes, One Symptom
 
-Here's a genuinely practical skill this chapter's own content makes possible: if an exported dome shows a visible crack or gap at a seam — two hubs that should be the identical physical point showing up as separate points instead — the *symptom* looks identical regardless of cause, but the *fix* depends entirely on which of two, very differently-located problems produced it.
+Here is a practical skill this chapter makes possible. If an exported dome shows two hubs where there should be one, the *symptom* looks the same whatever the cause, but the *fix* depends on which of two very different problems produced it.
 
 **Prompt:**
 > If two hubs that should be identical show up as separate points in the output, what's the first setting you'd check?
 
 **What Comes Back:**
-> First, check which subdivision class the dome uses. If it's Class I or Class II, this is almost certainly an ordinary `vertex_equal_threshold` problem — the threshold is too tight for the two points' actual floating-point separation, and Chapter 4's "too tight" failure (real seam duplicates left unmerged) is the direct cause. Widen `vertex_equal_threshold` slightly and re-check the golden-value vertex count.
+> First, check which subdivision class the dome uses. If it's Class I or Class II, this is almost certainly a `vertex_equal_threshold` problem: the threshold is tighter than the two points' floating-point separation, Chapter 4's "too tight" failure. Loosen it slightly and re-check the vertex count against its golden value.
 >
-> If it's Class III, don't reach for `vertex_equal_threshold` first. A chiral lattice's cross-face points generally don't land near each other in 3D at all — that's the entire premise of Chapter 6's own historical bug — so `vertex_equal_threshold` was never going to be the mechanism responsible for stitching them correctly in the first place. A cracked Class III seam more likely means the combinatorial `cross_face_matches` themselves are missing or wrong for this specific `(m,n)` pair, which is a construction bug in `class_three.py`, not a threshold-tuning problem in `geodesic_sphere.py`.
+> If it's Class III, don't reach for `vertex_equal_threshold` first. A chiral lattice's cross-face points generally don't land near each other in 3D at all (that was the premise of Chapter 6's bug), so the threshold was never what stitched them together. A cracked Class III seam more likely means the combinatorial `cross_face_matches` are missing or wrong for this `(m,n)` pair: a construction bug in `class_three.py`, not a tuning problem in `geodesic_sphere.py`.
 
-**What It Means:** The same visible symptom — a gap where a seam should be seamless — has two structurally different causes depending on which subdivision class produced it, and only one of them is a `vertex_equal_threshold` problem at all. Confusing the two wastes time nudging a threshold that was never going to fix a Class III construction gap, or, worse, nudging it far enough to cause the opposite failure this chapter just demonstrated.
+**What It Means:** One visible symptom, two structurally different causes, and only one of them is a threshold problem. Confusing them wastes time nudging a setting that can't fix a Class III construction gap, or, worse, nudging it far enough to cause the opposite failure this chapter just demonstrated.
 
 ## What's Next
 
-The geometric pipeline every subdivision class shares is now complete: pick a polyhedron, subdivide one face, replicate it, merge the seams, project outward. Part III picks the finished sphere back up and starts reshaping it on purpose — Chapter 8 stretches and squashes it into a general ellipsoid, and Chapter 9 slices it into an actual, ground-flush dome.
+The Foreman's count of hubs for the Actual Secret Lair, `(4,1)` at `T=21`, came to 212, the golden value, with no phantoms. He wrote it on the whiteboard under the Euler checks.
+
+The pipeline every subdivision class shares is complete: pick a polyhedron, subdivide one face, replicate it, merge the seams, project outward. Part III reshapes the finished sphere on purpose. Chapter 8 stretches it into an ellipsoid, and Chapter 9 slices it into a dome that can stand on a crater floor.

@@ -2,6 +2,8 @@
 ### Computational Geometry and Agentic AI with pyLair and pyFit
 **Proposed Outline**
 
+> **Status note (2026-11-22):** The chapter files are canonical; this outline is the original plan and has not been re-synced to them. The November 2026 revision changed several things the outline still describes the old way, among them: the running story (cast and arc in `AGENTS.md`); the Under-the-Ocean Prototype starts from an icosahedron, not an octahedron (Chapter 3); pyLair's Class II is not the `m=n` member of the Goldberg–Coxeter family (Chapter 6); pyLair has seven MCP tools, not four (Chapters 18, 22); and every example's numbers were re-run against the current code. Where the two disagree, trust the chapters.
+
 ---
 
 ## About This Outline

@@ -1,41 +1,42 @@
 # Chapter 11: Location, Location, Location — Designing for Hostile (and Ridiculous) Environments
 
-Nothing in this chapter is a new pyLair feature. Chapters 3 through 10 already gave you every tool this chapter uses — polyhedron choice, subdivision class, elongation, truncation. What this chapter teaches instead is how a real commission actually arrives: never as "build a Class III dome," always as "build a dome that survives *down there*, or *up there*, or *in there*." A satisfied supervillain client base spans essentially every environment capable of generating a strongly worded eviction notice, and every one of them thinks their site is the special case. Six stops, one design lens, applied deliberately each time — proof that it's the lens doing the work, not six unrelated one-off tricks.
+Word travels fast in the villain community, mostly by encrypted newsletter. Within a week of the Actual Secret Lair's first truncated preview, the Secret Lab™ had four commissions from other villains and a fifth from our Heroine's own contingency file. The CFV, who had been wondering how to pay for the plywood, priced the consulting work before anyone could object. "Every client," she observed, "thinks their site is the special case."
 
-*(Figure 11-1: All six of this chapter's stops, real `design_dome` builds, plotted at a single shared scale so their true relative sizes and proportions are honestly comparable — not six independently-scaled images that would each look similarly sized regardless of their actual dimensions.)*
+Nothing in this chapter is a new pyLair feature. Chapters 3 through 10 supplied every tool it uses: polyhedron choice, subdivision class, elongation, truncation. What this chapter teaches is how a commission arrives: never as "build a Class III dome," always as "build a dome that survives *down there*, or *up there*, or *in there*." Six stops, one design habit applied each time (start from what the site demands and what the client wants, then pick parameters), to show that the habit does the work, not six unrelated tricks. Every dome here is a Class I icosahedron at frequency 6 and radius 1 unless the stop says otherwise.
 
-![Six real dome configurations at a shared scale: a squashed sphere, a wide oblate disc, two low flat caps, a tall narrow spire, and one tiny closet-sized dome](examples/images/environments_gallery.png)
+**[IMAGE: examples/images/environments_gallery.png | Six dome wireframes drawn at one shared scale: a slightly squashed sphere, a wide flattened ellipsoid, two low flat caps, a tall narrow spire, and one tiny dome.]**
+**[CAPTION: All six of this chapter's stops, built with `design_dome` and drawn at one shared scale, so their relative sizes and proportions can be compared honestly.]**
 
 ## Stop One: The Under-the-Ocean Prototype, Completed
 
-Chapters 3 and 8 already made two of this design's three real decisions: an icosahedron, for its already-flatter near-equatorial vertex structure (Chapter 3), and a gentle `"1.0,1.0,0.9"` squash, kept as close to a true sphere as this design is willing to go (Chapter 8). The third decision belongs here: **no truncation at all**, if the actual goal is a fully closed, pressure-resistant shell with no seam anywhere for water to concentrate against.
+Chapters 3 and 8 made two of this design's three decisions: an icosahedron, the most uniform starting shape for a pressure hull (Chapter 3), and a gentle `(1.0, 1.0, 0.9)` squash, as close to a sphere as the design will go (Chapter 8). The third belongs here: **no truncation at all**, because the goal is a closed, pressure-resistant shell with no flat cut for the water to argue with.
 
 ```json
 {"footprint_diameter": 2.0000, "height": 1.8000, "total_strut_length": 208.7384}
 ```
 
-A real airlock changes this calculus — a flat mounting face is worth a small, carefully-chosen cutoff that stays clear of a vertex ring (Chapter 9's own safe-cutoff lesson, unchanged by which environment is asking for it). But absent that specific need, the closed shell is the honest default for this design goal, and it's worth resisting the temptation to truncate just because every other stop in this chapter does.
+An airlock would change this: a flat mounting face is worth a small cutoff chosen to stay clear of a vertex ring (Chapter 9's lesson, whatever the environment). Without that need, the closed shell is the right default here, and it's worth resisting the urge to truncate just because every other stop in this chapter does.
 
 **Prompt:**
-> Compare a frequency-4 and a frequency-8 Class I icosahedral dome for The Under-the-Ocean Prototype. Which one produces fewer distinct panel types, and why might that matter for a pressure-rated build?
+> Compare a frequency-4 and a frequency-8 Class I icosahedral dome for the Under-the-Ocean Prototype. Which one produces fewer distinct panel types, and why might that matter for a pressure-rated build?
 
-**What Comes Back** (real `get_bill_of_materials` results, both elongated `"1.0,1.0,0.9"`):
+**What Comes Back** (from two `get_bill_of_materials` calls, both elongated `(1.0, 1.0, 0.9)`, summarized from the panel section):
 
 ```json
 {"frequency": 4, "total_panels": 320,  "distinct_panel_shape_groups": 20}
 {"frequency": 8, "total_panels": 1280, "distinct_panel_shape_groups": 71}
 ```
 
-**What It Means:** Frequency 8 doesn't just have more panels — it has more than three times as many *distinct shapes*, each one needing its own cutting template (Chapter 15) and its own entry in a fabricator's parts list. For a pressure-rated hull, where every seam is a potential weak point and every distinct panel shape is one more opportunity to install the wrong piece in the wrong slot, frequency 4's 20 shape groups is a meaningfully simpler build than frequency 8's 71 — a real, concrete reason to prefer the coarser frequency here specifically, not just "lower numbers are simpler" as a vague instinct.
+**What It Means:** Frequency 8 doesn't just have four times as many panels; it has more than three times as many *distinct shapes*, each needing its own cutting template (Chapter 15) and its own line in a fabricator's parts list. For a pressure hull, where every seam is a potential weak point and every distinct shape is another chance to install the wrong piece in the wrong slot, 20 shape groups is a meaningfully simpler build than 71. That's a concrete reason to prefer the coarser frequency here, not a vague instinct that smaller numbers are simpler.
 
 ## Stop Two: The Orbital Panopticon
 
-A panopticon only earns the name if it can actually see everything, which is precisely why this station skips a floor: zero gravity makes "which way is down" a design choice, not a constraint — so this stop's dome skips truncation entirely and instead asks a cost question Chapter 8 didn't need to: given a fixed footprint, which elongation ratio is *cheapest to launch*? Total strut length is a reasonable proxy for that, since more material sent to orbit costs more regardless of what it's made of, and a supervillain funding a circumpolar surveillance station out of pocket cares about launch mass in a way a government contractor spending someone else's budget generally doesn't have to.
+A panopticon earns the name only if it can see everything, so this station has no floor: in orbit, "which way is down" is a design choice, not a constraint. It skips truncation and asks a cost question Chapter 8 didn't need to: at a fixed footprint, which elongation is *cheapest to launch*? Total strut length is a fair proxy, since every kilogram sent to orbit costs money whatever it's made of, and a villain funding a circumpolar surveillance station personally cares about launch mass in a way a contractor spending someone else's budget may not.
 
 **Prompt:**
-> For the Orbital Panopticon, hold the footprint diameter fixed and try three different elongation ratios. Which one minimizes total strut length — and therefore launch mass?
+> For the Orbital Panopticon, hold the footprint diameter fixed and try three different elongation ratios. Which one minimizes total strut length, and therefore launch mass?
 
-**What Comes Back** (three real builds, all `fx=fy=1.3` — holding the X/Y footprint fixed exactly the way Chapter 8 showed Z-only elongation does — varying only `fz`):
+**What Comes Back** (three `design_dome` builds, all with `elongation_x=elongation_y=1.3` to fix the footprint, varying only `elongation_z`):
 
 ```json
 {"fz": 0.5, "footprint_diameter": 2.6000, "total_strut_length": 233.2433}
@@ -43,63 +44,64 @@ A panopticon only earns the name if it can actually see everything, which is pre
 {"fz": 1.0, "footprint_diameter": 2.6000, "total_strut_length": 260.0654}
 ```
 
-**What It Means:** All three configurations share the exact same footprint, by construction — only `fz` differs. The flattest option (`fz=0.5`) is also the cheapest, by a real, measurable margin: about 10% less strut material than the roundest option (`fz=1.0`) at the identical footprint. This is worth noting as a genuinely useful pattern, not a coincidence specific to this one example: at a fixed horizontal footprint, flattening the vertical axis reduces total surface area, and therefore total strut length, monotonically — a real design lever for a launch-mass-constrained station, not just a stylistic choice.
+**What It Means:** All three share a footprint by construction; only `fz` differs. The flattest (`fz=0.5`) is also the cheapest, by about 10% of strut material against the roundest. That's a general pattern, not a quirk of this example: at a fixed horizontal footprint, flattening the vertical axis shrinks the ellipsoid's surface, and the strut total with it. For a launch-mass-limited station it's a real design lever.
 
 ## Stops Three and Four: The Magma Redoubt and the Permafrost Cache
 
-These two share one design logic for two opposite reasons: keep most of the structure buried, expose only a small cap. A volcano's caldera and a glacier's ice sheet don't have much in common as building sites, but they agree on one thing that matters enormously to anyone trying not to be noticed from a satellite: the surrounding rock or ice does the hiding for free, so the only part of the budget that has to go toward stealth is whatever small fraction can't be buried. pyLair's own truncation only ever describes what to keep *above* a cutoff, so an aggressive, close-to-1 cutoff (`0.85` for both stops here) keeps just the small top fraction this chapter's own images show — the physically buried remainder isn't part of either model at all, an important scope boundary this chapter returns to below.
+These two share one design logic for opposite reasons: bury most of the structure and expose only a small cap. An active volcano and a glacier have little in common as building sites, but they agree on what matters to anyone avoiding satellite photography: the rock or ice does the hiding for free, so only the small exposed fraction needs a stealth budget. pyLair's truncation describes only what to keep *above* a cutoff, so an aggressive `0.85` for both keeps the small top cap; the buried remainder isn't part of either model, a scope boundary this chapter returns to below.
 
 ```json
-{"stop": "Magma Redoubt",     "elongation": "1.0,1.0,1.0", "truncation_z": 0.85, "height": 0.3000, "footprint_diameter": 1.4135, "total_strut_length": 39.2628}
-{"stop": "Permafrost Cache",  "elongation": "1.2,1.2,1.0", "truncation_z": 0.85, "height": 0.3000, "footprint_diameter": 1.6962, "total_strut_length": 46.2090}
+{"stop": "Magma Redoubt",    "elongation": "1.0,1.0,1.0", "truncation_z": 0.85, "height": 0.3000, "footprint_diameter": 1.4135, "total_strut_length": 39.2628}
+{"stop": "Permafrost Cache", "elongation": "1.2,1.2,1.0", "truncation_z": 0.85, "height": 0.3000, "footprint_diameter": 1.6962, "total_strut_length": 46.2090}
 ```
 
-The Permafrost Cache's slightly wider `1.2,1.2` footprint reflects a real, different structural argument: even load distribution under accumulating snow weight matters more here than under the Magma Redoubt's heat exposure, and a shallower, wider cap distributes that load over more area for the same cap height — the same "geodesic domes distribute stress evenly" pitch this book's own companion blog post opens with, applied here to one specific, real load direction instead of stated as an abstract selling point.
+The Permafrost Cache's wider `1.2, 1.2` footprint reflects a different structural argument. Snow accumulates on top, and a wider, shallower cap spreads that load over more area for the same height. It's the "geodesic domes spread stress evenly" pitch from pyLair's companion blog post, applied to one specific load direction instead of stated as a slogan.
 
 ## Stop Five: The Ostentatious Mesa Spire
 
-Every other stop in this chapter reaches for a flattened, low-profile shape. This one deliberately doesn't, because the design goal here is the opposite of every other stop's: a supervillain who *wants* to be seen, not hidden — a mesa-top spire visible from the highway specifically so every driver who sees it understands, instantly and correctly, that someone with resources and a point to prove lives up there. Concealment was never the brief; the brief was a skyline. Aggressive vertical elongation (`"0.6,0.6,3.0"`), moderate truncation for a real floor (`0.4`):
+Every other stop reaches for a low, flattened shape. This one doesn't, because the client wants the opposite: to be *seen*. A mesa-top spire visible from the highway, so that every driver understands instantly that someone with resources and a point to prove lives up there. The brief was never concealment; it was a skyline. Aggressive vertical elongation, `(0.6, 0.6, 3.0)`, and a moderate truncation, `0.4`, for a floor:
 
 ```json
 {"footprint_diameter": 1.2000, "height": 3.6000, "total_strut_length": 223.6843}
 ```
 
-*(Figure 11-2: Footprint diameter versus total strut length across all six stops — real `design_dome` output, not estimated. Notice the Mesa Spire's bar pair: the smallest footprint of any stop in this chapter, paired with the second-highest strut total. A compact footprint and a cheap build are not the same claim.)*
+**[IMAGE: examples/images/environments_comparison_chart.png | A paired bar chart comparing footprint diameter and total strut length for each of the six stops.]**
+**[CAPTION: Footprint diameter against total strut length for all six stops, from `design_dome` output. The Mesa Spire pairs the smallest footprint of the five full-size stops with the second-highest strut total. A compact footprint and a cheap build are different claims.]**
 
-![A bar chart comparing footprint diameter and total strut length across all six environments](examples/images/environments_comparison_chart.png)
-
-That comparison is this stop's own real lesson, worth stating plainly: the Mesa Spire has the *smallest* footprint of any stop in this chapter, and very nearly the *highest* total strut length — more material than the much wider Under-the-Ocean Prototype, for a noticeably smaller footprint. "What does this environment demand" and "what does this villain want" are genuinely different, sometimes directly opposed inputs to the same design tool, and this stop is the chapter's clearest proof that the second one has real, measurable material costs the first would never have chosen to pay.
+That comparison is this stop's lesson. Among the five full-size stops, the Mesa Spire has the *smallest* footprint and the second-highest strut total, more material than the much wider Under-the-Ocean Prototype. "What does this site demand?" and "what does this client want?" are different inputs to the same tool, sometimes opposed ones, and the second can carry measurable material costs the first would never have chosen. The CFV added a vanity surcharge to the invoice.
 
 ## A Callback to the Studio Apartment
 
-One last stop, purely for the joke, and to make one final point honestly: the same agent, the same parameters, work exactly as well at a scale that matters to no one but our heroine's original studio-apartment ambitions.
+One last stop, partly for the joke and partly to make a point: the same agent and the same parameters work as well at a scale that matters to no one but our Heroine's former ambitions.
 
 **Prompt:**
 > Design a Class I icosahedral dome, frequency 6, radius 0.15, truncated at `truncation_z=0.499999`. Yes, radius 0.15. It's for a closet.
 
-**What Comes Back** (a real `design_dome` result):
+**What Comes Back** (a `design_dome` result, trimmed):
 
 ```json
 {"footprint_diameter": 0.3000, "height": 0.1500, "total_strut_length": 18.5354}
 ```
 
-Every parameter this chapter has used at volcano-lair and orbital-station scale — frequency, class, elongation, truncation — is exactly as usable for a closet-sized home addition. Nothing about pyLair's geometry engine cares whether the number passed as `radius` describes a modest renovation or a circumpolar fortress.
+Every parameter used at volcano and orbital scale works as well for a closet. Nothing in pyLair's geometry cares whether `radius` describes a renovation or a circumpolar fortress.
 
-## What pyLair Actually Checked, and What It Flatly Didn't
+## What pyLair Checked, and What It Didn't
 
-Every one of this chapter's six stops built cleanly, reported sensible numbers, and rendered a plausible-looking shape. It's worth being exactly as honest about what that does and doesn't prove as every other chapter in this book has been:
+Every stop built cleanly, reported sensible numbers, and rendered a plausible shape. Be as clear about what that proves as the rest of this book has been:
 
-- **pyLair's truncation is always an axis-aligned plane, never a terrain-conforming surface.** The Magma Redoubt's caldera rim, in reality, is not a flat plane at a fixed Z — it's an irregular, surveyed rock edge. `truncate()` gives a flat cut at a chosen fraction of an axis, full stop; reconciling that flat cut against an actual site survey is entirely outside pyLair's scope and stays the reader's own problem, the same honest boundary Chapter 1 drew around "pyLair reports geometry, not a validated build."
-- **Elongation is one uniform `(fx, fy, fz)` triple applied to the whole dome — pyLair has no notion of regional or local deformation.** A design that wants, say, a bulging equatorial ring for a spin-gravity station (a more ambitious version of the Orbital Panopticon) can only get pyLair's general-ellipsoid approximation as a starting silhouette; anything more locally shaped than a single ellipsoid is beyond what `elongate()` computes, full stop, not a missing flag waiting to be discovered.
-- **`panel_areal_density` and `cost_per_unit_area` are one plain number each, supplied by the reader — pyLair has no per-environment materials database.** Figuring out what areal density and unit cost actually apply to an underwater-rated composite versus an orbital-rated alloy versus volcanic-heat-rated ceramic is real research the tool has no opinion on; it will multiply whatever number it's given with complete indifference to whether that number was researched or guessed.
-- **The chapter's central, load-bearing caveat, stated as plainly as the rest of this book states its others:** every check this book has taught so far — Euler's formula, the golden-value formulas, the antitile/trimesh/ezdxf oracles, the flat-chord `ValueError`, the truncation-artifact sliver flags Chapter 16 covers next — validates that pyLair's own geometry is *internally* correct. None of them, individually or together, validate that a design survives real water pressure, orbital debris, magma heat, or snow load. A `preview_dome` image that looks plausible is a sanity check on the shape, not engineering sign-off on the environment — and a reader who conflates the two is making the one mistake this entire chapter exists to head off.
+- **Truncation is always an axis-aligned plane, never a terrain-following surface.** A real caldera rim is an irregular, surveyed rock edge, not a flat plane at a fixed Z. `truncate()` makes a flat cut at a chosen fraction of one axis; reconciling that with a site survey is outside pyLair's scope.
+- **Elongation is one `(fx, fy, fz)` triple applied to the whole dome; pyLair has no notion of local deformation.** A design that wants, say, a bulging equatorial ring for a spinning station can only get the general-ellipsoid approximation as a starting silhouette. Anything shaped more locally than one ellipsoid is beyond what `elongate()` computes; it isn't a missing flag.
+- **`panel_areal_density` and `cost_per_unit_area` are single numbers you supply; pyLair has no materials database.** Which density and price apply to an underwater-rated composite, an orbital alloy, or a heat-rated ceramic is research the tool has no opinion on. It multiplies whatever it's given, researched or guessed.
+- **The caveat that matters most:** every check this book teaches (Euler's formula, golden values, the antitile, trimesh, and ezdxf cross-checks, the flat-chord refusal, the sliver flags of Chapter 16) confirms that pyLair's geometry is *internally* correct. None of them, alone or together, confirms that a design survives water pressure, orbital debris, magma heat, or snow load. A plausible `preview_dome` image is a sanity check on the shape, not engineering sign-off on the environment.
 
 **Prompt:**
-> Design a dome meant to sit mostly below a caldera rim, using a single Z truncation. What has pyLair actually checked for you here, and what hasn't it checked at all before I try to fit this into an actual volcano?
+> Design a dome meant to sit mostly below a caldera rim, using a single Z truncation. What has pyLair checked for you, and what hasn't it checked at all, before I try to fit this into an actual volcano?
 
 **What Comes Back:**
-> pyLair has checked that the resulting shape is internally consistent — the vertex/edge/face counts satisfy the correct golden-value formula and Euler's identity, the truncation cutoff didn't land on a degenerate flat chord, and every reported strut length and hub angle is geometrically self-consistent with the requested radius, elongation, and cutoff. It has checked none of the following: whether the actual caldera rim is flat (it almost certainly isn't), whether the panel material or thickness specified through `cost_per_unit_area`/`panel_areal_density` is actually rated for volcanic heat, or whether the real site's geology can support a structure of this footprint at all. Those are every bit as real questions as the ones pyLair does answer — they're just not this tool's questions to answer.
+> pyLair has checked that the shape is internally consistent: the counts satisfy the golden-value formulas and Euler's formula, the cutoff didn't land on a flat chord, and every strut length and hub angle is geometrically consistent with the requested radius, elongation, and cutoff. It has checked none of the following: whether the real caldera rim is flat (it almost certainly isn't), whether the panel material behind your `cost_per_unit_area` and `panel_areal_density` is rated for volcanic heat, or whether the site's geology can carry a structure of this footprint. Those are real questions; they just aren't this tool's questions.
 
 ## What's Next
 
-Part IV picks the bill of materials back up in earnest, starting with the two hub-angle types every one of this chapter's six domes already has waiting to be read off — Chapter 12 teaches what they mean and why they need the true ellipsoid normal Chapter 8 introduced, on whichever of this chapter's shapes you find most interesting to keep building.
+The CFV sent out five invoices and one disclaimer, the last bullet list above in a large font. Our Heroine signed the disclaimer herself. A villain who sells someone a dome that collapses gets a reputation; she had a framed photograph of what that looks like.
+
+Part IV returns to the bill of materials in earnest, starting with the two kinds of hub angle every one of these domes already reports. Chapter 12 explains what they mean, why they need the true ellipsoid normal from Chapter 8, and what the Foreman does with them.

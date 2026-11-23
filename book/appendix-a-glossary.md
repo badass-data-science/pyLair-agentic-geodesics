@@ -1,14 +1,14 @@
 # Appendix A: Glossary
 
-Every geometry, engineering, and nesting term this book introduced, defined in one or two sentences each, cross-referenced to the chapter that first taught it. Terms are alphabetical within two groups: pyLair's geodesic-design vocabulary, then pyFit's nesting vocabulary.
+Every geometry, engineering, and nesting term this book introduced, defined in a sentence or two, with the chapter that teaches it. Terms are alphabetical within two groups: pyLair's geodesic-design vocabulary, then pyFit's nesting vocabulary.
 
 ## Geodesic Design (pyLair)
 
 **Achiral** — A shape that *can* be superimposed on its own mirror image using rotation and translation alone. Class I and Class II domes are both achiral by construction. (Chapter 6)
 
-**Assembly manifest** — A per-instance alternative to the Bill of Materials: every hub, strut, and panel keeps its own stable label (`H#`/`S#`/`P#`, literally that instance's own index into the dome's vertex/chord/face arrays) and its real adjacency to its neighbors, instead of being collapsed into a type-grouped count. (Chapter 22)
+**Assembly manifest** — A per-instance alternative to the Bill of Materials: every hub, strut, and panel keeps its own stable label (`H#`/`S#`/`P#`, literally that instance's own index into the dome's vertex/chord/face arrays) and its adjacency to its neighbors, instead of being collapsed into a type-grouped count. (Chapter 22)
 
-**Bevel angle** — Half of the angle between two adjacent panels' outward normals; the cut angle a panel's edge needs away from flat to sit correctly against its neighbor. A `0°` bevel means the two panels are coplanar. (Chapter 10, Chapter 12)
+**Bevel angle** — Half of the angle between two adjacent panels' outward normals; the cut angle a panel's edge needs away from flat to sit correctly against its neighbor. A `0°` bevel means the two panels are coplanar. (Chapter 10)
 
 **Bill of materials (BOM)** — The full JSON report of a dome's strut lengths/counts, hub angles, panel shapes/counts, and costs — everything needed to actually fabricate the design. (Chapters 12–16)
 
@@ -20,7 +20,7 @@ Every geometry, engineering, and nesting term this book introduced, defined in o
 
 **Class II ("Triacon") subdivision** — A subdivision that first splits each polyhedron face into 6 LCD sub-triangles around its centroid, then applies a frequency-`m` grid to one of them; requires an even nominal frequency. (Chapter 5)
 
-**Class III ("Skew") subdivision** — The general, genuinely chiral `(m,n)` Goldberg-Coxeter construction; `(m,n)` and `(n,m)` are true mirror images, not the same dome rotated. (Chapter 6)
+**Class III ("Skew") subdivision** — The chiral `(m,n)` Goldberg–Coxeter construction, with `m≠n`; `(m,n)` and `(n,m)` are true mirror images, not the same dome rotated. (Chapter 6)
 
 **Cluster tolerance** — The distance below which two chord lengths (or, for hub/panel shape grouping, two angle or edge-length values) are treated as the same value rather than independently rounded; derived from `-b/--bom-rounding`, which controls both display precision and this merge tolerance at once. (Chapter 13)
 
@@ -36,9 +36,11 @@ Every geometry, engineering, and nesting term this book introduced, defined in o
 
 **Golden-value formula** — A known, closed-form vertex/edge/face count formula for a given subdivision class and frequency, used as an independent sanity check on a real result. (Chapters 3–6)
 
-**Goldberg-Coxeter construction** — The general `(m,n)` triangulation framework that Class I (`n=0`), Class II (`m=n`), and Class III (`m≠n`) are all special cases of. (Chapter 6)
+**Goldberg–Coxeter construction** — The general `(m,n)` triangulation of a polyhedron's faces, described by Goldberg (1937), Caspar and Klug (1962), and Coxeter (1971). Class I is its `n=0` case and Class III its `m≠n` case; pyLair's Class II, built from LCD triangles, is a related but different construction, not the family's `m=n` member. (Chapter 6)
 
-**Hub** — A vertex where two or more struts meet; the point a physical connector plate attaches to. (Chapter 4, Chapter 12)
+**Hub** — A vertex where two or more struts meet; the point a physical connector plate attaches to. (Chapter 7, Chapter 12)
+
+**LCD triangle** — One of the six right triangles Class II splits each polyhedron face into, each running from a face corner to an edge midpoint to the face's center ("lowest common denominator"). (Chapter 5)
 
 **Spoke angle** — The angle, in a hub's own tangent plane, between one connecting strut and another, measured from an arbitrarily chosen reference strut. (Chapter 12)
 
@@ -46,31 +48,33 @@ Every geometry, engineering, and nesting term this book introduced, defined in o
 
 **Tangent-plane deflection angle** — The angle between a strut and the plane tangent to the dome's surface at that strut's hub; measures how far a connector must bend inward to receive that strut. (Chapter 12)
 
-**Triangulation number (T)** — `T = m² + mn + n²`; the general formula all three subdivision classes' golden-value vertex/edge/face counts are built from. (Chapter 6)
+**Triangulation number (T)** — `T = m² + mn + n²`; an icosahedral Goldberg–Coxeter sphere has `20T` faces, `30T` edges, and `10T+2` vertices. Gives the golden values for Classes I and III. (Chapter 6)
 
 **True ellipsoid surface normal** — The outward normal of a general ellipsoid, from the gradient of its implicit equation; equals the naive position vector only when a shape is a true, unelongated sphere. (Chapter 8)
 
 **Truncation** — Slicing a sphere/ellipsoid at a chosen cutoff fraction along an axis, keeping only the portion above it, to produce a ground-flush dome. (Chapter 9)
 
+**Valence** — The number of struts meeting at a hub; five or six on most geodesic domes, ten at twelve hubs of a pyLair Class II sphere. (Chapter 5, Chapter 15)
+
 **Truncation-artifact sliver** — A chord or panel shrunk to near-nothing by a truncation cutoff landing extremely close to (but not exactly on) a vertex ring; mathematically valid, practically unbuildable, and flagged rather than silently dropped. (Chapter 16)
 
 ## Nesting (pyFit)
 
-**Allow_mirror** — A pyFit job-spec part setting controlling whether the packer may flip a shape's template during placement; `true` for non-directional material, `false` for anything with a real physical direction (wood grain, a one-sided coating). (Chapter 20)
+**`allow_mirror`** — A pyFit job-spec part setting controlling whether the packer may flip a shape's template during placement; `true` for non-directional material, `false` for anything with a real physical direction (wood grain, a one-sided coating). (Chapter 20, Chapter 22)
 
-**Bottom-left-fill heuristic** — pyFit's placement strategy: place the largest remaining part first, try a range of rotation/mirror orientations, and pick whichever legal candidate position sits furthest left, then furthest down. (Chapter 19)
+**Bottom-left-fill heuristic** — pyFit's placement strategy: place the largest remaining part first, try a range of rotation/mirror orientations, and pick the legal position furthest left, breaking ties by lowest, so sheets fill column by column. (Chapter 19)
 
 **Job spec** — The JSON input to a pyFit nesting run: a sheet size and a list of parts, each with an outline (DXF or inline polygon), a quantity, and an `allow_mirror` setting. (Chapter 19, Chapter 20)
 
 **Minkowski sum** — The technique pyFit's NFP computation is built on: sweeping one shape along every point of another to produce the region where they touch or overlap. (Chapter 19)
 
-**No-fit-polygon (NFP)** — The region a moving shape's reference point must stay outside of to avoid overlapping a fixed shape; inside it, the shapes overlap, on its boundary they touch. (Chapter 19)
+**No-fit polygon (NFP)** — The region a moving shape's reference point must stay outside of to avoid overlapping a fixed shape; inside it, the shapes overlap, on its boundary they touch. (Chapter 19)
 
 **NP-hard** — The computational complexity class 2D irregular nesting belongs to; no known algorithm finds the provably optimal layout in reasonable time as part count grows, which is why pyFit is honestly a heuristic, not an optimal solver. (Chapter 19)
 
-**Rotation step (`-R/--rotation-step`)** — The angular spacing between candidate orientations tried during placement search; a finer step means denser search and better packing at the cost of speed. (Chapter 20)
+**Rotation step (`-R/--rotation-step`)** — The angular spacing between candidate orientations tried during placement search; a finer step searches more orientations at the cost of speed, and usually, though not always, packs tighter. (Chapter 20, Chapter 21)
 
-**Sheet utilization** — The fraction of a sheet's area actually covered by placed parts; the real metric for "how much material is being wasted," as distinct from a design's theoretical panel area. (Chapter 20, Chapter 23)
+**Sheet utilization** — The fraction of a sheet's area actually covered by placed parts; the real metric for "how much material is being wasted," as distinct from a design's theoretical panel area. (Chapter 2, Chapter 20, Chapter 23)
 
 ## Agentic Interface (Both Toolkits)
 
@@ -78,7 +82,7 @@ Every geometry, engineering, and nesting term this book introduced, defined in o
 
 **JSON** — JavaScript Object Notation; the structured, typed data format every tool result in this book is shown in, chosen because a named field can't drift the way a paraphrased sentence can. (Chapter 1)
 
-**MCP (Model Context Protocol)** — The standard by which an agent discovers and calls a set of typed tools over a stdio-connected server. (Chapter 2)
+**MCP (Model Context Protocol)** — The standard by which an agent discovers and calls a set of typed tools from a server it launches and talks to over standard input and output. (Chapter 1, Chapter 2)
 
 **MCP progress notification** — A live heartbeat an MCP tool can send while a long call is still running, requiring the actual work to run off the server's main event loop (a worker thread) so the loop stays free to relay it. (Chapter 21)
 
