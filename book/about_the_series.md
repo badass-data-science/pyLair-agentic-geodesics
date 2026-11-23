@@ -1,4 +1,4 @@
-# About the "for Supervillains" Book Series
+# About the "...for Supervillains" Book Series
 
 Ordinary textbooks assume you just want to learn the material — the *...for Supervillains* series assumes you also want to conquer the world! This volume is the most recent in the series, after *Agentic Time Series Forecasting for Supervillains* and *Systems Thinking for Supervillains*.
 
