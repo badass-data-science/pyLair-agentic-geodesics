@@ -1,10 +1,10 @@
-**You bought a dormant volcano through three shell companies. Your homeowners' association has sent its second letter. Now you need a lair that will actually stand up. So why does your rival's dome keep falling down?**
+**You just purchased a dormant volcano through three shell companies. Now you need to build your villainous geodesic lair on top of it.**
 
-The Rival Supervillain asked a general-purpose chatbot to design his geodesic dome. It came back fluent, confident, and finished-looking: vertex lists, strut lengths, a parts order. The struts didn't meet. The four-sided panels folded like garden gates. His crew is still standing in the field, holding a pile of plausible numbers.
+Your Rival already attempted this by asking a general-purpose AI chatbot to design his geodesic dome. The answer came back fluent, confident, and finished-looking: vertex lists, strut lengths, a parts order. However, the struts didn't meet. The four-sided panels folded like garden gates. His crew is still standing in the field, holding a pile of plausible numbers.
 
-The trouble isn't that he used AI. It's that he let the AI do the geometry from memory, and never checked it. Hand the same job to an agent that calls real, typed geometry tools and shows you their raw output, and the dome closes.
+The trouble isn't that he used AI. It's that he let the AI do the geometry from memory, and never checked it. Hand the same job to an agent that calls real, typed, specifically designed geometry tools and shows you their raw output, and the dome closes. Correctly.
 
-*Agentic Geodesic Lair Design for Supervillains* teaches computational geometry and agentic AI together, through two free, open-source Python toolkits driven by an AI agent over the Model Context Protocol (MCP): **pyLair**, which designs geodesic domes, and **pyFit**, which nests their panels onto sheets of plywood. You'll follow one dome, the Actual Secret Lair, from its first prompt to its last cut panel. Along the way you'll learn why each design decision matters, what the numbers coming back mean, and how to tell when to trust them. Every teaching example is villainous. None of the geometry is.
+*Agentic Geodesic Lair Design for Supervillains* teaches geodesic computational geometry and agentic AI together, through two free, open-source Python toolkits driven by an AI agent over the Model Context Protocol (MCP): **pyLair**, which designs geodesic domes, and **pyFit**, which nests their panels onto sheets of your building material. You'll follow one dome, the Actual Secret Lair, from its first prompt to its last cut panel. Along the way you'll learn why each design decision matters, what the numbers coming back mean, and how to tell when to trust them. Every teaching example is comically villainous. None of the geometry is.
 
 **Design a dome that closes**
 
