@@ -59,11 +59,13 @@ Notice that "bottom-left" here means *left first*: square 2 goes on top of squar
 
 **What It Means:** It's a different kind of correctness claim from anything pyLair makes. A pyLair dome matches its golden values or it doesn't: closed-form, checkable, unambiguous. A pyFit layout is never "the" correct layout, only *a* legal one. Every placement is re-checked for overlap and containment before it's accepted, so pyFit's guarantee is "this layout is valid," never "this layout is optimal." Chapter 24 compares the two kinds of correctness side by side.
 
-## A Documented Gotcha, Told the Way pyLair's Are
+## A Documented Gotcha, and How pyFit Checks Its Way Past It
 
-`pyclipper.MinkowskiSum` doesn't return one clean polygon. It returns the *raw* swept outlines, and when a small shape is swept around a larger one, one of those outlines can wind the opposite way and *look* like it marks a hole. It can't: the Minkowski sum of two convex, filled shapes is itself convex, and a convex shape has no holes. pyFit's fix (`pyfit/nfp.py`) treats every returned outline as a solid region and merges them with the `shapely` library, ignoring the winding direction.
+`pyclipper.MinkowskiSum` doesn't return one clean polygon. It returns the *raw* swept outlines, and when a small shape is swept around a larger one, one of those outlines can wind the opposite way and *look* like it marks a hole. It can't: the Minkowski sum of two convex, filled shapes is itself convex, and a convex shape has no holes. pyFit (`pyfit/nfp.py`) treats every returned outline as a solid region and merges them with the `shapely` library, ignoring the winding direction.
 
-What makes it worth telling, the way this book has told pyLair's bugs: **this issue passed its first hand-computable test, the two unit squares, cleanly**, and appeared only on a second case with shapes of different sizes (pyFit's `AGENTS.md` records it). One verified case is not a verified method. Chapter 24 sets this beside Class III's stitching bug, which passed checks that were too few in the same way, in an unrelated part of an unrelated codebase.
+Notice what the two unit squares can't tell you here. Two shapes of the same size never produce the misleading outline, so a no-fit polygon that passes the unit-square test could still mishandle a small panel against a large one. **One verified case is not a verified method.**
+
+pyFit's authors checked the merge three ways: the hand-computable unit squares; a second hand-computable case, a half-unit square around a 2×2 one, whose no-fit polygon must span exactly `-0.5` to `2` on each axis; and, on a small-around-large case, the convex hull of every pairwise sum of corner points, a different way of computing the same Minkowski sum that never consults Clipper's outlines at all. The test suite also confirms that a touching position lands on the polygon's boundary and an overlapping one inside it. Chapter 24 sets these beside pyLair's Class III checks, the same lesson in an unrelated codebase.
 
 ## What the Search Doesn't Try
 

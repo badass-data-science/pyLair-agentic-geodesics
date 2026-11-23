@@ -51,7 +51,7 @@ The sheet is `2.44 m × 1.22 m`, a standard 8-by-4-foot panel in meters. Start w
 **What Comes Back:**
 > `rotation_step_degrees` is the direct lever. The default, `15°`, tries 24 orientations per part (twice that when mirroring is allowed); `45°` tries 8. You give up packing quality, usually a little: on this job, two extra sheets for about a third of the time. It's not a correctness problem, since every placement is still checked. On a job this size, try a coarser step before assuming something is stuck, and go back to the default for the run you'll actually cut from.
 
-The first draft of this book recorded one more surprise: a crash, `shapely.errors.GEOSException: TopologyException: side location conflict`, from inside `no_fit_polygon`, at one combination of a coarse rotation step and a smaller sheet with real dome panels. None of this revision's runs reproduced it. Geometry libraries do have edge cases that only irregular, real shapes reach; if you hit one, report the job spec that triggered it rather than assuming your design is at fault.
+Geometry libraries have edge cases that only irregular, real shapes reach, and pyFit stands on two of them (`pyclipper` and `shapely`). If a nesting run ever fails with an error from inside `no_fit_polygon` rather than a clear message about your job spec, report the job spec that triggered it rather than assuming your design is at fault.
 
 The Chief Financial Villain took the 30. At ten sheets to a truck, that's three trucks, which she could disguise as a hardware delivery. Thirty-two would have needed a fourth truck, and she pointed out that it's always the fourth truck that someone remembers.
 

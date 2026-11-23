@@ -113,7 +113,7 @@ What it offers is the fewest physical pieces pyLair can produce at a given frequ
 
 ## A Note to File Away Now
 
-pyLair refers to vertices, chords, and faces internally by 0-indexed position in a Python list: vertex `0`, not vertex `1`. This wasn't always true. An earlier version of the codebase numbered vertices from 1 and subtracted 1 wherever they were used, a footgun since cleaned up and recorded in the repository's `README.md` and `AGENTS.md`. Nothing in this chapter depends on that history, but every vertex index this book shows from here on starts at 0, and it's better to find that unsurprising now than to rediscover it three chapters from now.
+pyLair refers to vertices, chords, and faces internally by 0-indexed position in a Python list: vertex `0`, not vertex `1`. Every vertex index this book shows from here on starts at 0, and it's better to find that unsurprising now than to rediscover it three chapters from now.
 
 ## What's Next
 

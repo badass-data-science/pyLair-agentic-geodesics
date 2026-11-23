@@ -53,19 +53,17 @@ Compare Chapter 4's Class I table at the *same nominal frequency*, `f=6`: Class 
 
 **What It Means:** `542 - 1620 + 1080 = 2`. **Euler's formula**, published by Leonhard Euler in the 1750s, says that for any closed surface topologically equivalent to a sphere, vertices minus edges plus faces equals 2, and it holds here exactly. A second, independent identity is worth checking beside it: every face is a triangle with 3 edges, and every edge borders exactly 2 faces, so a closed triangulated mesh must have `2 × edges = 3 × faces`. Here, `2(1620) = 3240` and `3(1080) = 3240`. Neither check is specific to pyLair or to domes. They're general facts about closed triangulated surfaces, which is what makes them useful: a bug that fools pyLair's own bookkeeping still has to fool two independent mathematical facts.
 
-## The Bug These Two Checks Caught
+## Where Class II Needs the Check Most
 
-That isn't hypothetical for this codebase. An earlier version of `ClassTwoMethodOneSymmetryTriangle` had a real bug, and how it was found shows *why* Euler's formula is worth checking rather than trusting a rendered preview.
-
-Here is the comment that now sits in `ClassTwoMethodOneSymmetryTriangle` (`pylair/symmetry_triangle.py`):
+Class II has a specific reason to want these checks. Here is the comment in `ClassTwoMethodOneSymmetryTriangle` (`pylair/symmetry_triangle.py`):
 
 > Unlike Class I's equilateral triangle (where vertex-to-centroid happens to be perpendicular to the opposite edge, since median=altitude there), this LCD triangle's x_dir/y_dir are NOT orthogonal, so solve for each point's (a, b) in that actual oblique basis rather than assuming an orthonormal one.
 
-pyLair places each grid point by moving along two direction vectors from an origin. In Class I's equilateral triangle, the two natural directions happen to be at right angles, so placing points as if they were independent, perpendicular axes just works. Class II's LCD triangle is a 30-60-90 right triangle, and its two natural directions are *not* perpendicular. An earlier implementation reused Class I's perpendicular-axes approach anyway, assuming the same convenient coincidence would hold. It doesn't.
+pyLair places each grid point by moving along two direction vectors from an origin. In Class I's equilateral triangle, the two natural directions happen to be at right angles, so placing points as if they were independent, perpendicular axes just works. Class II's LCD triangle is a 30-60-90 right triangle, and its two natural directions are *not* perpendicular. pyLair builds the two direction vectors as they are and solves a 2×2 linear system (`np.linalg.solve(basis, ...)`) for each grid point's position in that oblique basis.
 
-The result wasn't a crash or a visibly mangled shape; a preview would have looked plausible enough to wave through. What it failed was **Euler's formula** and `2E = 3F`, immediately, the moment anyone checked, as the repository's README records, before the golden-value formulas above were even known. That's why this chapter teaches the check as a habit rather than a footnote: a construction can be wrong in a way that looks fine and still fail a five-second arithmetic check, and the only way to catch it is to run the check.
+Treat those axes as perpendicular and the result isn't a crash or a visibly mangled shape: a preview looks plausible enough to wave through. The points from neighboring triangles stop meeting, the mesh gains edges it shouldn't have, and `V - E + F` stops coming out to 2. That's why this chapter teaches the check as a habit rather than a footnote: a construction can be wrong in a way that looks fine and still fail a five-second arithmetic check.
 
-The fix replaced the assumption with the real geometry: build the LCD triangle's two direction vectors as they are, and solve a 2×2 linear system (`np.linalg.solve(basis, ...)`) for each grid point's position in that oblique basis. Euler's formula has held on every Class II configuration checked since, a stronger claim than "it held once."
+pyLair's test suite runs the check rather than trusting it. It requires `V - E + F = 2` and `2E = 3F` on Class II spheres at frequencies 2, 4, 6, and 8; it compares vertex, edge, and face counts with the golden-value formulas above on both the icosahedron and the octahedron; and it confirms that every vertex sits at the requested radius and that no two vertices occupy the same point. Each test asks a different question, so a mistake that slips past one still has to get past the others.
 
 ## Continuing the Actual Secret Lair
 

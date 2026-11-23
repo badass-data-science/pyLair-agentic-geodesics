@@ -32,7 +32,7 @@ One of the flagged chord rows, the one on the Junior Henchman's cutting list:
 {"length": 2.36e-07, "count": 10}
 ```
 
-Some of the flagged struts close the dome's base ring. Since the base-ring fix Chapter 15 mentioned, every cut edge gets a strut, and at a cutoff this close to a ring, several struts leaving one ring vertex downward all cross the cut within a ten-millionth of that vertex. The base-ring segments joining those crossing points are near zero too. It's the same near-degenerate ring causing the same kind of sliver, in one more place.
+Some of the flagged struts close the dome's base ring. Every cut edge gets a strut (Chapter 15), and at a cutoff this close to a ring, several struts leaving one ring vertex downward all cross the cut within a ten-millionth of that vertex. The base-ring segments joining those crossing points are near zero too. It's the same near-degenerate ring causing the same kind of sliver, in one more place.
 
 The three flagged panel shapes are degenerate in two different ways. Their edge lengths, measured from the dome's face data (the report itself prints panel edges to three decimals, so these show there as `0.0`), are:
 

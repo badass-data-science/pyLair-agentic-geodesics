@@ -22,7 +22,7 @@ What `face_output` does *not* control is the other face-based outputs. STL, OBJ,
 
 ## Two-Axis Truncation, Exported
 
-Face-aware export once worked only on an untruncated sphere; the repository's changelog records when truncation on every axis learned to clip faces too, and Chapters 9 and 10 describe how it does so. Here is that capability on the hardest case this book builds: the Actual Secret Lair truncated on **two** axes at once (`X` at `0.3`, perhaps for a flat wall against the crater's side, and `Z` at `0.499999`), with every face-dependent output requested together.
+Face-aware export works on a dome truncated along any axis, because truncation clips faces as well as struts; Chapters 9 and 10 describe how. Here is that capability on the hardest case this book builds: the Actual Secret Lair truncated on **two** axes at once (`X` at `0.3`, perhaps for a flat wall against the crater's side, and `Z` at `0.499999`), with every face-dependent output requested together.
 
 **Prompt:**
 > Export this dome (Class III `(4,1)`, stretched `1.8`× on Z, truncated on X at `0.3` and Z at `0.499999`) with `face_output=True`, `stl=True`, `obj=True`, `preview=True`, `hub_templates=True`, and `face_templates=True` all at once. Which of the files that come back depend on the face data surviving truncation?

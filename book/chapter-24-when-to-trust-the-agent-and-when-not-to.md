@@ -6,29 +6,29 @@ No new dome and no new nesting job in this chapter: a structured look back at ev
 
 ## The Thesis
 
-A check that compares a result only against its own assumptions can catch a **count** bug. It cannot catch a **shape** bug that happens to preserve the counts. Every gotcha in this book traces back to a moment where that distinction mattered, and the sharpest illustrations, one from each toolkit, made the same point in unrelated code.
+A check that compares a result only against its own assumptions can catch a **count** error. It cannot catch a **shape** error that happens to preserve the counts. Every gotcha in this book comes back to that distinction, and the authors of both toolkits, working in unrelated code, answered it the same way: by checking against something their own code didn't produce.
 
 ## Every Independent Check This Book Used
 
-**Euler's formula and `2E = 3F`** (Chapter 5) caught Class II's perpendicular-axes bug immediately: identities true of *any* closed triangulated surface, not something pyLair's construction gets to define for itself.
+**Euler's formula and `2E = 3F`** (Chapter 5) guard Class II's oblique grid: identities true of *any* closed triangulated surface, not something pyLair's construction gets to define for itself.
 
-**The `antitile` cross-check** (Chapter 6) shows the limit of count checks. Class III's first implementation satisfied Euler's formula *and* its golden-value counts while leaving thirty of the icosahedron's original edges unsubdivided. Only a comparison against an independently written library, sharing no code with pyLair, caught what two internal checks couldn't.
+**The `antitile` cross-check** (Chapter 6) covers what count checks can't. A Class III dome stitched by proximity alone satisfies Euler's formula *and* its golden-value counts while leaving thirty of the icosahedron's original edges unsubdivided. Comparing the whole edge-length distribution against an independently written library, sharing no code with pyLair, tests the shape, and the strut-length-ratio test keeps that shape check in the suite.
 
 **The finite-difference gradient** (Chapter 8) checked the ellipsoid-normal formula with a different method for computing the same quantity: a numerical approximation, not a restatement of the formula, agreeing within `10⁻⁵` on a general three-axis case.
 
 **`trimesh` and `ezdxf`** (in pyLair's test suite, run when the `verify` extra is installed) recompute panel areas and angles between panels from pyLair's exported files, check truncated panels against `trimesh`'s own mesh-slicing routine, and read a generated cutting template back in to confirm it reproduces the lengths it claims: a round trip through files, not a re-run of the trigonometry under test.
 
-**The strut–panel cross-reference** (Chapter 22) caught the base-ring bug, which no count could, because a truncated dome has no golden value to contradict. Every panel edge had to name its strut; fifty couldn't. It's the one check on this list that wasn't built as a check at all.
+**The strut–panel cross-reference** (Chapter 22) checks the truncated dome, where no count can, because an open dome has no golden value to contradict. Every panel edge must name its strut, and every strut must border one panel or two. It's the one check on this list that the builder uses too: the same manifest tells the Foreman which piece goes where.
 
 **pyFit's hand-checkable no-fit polygon** (Chapter 19), two unit squares giving the `2×2` square from `(-1,-1)` to `(1,1)`, is the same kind of check at a smaller scale: a result compared with an answer a person can compute by hand.
 
-**The convex-hull cross-check** (Chapter 19) verified pyFit's Minkowski-sum fix by a second method, the convex hull of every pairwise sum of corner points, rather than declaring it correct because the unit-square case still passed.
+**The convex-hull cross-check** (Chapter 19) checked pyFit's Minkowski-sum merge by a second method, the convex hull of every pairwise sum of corner points, on the small-around-large case the unit squares can't exercise, rather than declaring it correct because the unit-square case passed.
 
 **Reading the report** (Chapter 16) belongs here too, in a humbler way: the documented safe cutoff still left slivers on one dome, and only looking at the artifact lists showed it.
 
-## The Same Bug, Twice, in Two Toolkits That Share No Code
+## The Same Lesson, in Two Toolkits That Share No Code
 
-Stated plainly: **Class III's stitching bug and pyFit's Minkowski-sum "hole" are the same lesson, discovered independently in two projects with no code in common.** Both passed their first test cleanly. Both were wrong anyway, in a way that first test couldn't expose. Both were caught only when a second, differently shaped case, or an independent method, was run against them. One verified case is not a verified method, and the book didn't have to invent an example to make the point; its two subjects supplied one each.
+Stated plainly: **Class III's stitching and pyFit's Minkowski-sum "hole" teach the same lesson, in two projects with no code in common.** In both, the obvious first test passes whether the code is right or wrong: Class III's counts come out right even when the stitching doesn't, and two equal squares never produce the misleading outline. In both, the authors added a second, differently shaped case and an independent method (antitile and a strut-length ratio; a small square around a large one and a convex hull). One verified case is not a verified method, and the book didn't have to invent an example to make the point; its two subjects supplied one each.
 
 **Prompt:**
 > Looking back at everything this book covered, list every point where pyLair or pyFit checked a result against an independent, differently implemented source rather than its own internal consistency. What do they have in common?
@@ -43,7 +43,7 @@ Neither story is weaker. pyLair's geometry is closed-form because subdivision is
 
 ## Applied One Level Up
 
-The principle applies to the book too. Every number, error message, and bug story in these pages is meant to trace to a code change, a test, or a run. The revision that produced this edition re-ran every example against the current code, and the exercise proved the point. Some numbers had drifted as the tools improved: a nesting batch that once needed six sheets now needs five. One figure caption described bottom-left fill as filling rows when the code, and the figure itself, fill columns. One chapter had chosen a different base polyhedron for the Under-the-Ocean Prototype than the two chapters that built it. Each was internally consistent with its own chapter, passed a read-through, and was wrong in a way only an outside check could catch.
+The principle applies to the book too. Every number, error message, and check in these pages is meant to trace to the code, a test, or a run. The revision that produced this edition re-ran every example, and the exercise proved the point. One figure caption described bottom-left fill as filling rows when the code, and the figure itself, fill columns. One chapter had chosen a different base polyhedron for the Under-the-Ocean Prototype than the two chapters that built it. Each was internally consistent with its own chapter, passed a read-through, and was wrong in a way only an outside check could catch.
 
 So, to answer the question on the whiteboard: trust the agent to sequence tools, read fields, and summarize. Don't trust it, or yourself, or a book, to be the only witness to a number that will be cut, welded, or bolted. The AI Henchman didn't object. It has never claimed to be its own witness; that was always the Rival's mistake, not his chatbot's.
 

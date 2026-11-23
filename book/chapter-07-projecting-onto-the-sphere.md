@@ -58,7 +58,7 @@ Here is a practical skill this chapter makes possible. If an exported dome shows
 **What Comes Back:**
 > First, check which subdivision class the dome uses. If it's Class I or Class II, this is almost certainly a `vertex_equal_threshold` problem: the threshold is tighter than the two points' floating-point separation, Chapter 4's "too tight" failure. Loosen it slightly and re-check the vertex count against its golden value.
 >
-> If it's Class III, don't reach for `vertex_equal_threshold` first. A chiral lattice's cross-face points generally don't land near each other in 3D at all (that was the premise of Chapter 6's bug), so the threshold was never what stitched them together. A cracked Class III seam more likely means the combinatorial `cross_face_matches` are missing or wrong for this `(m,n)` pair: a construction bug in `class_three.py`, not a tuning problem in `geodesic_sphere.py`.
+> If it's Class III, don't reach for `vertex_equal_threshold` first. A chiral lattice's cross-face points generally don't land near each other in 3D at all (Chapter 6 explains why), so the threshold was never what stitched them together. A cracked Class III seam more likely means the combinatorial `cross_face_matches` are missing or wrong for this `(m,n)` pair: a construction bug in `class_three.py`, not a tuning problem in `geodesic_sphere.py`.
 
 **What It Means:** One visible symptom, two structurally different causes, and only one of them is a threshold problem. Confusing them wastes time nudging a setting that can't fix a Class III construction gap, or, worse, nudging it far enough to cause the opposite failure this chapter just demonstrated.
 
