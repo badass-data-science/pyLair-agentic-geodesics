@@ -65,6 +65,9 @@ import zipfile
 BOOK_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 IMAGE_DIR = os.path.join(BOOK_DIR, "examples", "images")
 TITLE_PAGE_IMAGE = os.path.join(BOOK_DIR, "title-page-image.png")
+# The author's portrait on About the Author, placed by _with_author_portrait()
+# with no IMAGE tag in the (author-owned) source file.
+AUTHOR_PORTRAIT = os.path.join(BOOK_DIR, "image-generation", "about-the-author", "dj.png")
 OUTPUT_STEM = "geodesic-lair-book"
 
 TITLE = "Agentic Geodesic Lair Design for Supervillains"
@@ -538,6 +541,8 @@ def _substitute_images(content, filename, out_dir):
     relative to out_dir, pandoc's working directory when it renders."""
     if filename == "title_page.md":
         return _with_title_page_image(content, out_dir)
+    if filename == "about_the_author.md":
+        return _with_author_portrait(content, out_dir)
 
     tags = IMAGE_TAG_RE.findall(content)
     figures = _figures_in(content)
@@ -585,6 +590,43 @@ def _with_title_page_image(content, out_dir):
         if i > 1 and line.strip().startswith("*") and not line.strip().startswith("**"):
             return "\n".join(lines[: i + 1] + ["", block, ""] + lines[i + 1:])
     return "\n".join(lines[:2] + ["", block, ""] + lines[2:])
+
+
+def _with_author_portrait(content, out_dir):
+    """About the Author gets the author's portrait (AUTHOR_PORTRAIT)
+    between its heading and its text, with no placeholder in the
+    author-owned source file and no caption or figure number. Same layout
+    and spacing as Strategy for Supervillains' About the Author page.
+
+    The portrait and the text must land on one page in every output:
+    - The image is a plain inline image followed by a non-breaking space
+      (`\\ `), so pandoc's implicit_figures doesn't turn it into a
+      captioned, numbered, floating figure -- it stays exactly where it
+      is, under the heading.
+    - Its width is 35% of the text column, which leaves the heading and
+      the text room on the same page. Raw-LaTeX center/endcenter (dropped
+      from the EPUB) center it there.
+    - In the EPUB (and so the Kindle book built from it), image and text
+      share div.author-page, which _EPUB_BOX_CSS asks reading systems
+      not to break inside, sizes the image to leave room for the text, and
+      centers it.
+    """
+    if not os.path.isfile(AUTHOR_PORTRAIT):
+        return content
+    rel_path = os.path.relpath(AUTHOR_PORTRAIT, out_dir)
+    lines = content.strip().split("\n")
+    if not H1_RE.match(lines[0]):
+        raise ValueError("about_the_author.md: expected its first line to be its # heading")
+    portrait = (
+        "::: {.author-page}\n\n"
+        "```{=latex}\n\\begin{center}\n```\n\n"
+        f"![{AUTHOR}]({rel_path}){{width=35%}}\\ \n\n"
+        # two lines' space between the portrait and the text, as in
+        # Strategy for Supervillains (user request, 2026-11-23); the EPUB
+        # gets the same gap from _EPUB_BOX_CSS
+        "```{=latex}\n\\end{center}\n\\vspace{2\\baselineskip}\n```\n"
+    )
+    return "\n".join([lines[0], "", portrait] + lines[1:] + ["", ":::"])
 
 
 def _unnumber_h1(content):
