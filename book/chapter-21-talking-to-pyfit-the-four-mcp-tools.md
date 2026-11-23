@@ -6,7 +6,7 @@ Chapter 18 taught pyLair's iterate-then-commit loop. pyFit has the same shape, `
 
 ## The Same Four-Tool Shape, on the Nesting Side
 
-`design_nest` answers the cheapest question: sheets used and utilization per sheet, no files written. `preview_nest` renders each sheet's layout inline. `get_nest_report` returns every placement (sheet, position, rotation, and mirror flag for each part), still with no files. `export_nest` is the only one that writes anything: one DXF per sheet and, optionally, a preview PNG of each. Here they are on a deliberately small batch of the Actual Secret Lair's panels, four of its 52 shapes, five panels each, on small `0.6 × 0.5` sheets:
+`design_nest` answers the cheapest question: sheets used and utilization per sheet, no files written. `preview_nest` renders each sheet's layout inline. `get_nest_report` returns every placement (sheet, position, rotation, and mirror flag for each part), still with no files. `export_nest` is the only one that writes anything: one DXF per sheet and, optionally, a preview PNG of each. Here they are on a deliberately small batch of the Actual Secret Lair's panels, its first four of 52 shapes (`facetype1` through `facetype4`), five panels each, on small `0.6 × 0.5` sheets:
 
 **Prompt:**
 > Nest these four panel templates, five of each, on 0.6 by 0.5 sheets. Summarize first, then give me the full report, then export.
@@ -91,12 +91,14 @@ Nothing in pyLair's tools needed this, because nothing pyLair computes takes lon
 
 That's harder than it sounds. An MCP server handles requests on an event loop, and a tool written as an ordinary (synchronous) function blocks that loop for the whole call. If the packer ran inside a plain `def design_nest(...)`, the server couldn't send a single progress message until the function returned, when there'd be nothing left to report. pyFit's tools are declared `async def` for this reason: the packing runs in a worker thread (`asyncio.to_thread`), and the event loop stays free to relay the thread's progress callback as MCP notifications while the work is still happening.
 
-That's worth confirming rather than trusting as a description. Here is a reproduction: a 40-panel job (eight of the Lair's shapes on the same small sheets), called through an MCP client that timestamps each notification as it arrives:
+That's worth confirming rather than trusting as a description. Here is a reproduction: a 40-panel job (the Lair's first eight shapes, five of each, on the same small sheets), called through an MCP client that timestamps each notification as it arrives:
 
 ```
 elapsed: 23.03s, 214 progress notifications
-first: t=0.008s (placed 0/40 parts, checking sheet 1)
-last: t=23.026s (placed 39/40 parts, checking sheet 10)
+first: t=0.008s
+  placed 0/40 parts (checking sheet 1)
+last: t=23.026s
+  placed 39/40 parts (checking sheet 10)
 ```
 
 **What It Means:** 214 notifications, arriving continuously from eight milliseconds after the call began to its final moment, not bunched at the end, which is what a blocked event loop would produce. pyFit's `AGENTS.md` records the same behavior on a different, shorter job (about 33 notifications over 5.6 seconds): a different run, the same mechanism. Timings depend on the machine; the shape of the arrivals doesn't. The AI Henchman, given a client that displayed them, stopped going quiet.

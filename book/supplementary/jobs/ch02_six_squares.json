@@ -1,0 +1,30 @@
+{
+  "sheet": {
+    "width": 3,
+    "height": 2
+  },
+  "parts": [
+    {
+      "name": "square",
+      "polygon": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "quantity": 6
+    }
+  ]
+}
