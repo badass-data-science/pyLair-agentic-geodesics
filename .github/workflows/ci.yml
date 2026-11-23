@@ -11,12 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # mcp has no published release supporting Python 3.9 (all require
-        # >=3.10), so 3.9 installs test+verify only; the mcp_server tests
-        # skip themselves there via pytest.importorskip("mcp").
         include:
-          - python-version: "3.9"
-            extras: "test,verify"
           - python-version: "3.10"
             extras: "test,mcp,verify"
           - python-version: "3.11"
