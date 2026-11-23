@@ -88,6 +88,6 @@ Chapter 19 explains why it can happen. pyFit is a bottom-left-fill *heuristic*, 
 
 ## What's Next
 
-Three trucks left for the crater on three different days, with three different hardware-store logos on their doors. The Interpol heat, by the Chief Financial Villain's own index, did not move.
+Three trucks left for the crater on three different days, with three different hardware-store logos on their doors. The Interpol heat, by the Chief Financial Villain's own index, did not move. The Powers That Be™, whose satellites photograph every road that leads to a volcano, filed the convoy under home improvement: an analyst concluded that someone up there was redoing a kitchen. Three trucks of plywood is a kitchen. Four is a question.
 
 Chapter 21 covers pyFit's four MCP tools, the same iterate-then-commit shape Chapter 18 taught for pyLair, plus one idea no dome design ever needed: progress reports on a job long enough to need them, like the 17-minute one above. It closes with one complete session spanning both toolkits, from a bare polyhedron to a ready-to-cut sheet layout.
