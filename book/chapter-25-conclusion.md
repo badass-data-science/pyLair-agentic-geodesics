@@ -41,4 +41,4 @@ Neither project has been published to PyPI as of this writing. Both are working 
 
 ---
 
-Our Heroine's secret laboratory, geodesically sound and cut from a nested plan, is of course still secret. The AI Henchman has a new terminal, by the pool. The mojitos, per pyLair's blog post, remain optional, but encouraged.
+Our Heroine's Secret Lab™, geodesically sound and cut from a nested plan, is of course still secret. The AI Henchman has a new terminal, by the pool. The mojitos, per pyLair's blog post, remain optional, but encouraged.
