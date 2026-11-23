@@ -71,7 +71,7 @@ Nothing here is the final design, which is the point of introducing it early. Ea
 {"frequency": 8, "face_count": 1280}
 ```
 
-**What It Means:** `1280 / 320 = 4`, not 2. Doubling the frequency quadruples the face count, because faces scale with `f²`: the symmetry triangle is a two-dimensional grid, not a list. Expect "twice the frequency, twice the detail" and you're off by a factor of two, with consequences once the same growth reaches strut counts, file sizes (Chapter 17), and the size of the nesting job Part VI has to pack onto sheet stock. The CFV, shown these two lines, asked that nobody double anything without telling her.
+**What It Means:** `1280 / 320 = 4`, not 2. Doubling the frequency quadruples the face count, because faces scale with `f²`: the symmetry triangle is a two-dimensional grid, not a list. Expect "twice the frequency, twice the detail" and you're off by a factor of two, with consequences once the same growth reaches strut counts, file sizes (Chapter 17), and the size of the nesting job Part VI has to pack onto sheet stock. The Chief Financial Villain, shown these two lines, asked that nobody double anything without telling her.
 
 ## What `vertex_equal_threshold` Measures
 

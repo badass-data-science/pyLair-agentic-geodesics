@@ -20,7 +20,7 @@ Then, because a design isn't a building: hand the panels to a second, independen
 
 **The Under-the-Ocean Prototype** remains a prototype. Its panels were nested in Chapter 20, with an `allow_mirror` decision made for a one-sided coating, and the Junior Henchman's rewritten prompts from Chapter 23 are queued for its next design session. Its construction, like any sensible secret laboratory's, stays secret.
 
-**Chapter 11's clients** received their designs, their invoices, and the CFV's disclaimer. The Mesa Spire's owner paid the vanity surcharge without comment.
+**Chapter 11's clients** received their designs, their invoices, and the Chief Financial Villain's disclaimer. The Mesa Spire's owner paid the vanity surcharge without comment.
 
 **The Rival Supervillain** sent a message through the disgruntled henchman, who was by now doing a brisk trade in both directions. He wanted to borrow the templates. Our Heroine sent back a copy of Chapter 24 instead, and the address of pyLair's repository.
 

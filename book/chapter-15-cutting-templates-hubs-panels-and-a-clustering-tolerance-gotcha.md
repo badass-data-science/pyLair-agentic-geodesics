@@ -1,6 +1,6 @@
 # Chapter 15: Cutting Templates — Hubs, Panels, and a Clustering-Tolerance Gotcha
 
-The Foreman's request was simple: part numbers. He did not want 156 custom connector plates, one per joint, each a snowflake. He wanted a short list of plate *designs*, a count for each, and a drawing he could hand to the cutting crew. The CFV wanted the same list for a different reason: every distinct design was a setup charge.
+The Foreman's request was simple: part numbers. He did not want 156 custom connector plates, one per joint, each a snowflake. He wanted a short list of plate *designs*, a count for each, and a drawing he could hand to the cutting crew. The Chief Financial Villain wanted the same list for a different reason: every distinct design was a setup charge.
 
 Four chapters of geometry (subdivision, projection, shaping, and now hub angles, strut clustering, and panel shapes) converge here on the two kinds of file a fabricator needs: one cutting template per distinct hub-connector shape, and one per distinct panel shape. This chapter is also the bridge to Part VI: every panel-template DXF that `export_dome` writes with `face_templates=True` is the kind of file a pyFit nesting job (Chapter 20) takes as input.
 
@@ -61,8 +61,8 @@ Chapter 14 promised to show what the chirality flag means for the template count
 
 ## What These Numbers Don't Answer Yet
 
-One gap, in one sentence: knowing the dome needs `52` panel shapes in specific quantities says nothing about how many sheets of plywood it takes to cut them, a different question Chapter 20 answers. The CFV underlined it twice.
+One gap, in one sentence: knowing the dome needs `52` panel shapes in specific quantities says nothing about how many sheets of plywood it takes to cut them, a different question Chapter 20 answers. The Chief Financial Villain underlined it twice.
 
 ## What's Next
 
-Chapter 16 covers the last gotcha in this dome's bill of materials: truncation slivers, struts and panels shrunk to almost nothing by an unlucky cutoff, and why pyLair flags them rather than silently dropping them. Part V then writes every template here to disk, and Part VI takes up the CFV's underlined question.
+Chapter 16 covers the last gotcha in this dome's bill of materials: truncation slivers, struts and panels shrunk to almost nothing by an unlucky cutoff, and why pyLair flags them rather than silently dropping them. Part V then writes every template here to disk, and Part VI takes up the Chief Financial Villain's underlined question.

@@ -1,6 +1,6 @@
 # Chapter 19: Introducing pyFit — Nesting as a Second Geometry Problem
 
-The Junior Henchman stood in front of the first sheet of plywood with 52 panel templates, a pencil, and a question nobody in Parts II through V had answered: where does each piece *go*? They tried laying the templates out by hand. The first sheet held nine panels and a great deal of offcut. The CFV, passing through, did the arithmetic for 260 panels and stopped passing through.
+The Junior Henchman stood in front of the first sheet of plywood with 52 panel templates, a pencil, and a question nobody in Parts II through V had answered: where does each piece *go*? They tried laying the templates out by hand. The first sheet held nine panels and a great deal of offcut. The Chief Financial Villain, passing through, did the arithmetic for 260 panels and stopped passing through.
 
 Every dome in this book now has an answer for its shape, its subdivision, its struts and panels, and its files. What none of that answers is the question a henchman in front of a sheet of plywood has. This part of the book is about **pyFit**, a separate project from pyLair that shares nothing with it but a file format, built to answer that question.
 

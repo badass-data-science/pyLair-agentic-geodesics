@@ -1,6 +1,6 @@
 # Chapter 20: From Bill of Materials to Job Spec — Nesting the Actual Secret Lair's Panels
 
-The CFV's concern about plywood had sharpened into a concern about trucks. Every sheet had to reach a dormant volcano by road, and a convoy of lumber trucks climbing toward an uninhabited crater is precisely the kind of thing that raises the Interpol heat. "Fewer sheets," she said, "is fewer trucks, is fewer questions." She wanted a number, and she wanted it before anyone ordered anything.
+The Chief Financial Villain's concern about plywood had sharpened into a concern about trucks. Every sheet had to reach a dormant volcano by road, and a convoy of lumber trucks climbing toward an uninhabited crater is precisely the kind of thing that raises the Interpol heat. "Fewer sheets," she said, "is fewer trucks, is fewer questions." She wanted a number, and she wanted it before anyone ordered anything.
 
 Chapter 19 showed pyFit working on its own terms. This chapter puts it to work on pyLair's: a job spec built straight from the Actual Secret Lair's bill of materials, with no quantity typed by hand, and the numbers that come back once real dome panels, not unit squares, are being nested.
 
@@ -53,7 +53,7 @@ The sheet is `2.44 m × 1.22 m`, a standard 8-by-4-foot panel in meters. Start w
 
 The first draft of this book recorded one more surprise: a crash, `shapely.errors.GEOSException: TopologyException: side location conflict`, from inside `no_fit_polygon`, at one combination of a coarse rotation step and a smaller sheet with real dome panels. None of this revision's runs reproduced it. Geometry libraries do have edge cases that only irregular, real shapes reach; if you hit one, report the job spec that triggered it rather than assuming your design is at fault.
 
-The CFV took the 30. At ten sheets to a truck, that's three trucks, which she could disguise as a hardware delivery. Thirty-two would have needed a fourth truck, and she pointed out that it's always the fourth truck that someone remembers.
+The Chief Financial Villain took the 30. At ten sheets to a truck, that's three trucks, which she could disguise as a hardware delivery. Thirty-two would have needed a fourth truck, and she pointed out that it's always the fourth truck that someone remembers.
 
 ## The Chirality Flag, Now a Packing Decision
 
@@ -88,6 +88,6 @@ Chapter 19 explains why it can happen. pyFit is a bottom-left-fill *heuristic*, 
 
 ## What's Next
 
-Three trucks left for the crater on three different days, with three different hardware-store logos on their doors. The Interpol heat, by the CFV's own index, did not move.
+Three trucks left for the crater on three different days, with three different hardware-store logos on their doors. The Interpol heat, by the Chief Financial Villain's own index, did not move.
 
 Chapter 21 covers pyFit's four MCP tools, the same iterate-then-commit shape Chapter 18 taught for pyLair, plus one idea no dome design ever needed: progress reports on a job long enough to need them, like the 17-minute one above. It closes with one complete session spanning both toolkits, from a bare polyhedron to a ready-to-cut sheet layout.

@@ -33,7 +33,7 @@ Each chapter opens with a short scene (one to three paragraphs) that sets up its
 - **Our Heroine** (she). Designs by prompting; checks the JSON herself.
 - **The AI Henchman** (it). The agent at the Secret Lab's™ terminal that calls pyLair's and pyFit's tools. Fluent, quick, eager to summarize; kept honest by typed tools and our Heroine's insistence on raw results.
 - **The Foreman** (he). Head of the construction crew; owns the tape measure and trusts nothing he can't measure. Asks the builder's questions: does it close, what angle, which piece goes where.
-- **The Chief Financial Villain** (she), the CFV. Counts struts, sheets, and cost; the person Chapter 20's sheet count and Chapter 23's "theoretical cost" are for. (Same office as in *Strategy for Supervillains*.)
+- **The Chief Financial Villain** (she). Always spelled out in the prose, never abbreviated "CFV." Counts struts, sheets, and cost; the person Chapter 20's sheet count and Chapter 23's "theoretical cost" are for. (Same office as in *Strategy for Supervillains*.)
 - **The Junior Henchman** (they). Runs the laser cutter; enthusiastic, literal, the one who would cut 120 left-handed panels if nobody told them about chirality.
 - **The Rival Supervillain** (he). Had a general-purpose chatbot freehand his dome's geometry. It looked finished. It did not close. His dome is the book's running cautionary tale (Chapters 1–6, 10, 12, 21, 22, 24, 25); a disgruntled henchman sells his files and photographs to the Secret Lab™. In Chapter 25 he asks to borrow her templates.
 - **The HOA** and its president (she): the ticking clock (Chapters 1, 2, 3, 9, 25).

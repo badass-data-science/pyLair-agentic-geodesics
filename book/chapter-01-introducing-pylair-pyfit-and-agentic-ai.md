@@ -123,7 +123,7 @@ The two answer different questions but share a form: flat, labeled, and ready to
 
 Every dome and nesting job in this book belongs to *somebody*, and that somebody wants it for a specific, defensible, only slightly unhinged reason. A design constraint stops being abstract the moment it's *your* pressure hull, *your* launch mass, *your* henchmen waiting on a cutting template. Villainy isn't the garnish here. It's the load case.
 
-The people first. **Our Heroine** designs by prompting and reads the JSON herself. **The AI Henchman** calls the tools. **The Foreman**, head of the construction crew, owns the tape measure and trusts nothing he can't measure; most of the questions a builder asks in this book are his. **The Chief Financial Villain** (CFV) counts struts, sheets, and money. **The Junior Henchman** runs the laser cutter, enthusiastically and literally. And somewhere offstage, **the Rival Supervillain** is still standing in his field.
+The people first. **Our Heroine** designs by prompting and reads the JSON herself. **The AI Henchman** calls the tools. **The Foreman**, head of the construction crew, owns the tape measure and trusts nothing he can't measure; most of the questions a builder asks in this book are his. **The Chief Financial Villain** counts struts, sheets, and money. **The Junior Henchman** runs the laser cutter, enthusiastically and literally. And somewhere offstage, **the Rival Supervillain** is still standing in his field.
 
 Then the designs, each introduced properly when it comes up:
 

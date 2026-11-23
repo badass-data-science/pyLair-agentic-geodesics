@@ -1,6 +1,6 @@
 # Chapter 9: Cutting a Dome From a Sphere — Truncation
 
-The CFV's question from the end of Chapter 8 stood on the whiteboard in her neat capitals: WHO IS PAYING FOR THE BOTTOM HALF? Nobody, was the answer. A crater floor is flat, the Secret Lab™ needs a floor to stand on, and half an ellipsoid buried in volcanic rock is a very expensive way to hold up nothing. The bottom half had to go.
+The Chief Financial Villain's question from the end of Chapter 8 stood on the whiteboard in her neat capitals: WHO IS PAYING FOR THE BOTTOM HALF? Nobody, was the answer. A crater floor is flat, the Secret Lab™ needs a floor to stand on, and half an ellipsoid buried in volcanic rock is a very expensive way to hold up nothing. The bottom half had to go.
 
 Every dome so far has been a complete sphere or ellipsoid: structurally interesting, not yet a *building*. Nothing in Chapters 3 through 8 has a floor. This chapter adds one with **truncation**, the operation that slices a finished shape at a chosen height and keeps only the part above it. It's also home to the book's most dramatic failure mode so far, a refusal rather than a silent mistake, and an ordering subtlety worth getting right before Chapter 10 complicates it.
 
@@ -85,6 +85,6 @@ Same two fractions, different shapes: different vertex and edge counts, and a di
 
 ## What's Next
 
-The CFV crossed out her question on the whiteboard and wrote 260 beside it: faces, which she now understood to mean panels, which she now understood to mean money. The HOA, meanwhile, had sent its president to look at the sub-basement stairs, "for a routine inspection." Our Heroine said the stairs were being renovated, which was nearly true.
+The Chief Financial Villain crossed out her question on the whiteboard and wrote 260 beside it: faces, which she now understood to mean panels, which she now understood to mean money. The HOA, meanwhile, had sent its president to look at the sub-basement stairs, "for a routine inspection." Our Heroine said the stairs were being renovated, which was nearly true.
 
 Chapter 10 picks up where this chapter's face clipping leaves off: what happens to a triangular panel when the cut takes off one corner and leaves four sides where there were three, and a since-fixed piece of pyLair's history about whether the new seam counts as a real, strutted edge or an invisible bookkeeping line.

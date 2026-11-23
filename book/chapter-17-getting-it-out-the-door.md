@@ -1,6 +1,6 @@
 # Chapter 17: Getting It Out the Door — DXF, VRML, STL, OBJ
 
-Export day had three customers. The Foreman wanted drawings his fabrication software could open. Our Heroine wanted something she could spin around on a screen and admire. The Junior Henchman wanted a 3D-printed scale model for the CFV's desk, and had promised her "every strut, in miniature." Three different files, it turned out, and one of the three promises was about to be broken.
+Export day had three customers. The Foreman wanted drawings his fabrication software could open. Our Heroine wanted something she could spin around on a screen and admire. The Junior Henchman wanted a 3D-printed scale model for the Chief Financial Villain's desk, and had promised her "every strut, in miniature." Three different files, it turned out, and one of the three promises was about to be broken.
 
 Everything since Chapter 3 has built toward this: the Actual Secret Lair, subdivided, shaped, and accounted for, written to files that other software can open. This chapter is about matching the file to the job: four export formats with four different purposes, and the one setting that changes which of them you get.
 
@@ -71,6 +71,6 @@ One more thing worth stating plainly, because it's easy to get backwards: **STL 
 
 ## What's Next
 
-The CFV's desk model arrived as a smooth, faceted shell, handsome and entirely strut-free. The Junior Henchman explained STL files at some length. The CFV said she liked it better this way, since it couldn't collapse, and asked how much the real one would cost to skin.
+The Chief Financial Villain's desk model arrived as a smooth, faceted shell, handsome and entirely strut-free. The Junior Henchman explained STL files at some length. The Chief Financial Villain said she liked it better this way, since it couldn't collapse, and asked how much the real one would cost to skin.
 
 Chapter 18 turns the export logic into an agentic workflow: the pyLair MCP tools that let an agent try, preview, and cost a design freely before calling the one tool that writes it to disk.

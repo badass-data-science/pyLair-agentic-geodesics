@@ -1,6 +1,6 @@
 # Chapter 11: Location, Location, Location — Designing for Hostile (and Ridiculous) Environments
 
-Word travels fast in the villain community, mostly by encrypted newsletter. Within a week of the Actual Secret Lair's first truncated preview, the Secret Lab™ had four commissions from other villains and a fifth from our Heroine's own contingency file. The CFV, who had been wondering how to pay for the plywood, priced the consulting work before anyone could object. "Every client," she observed, "thinks their site is the special case."
+Word travels fast in the villain community, mostly by encrypted newsletter. Within a week of the Actual Secret Lair's first truncated preview, the Secret Lab™ had four commissions from other villains and a fifth from our Heroine's own contingency file. The Chief Financial Villain, who had been wondering how to pay for the plywood, priced the consulting work before anyone could object. "Every client," she observed, "thinks their site is the special case."
 
 Nothing in this chapter is a new pyLair feature. Chapters 3 through 10 supplied every tool it uses: polyhedron choice, subdivision class, elongation, truncation. What this chapter teaches is how a commission arrives: never as "build a Class III dome," always as "build a dome that survives *down there*, or *up there*, or *in there*." Six stops, one design habit applied each time (start from what the site demands and what the client wants, then pick parameters), to show that the habit does the work, not six unrelated tricks. Every dome here is a Class I icosahedron at frequency 6 and radius 1 unless the stop says otherwise.
 
@@ -68,7 +68,7 @@ Every other stop reaches for a low, flattened shape. This one doesn't, because t
 **[IMAGE: examples/images/environments_comparison_chart.png | A paired bar chart comparing footprint diameter and total strut length for each of the six stops.]**
 **[CAPTION: Footprint diameter against total strut length for all six stops, from `design_dome` output. The Mesa Spire pairs the smallest footprint of the five full-size stops with the second-highest strut total. A compact footprint and a cheap build are different claims.]**
 
-That comparison is this stop's lesson. Among the five full-size stops, the Mesa Spire has the *smallest* footprint and the second-highest strut total, more material than the much wider Under-the-Ocean Prototype. "What does this site demand?" and "what does this client want?" are different inputs to the same tool, sometimes opposed ones, and the second can carry measurable material costs the first would never have chosen. The CFV added a vanity surcharge to the invoice.
+That comparison is this stop's lesson. Among the five full-size stops, the Mesa Spire has the *smallest* footprint and the second-highest strut total, more material than the much wider Under-the-Ocean Prototype. "What does this site demand?" and "what does this client want?" are different inputs to the same tool, sometimes opposed ones, and the second can carry measurable material costs the first would never have chosen. The Chief Financial Villain added a vanity surcharge to the invoice.
 
 ## A Callback to the Studio Apartment
 
@@ -102,6 +102,6 @@ Every stop built cleanly, reported sensible numbers, and rendered a plausible sh
 
 ## What's Next
 
-The CFV sent out five invoices and one disclaimer, the last bullet list above in a large font. Our Heroine signed the disclaimer herself. A villain who sells someone a dome that collapses gets a reputation; she had a framed photograph of what that looks like.
+The Chief Financial Villain sent out five invoices and one disclaimer, the last bullet list above in a large font. Our Heroine signed the disclaimer herself. A villain who sells someone a dome that collapses gets a reputation; she had a framed photograph of what that looks like.
 
 Part IV returns to the bill of materials in earnest, starting with the two kinds of hub angle every one of these domes already reports. Chapter 12 explains what they mean, why they need the true ellipsoid normal from Chapter 8, and what the Foreman does with them.

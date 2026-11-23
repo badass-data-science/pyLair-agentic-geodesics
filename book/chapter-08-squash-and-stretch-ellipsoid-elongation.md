@@ -1,6 +1,6 @@
 # Chapter 8: Squash and Stretch — Ellipsoid Elongation
 
-The particle accelerator's shipping crate was 3.4 meters tall. The CFV had measured it twice, because the moving company charged by the cubic meter, and she brought the number to the design meeting with the air of someone delivering bad news. A sphere wide enough to fit on the crater floor wasn't tall enough to hold the crate standing up. "Then the sphere," said our Heroine, "will stop being a sphere."
+The particle accelerator's shipping crate was 3.4 meters tall. The Chief Financial Villain had measured it twice, because the moving company charged by the cubic meter, and she brought the number to the design meeting with the air of someone delivering bad news. A sphere wide enough to fit on the crater floor wasn't tall enough to hold the crate standing up. "Then the sphere," said our Heroine, "will stop being a sphere."
 
 Part II built a sphere. Part III turns it into a building. This chapter is the first of the shaping tools (elongation here, truncation in Chapter 9, the quadrilateral panels their combination produces in Chapter 10), and it brings back **the Under-the-Ocean Prototype** from Chapter 3, whose design philosophy is the opposite of the Actual Secret Lair's.
 
@@ -99,6 +99,6 @@ Elongation always happens **before** truncation in pyLair's pipeline: every axis
 
 ## What's Next
 
-At a radius of 2.5 meters, a 1.8× stretch makes the Actual Secret Lair 9 meters from top to bottom of the full ellipsoid. The CFV checked the crate against it and withdrew her bad news. She noted, however, that the bottom half of the ellipsoid was underground, and asked who was paying for that.
+At a radius of 2.5 meters, a 1.8× stretch makes the Actual Secret Lair 9 meters from top to bottom of the full ellipsoid. The Chief Financial Villain checked the crate against it and withdrew her bad news. She noted, however, that the bottom half of the ellipsoid was underground, and asked who was paying for that.
 
 Chapter 9 answers her: it slices the shape into a dome that stands on the crater floor, and introduces pyLair's most dramatic failure mode, a cutoff that lands exactly wrong and is refused rather than silently producing something broken.

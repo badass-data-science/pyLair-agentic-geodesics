@@ -10,7 +10,7 @@ Every number in this book so far came from pyLair's functions, through the CLI o
 
 ## An Iterate-Then-Commit Session
 
-Here is the session: three `design_dome` calls comparing Class III configurations, one `preview_dome`, one `get_bill_of_materials`, and one `export_dome`. The CFV had set the budget: about 120 units of strut at the design radius, give or take five.
+Here is the session: three `design_dome` calls comparing Class III configurations, one `preview_dome`, one `get_bill_of_materials`, and one `export_dome`. The Chief Financial Villain had set the budget: about 120 units of strut at the design radius, give or take five.
 
 **Prompt:**
 > Try three different frequencies for this dome using `design_dome` only; don't write any files yet. Which one gives a total strut length closest to my budget of 115 to 125 units?

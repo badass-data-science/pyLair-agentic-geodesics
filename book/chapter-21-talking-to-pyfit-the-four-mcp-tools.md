@@ -83,7 +83,7 @@ Part spec is missing required field "name".
 
 Here, as one transcript, is the arc the book has built since Chapter 1. Every number below comes from the chapter that first produced it:
 
-1. **`design_dome`**, three times (Chapter 18): Class III `(3,1)`, `(4,1)`, `(5,1)`, at `97.99`, `121.08`, and `144.02` units of strut, settling on `(4,1)` against the CFV's budget. No files written.
+1. **`design_dome`**, three times (Chapter 18): Class III `(3,1)`, `(4,1)`, `(5,1)`, at `97.99`, `121.08`, and `144.02` units of strut, settling on `(4,1)` against the Chief Financial Villain's budget. No files written.
 2. **`preview_dome`** (Chapter 18): one inline look at the shape.
 3. **`get_bill_of_materials`** (Chapters 12 through 16, 18): hub angles, strut clustering, panel shapes, chirality flags, empty artifact lists. Still no files.
 4. **`export_dome`** with templates (Chapters 15, 17, 18): the only pyLair call that writes files: `52` panel templates, `32` hub templates, a DXF, a VRML, an STL, an OBJ.
