@@ -46,6 +46,8 @@ A panopticon earns the name only if it can see everything, so this station has n
 
 **What It Means:** All three share a footprint by construction; only `fz` differs. The flattest (`fz=0.5`) is also the cheapest, by about 10% of strut material against the roundest. That's a general pattern, not a quirk of this example: at a fixed horizontal footprint, flattening the vertical axis shrinks the ellipsoid's surface, and the strut total with it. For a launch-mass-limited station it's a real design lever.
 
+The client added one requirement of their own: the station must never be seen to look down on the Powers That Be™, whose satellites already shared its orbit and who were known to take a dim view of competition. Since this station has no "down," the Chief Financial Villain billed the requirement as satisfied by design, at the consulting rate.
+
 ## Stops Three and Four: The Magma Redoubt and the Permafrost Cache
 
 These two share one design logic for opposite reasons: bury most of the structure and expose only a small cap. An active volcano and a glacier have little in common as building sites, but they agree on what matters to anyone avoiding satellite photography: the rock or ice does the hiding for free, so only the small exposed fraction needs a stealth budget. pyLair's truncation describes only what to keep *above* a cutoff, so an aggressive `0.85` for both keeps the small top cap; the buried remainder isn't part of either model, a scope boundary this chapter returns to below.
