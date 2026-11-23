@@ -12,7 +12,8 @@ Nothing in this chapter is a new pyLair feature. Chapters 3 through 10 supplied 
 Chapters 3 and 8 made two of this design's three decisions: an icosahedron, the most uniform starting shape for a pressure hull (Chapter 3), and a gentle `(1.0, 1.0, 0.9)` squash, as close to a sphere as the design will go (Chapter 8). The third belongs here: **no truncation at all**, because the goal is a closed, pressure-resistant shell with no flat cut for the water to argue with.
 
 ```json
-{"footprint_diameter": 2.0000, "height": 1.8000, "total_strut_length": 208.7384}
+{"footprint_diameter": 2.0000, "height": 1.8000,
+ "total_strut_length": 208.7384}
 ```
 
 An airlock would change this: a flat mounting face is worth a small cutoff chosen to stay clear of a vertex ring (Chapter 9's lesson, whatever the environment). Without that need, the closed shell is the right default here, and it's worth resisting the urge to truncate just because every other stop in this chapter does.
@@ -20,11 +21,63 @@ An airlock would change this: a flat mounting face is worth a small cutoff chose
 **Prompt:**
 > Compare a frequency-4 and a frequency-8 Class I icosahedral dome for the Under-the-Ocean Prototype. Which one produces fewer distinct panel types, and why might that matter for a pressure-rated build?
 
-**What Comes Back** (from two `get_bill_of_materials` calls, both elongated `(1.0, 1.0, 0.9)`, summarized from the panel section):
+**What Comes Back** (two `get_bill_of_materials` calls, both elongated `(1.0, 1.0, 0.9)`: a snapshot of the frequency-4 report, then both reports' panel sections, counted):
 
 ```json
-{"frequency": 4, "total_panels": 320,  "distinct_panel_shape_groups": 20}
-{"frequency": 8, "total_panels": 1280, "distinct_panel_shape_groups": 71}
+{
+  "pyLair report": {
+    "Bill of materials": {
+      "Chord Lengths and Counts": [
+        {"length": 0.3249, "count": 20,
+         "chord_indices": [15, ...]},
+        ...
+      ],
+      "Warning": "Small length chords...",
+      "Possible truncation-artifact chords": []
+    },
+    "Total material": {
+      "Total strut length": 138.5312
+    },
+    "Angles at hub between outbound cords and tangential plane": [
+      {"hub": 0, "connecting hub": 1,
+       "angle (degrees)": 7.1394, "note": ""},
+      ...
+    ],
+    "Spoke angles": [
+      {"index": 0, "hub": 0, "connecting hub": 1,
+       "angle (degrees)": 0.0},
+      ...
+    ],
+    "Panel shapes and counts": {
+      "Panel Types and Counts": [
+        {"edge_lengths": [0.236, 0.252, 0.287],
+         "area": 0.028, "count": 20, "chiral": true,
+         ...},
+        {"edge_lengths": [0.278, 0.298, 0.301],
+         "area": 0.037, "count": 20, "chiral": true,
+         ...},
+        ...
+      ],
+      "Warning": "Panels sharing the same...",
+      "Possible truncation-artifact panels": []
+    },
+    "Total panel material": {
+      "Total panel area": 11.5158
+    },
+    "Bevel angles at panel edges": [
+      {"vertex 1": 0, "vertex 2": 5, "face 1": 0,
+       "face 2": 69, ...},
+      ...
+    ]
+  }
+}
+```
+
+```json
+{"frequency": 4, "total_panels": 320,
+ "distinct_panel_shape_groups": 20}
+{"frequency": 8, "total_panels": 1280,
+ "distinct_panel_shape_groups": 71}
 ```
 
 **What It Means:** Frequency 8 doesn't just have four times as many panels; it has more than three times as many *distinct shapes*, each needing its own cutting template (Chapter 15) and its own line in a fabricator's parts list. For a pressure hull, where every seam is a potential weak point and every distinct shape is another chance to install the wrong piece in the wrong slot, 20 shape groups is a meaningfully simpler build than 71. That's a concrete reason to prefer the coarser frequency here, not a vague instinct that smaller numbers are simpler.
@@ -36,12 +89,40 @@ A panopticon earns the name only if it can see everything, so this station has n
 **Prompt:**
 > For the Orbital Panopticon, hold the footprint diameter fixed and try three different elongation ratios. Which one minimizes total strut length, and therefore launch mass?
 
-**What Comes Back** (three `design_dome` builds, all with `elongation_x=elongation_y=1.3` to fix the footprint, varying only `elongation_z`):
+**What Comes Back** (three `design_dome` builds, all with `elongation_x=elongation_y=1.3` to fix the footprint, varying only `elongation_z`: a snapshot of the flattest, then all three side by side):
 
 ```json
-{"fz": 0.5, "footprint_diameter": 2.6000, "total_strut_length": 233.2433}
-{"fz": 0.7, "footprint_diameter": 2.6000, "total_strut_length": 242.5685}
-{"fz": 1.0, "footprint_diameter": 2.6000, "total_strut_length": 260.0654}
+{
+  "vertex_count": 162,
+  "edge_count": 480,
+  "face_count": 320,
+  "truncated": false,
+  "bounding_box": {"x": [-1.3, 1.3],
+                   "y": [-1.3, 1.3],
+                   "z": [-0.5, 0.5]},
+  "height": 1.0,
+  "footprint_diameter": 2.6,
+  "total_strut_length": 154.7982,
+  "resolved_parameters": {
+    "radius": 1.0,
+    "frequency": 4,
+    "polyhedron": "icosahedron",
+    "dome_class": 1,
+    "elongation_factors": {
+      "x": 1.3, "y": 1.3, "z": 0.5
+    },
+    ...
+  }
+}
+```
+
+```json
+{"fz": 0.5, "footprint_diameter": 2.6000,
+ "total_strut_length": 233.2433}
+{"fz": 0.7, "footprint_diameter": 2.6000,
+ "total_strut_length": 242.5685}
+{"fz": 1.0, "footprint_diameter": 2.6000,
+ "total_strut_length": 260.0654}
 ```
 
 **What It Means:** All three share a footprint by construction; only `fz` differs. The flattest (`fz=0.5`) is also the cheapest, by about 10% of strut material against the roundest. That's a general pattern, not a quirk of this example: at a fixed horizontal footprint, flattening the vertical axis shrinks the ellipsoid's surface, and the strut total with it. For a launch-mass-limited station it's a real design lever.
@@ -53,8 +134,14 @@ The client added one requirement of their own: the station must never be seen to
 These two share one design logic for opposite reasons: bury most of the structure and expose only a small cap. An active volcano and a glacier have little in common as building sites, but they agree on what matters to anyone avoiding satellite photography: the rock or ice does the hiding for free, so only the small exposed fraction needs a stealth budget. pyLair's truncation describes only what to keep *above* a cutoff, so an aggressive `0.85` for both keeps the small top cap; the buried remainder isn't part of either model, a scope boundary this chapter returns to below.
 
 ```json
-{"stop": "Magma Redoubt",    "elongation": "1.0,1.0,1.0", "truncation_z": 0.85, "height": 0.3000, "footprint_diameter": 1.4135, "total_strut_length": 39.2628}
-{"stop": "Permafrost Cache", "elongation": "1.2,1.2,1.0", "truncation_z": 0.85, "height": 0.3000, "footprint_diameter": 1.6962, "total_strut_length": 46.2090}
+{"stop": "Magma Redoubt",
+ "elongation": "1.0,1.0,1.0", "truncation_z": 0.85,
+ "height": 0.3000, "footprint_diameter": 1.4135,
+ "total_strut_length": 39.2628}
+{"stop": "Permafrost Cache",
+ "elongation": "1.2,1.2,1.0", "truncation_z": 0.85,
+ "height": 0.3000, "footprint_diameter": 1.6962,
+ "total_strut_length": 46.2090}
 ```
 
 The Permafrost Cache's wider `1.2, 1.2` footprint reflects a different structural argument. Snow accumulates on top, and a wider, shallower cap spreads that load over more area for the same height. It's the "geodesic domes spread stress evenly" pitch from pyLair's companion blog post, applied to one specific load direction instead of stated as a slogan.
@@ -64,7 +151,8 @@ The Permafrost Cache's wider `1.2, 1.2` footprint reflects a different structura
 Every other stop reaches for a low, flattened shape. This one doesn't, because the client wants the opposite: to be *seen*. A mesa-top spire visible from the highway, so that every driver understands instantly that someone with resources and a point to prove lives up there. The brief was never concealment; it was a skyline. Aggressive vertical elongation, `(0.6, 0.6, 3.0)`, and a moderate truncation, `0.4`, for a floor:
 
 ```json
-{"footprint_diameter": 1.2000, "height": 3.6000, "total_strut_length": 223.6843}
+{"footprint_diameter": 1.2000, "height": 3.6000,
+ "total_strut_length": 223.6843}
 ```
 
 **[IMAGE: examples/images/environments_comparison_chart.png | A paired bar chart comparing footprint diameter and total strut length for each of the six stops.]**
@@ -79,10 +167,30 @@ One last stop, partly for the joke and partly to make a point: the same agent an
 **Prompt:**
 > Design a Class I icosahedral dome, frequency 6, radius 0.15, truncated at `truncation_z=0.499999`. Yes, radius 0.15. It's for a closet.
 
-**What Comes Back** (a `design_dome` result, trimmed):
+**What Comes Back** (a snapshot of the `design_dome` result):
 
 ```json
-{"footprint_diameter": 0.3000, "height": 0.1500, "total_strut_length": 18.5354}
+{
+  "vertex_count": 256,
+  "edge_count": 705,
+  "face_count": 450,
+  "truncated": true,
+  "bounding_box": {"x": [-0.1491, 0.1491],
+                   "y": [-0.15, 0.15],
+                   "z": [-3.00e-07, 0.15]},
+  "height": 0.15,
+  "footprint_diameter": 0.3,
+  "total_strut_length": 18.5354,
+  "resolved_parameters": {
+    "radius": 0.15,
+    "frequency": 6,
+    "polyhedron": "icosahedron",
+    "dome_class": 1,
+    "truncation": {"x": null, "y": null,
+                   "z": 0.499999},
+    ...
+  }
+}
 ```
 
 Every parameter used at volcano and orbital scale works as well for a closet. Nothing in pyLair's geometry cares whether `radius` describes a renovation or a circumpolar fortress.

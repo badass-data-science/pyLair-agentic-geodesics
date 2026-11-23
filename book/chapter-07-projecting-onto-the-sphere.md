@@ -19,8 +19,10 @@ The merging step, `locate_duplicate_vertices()`, has an obvious naive implementa
 
 ```
 raw (unprojected) vertex count: 3060
-pairwise Python loop:  1.75s,   found 570 duplicate pairs
-k-d tree query_pairs:  0.0016s, found 570 duplicate pairs
+pairwise Python loop: 1.75s,
+  found 570 duplicate pairs
+k-d tree query_pairs: 0.0016s,
+  found 570 duplicate pairs
 ```
 
 Both find the same 570 pairs, so the faster method isn't cutting a corner. On this machine it's about **1,100 times faster** (your timings will differ, the ratio less so), and the gap widens with frequency, because the pairwise loop's cost grows with the square of the vertex count while the tree's grows close to linearly. That's why `locate_duplicate_vertices()` uses `scipy.spatial.cKDTree`'s `query_pairs`.
@@ -28,7 +30,29 @@ Both find the same 570 pairs, so the faster method isn't cutting a corner. On th
 **Prompt:**
 > At a high frequency, how many vertices get merged during the build, and does that number make sense given the golden values?
 
-**What Comes Back:** At frequency 16, Class I icosahedron: `3060` raw vertices (`20` faces × `153` symmetry-triangle vertices each, since a Class I symmetry triangle at frequency `f` has `(f+1)(f+2)/2` of them) collapse to the golden-value `2562` (`10(16)²+2`), a reduction of `498`. That isn't the same as the `570` duplicate *pairs* found above. Each of the icosahedron's 12 original vertices is shared by 5 faces, not 2, so its 5 copies form a cluster with several pairwise links among them, and the whole cluster collapses to one vertex rather than being counted pair by pair. `locate_duplicate_vertices()` handles that by grouping linked pairs into clusters (a union-find structure) and keeping one member of each.
+**What Comes Back** (a snapshot of `design_dome` at frequency 16, then the arithmetic around it):
+
+```json
+{
+  "vertex_count": 2562,
+  "edge_count": 7680,
+  "face_count": 5120,
+  "truncated": false,
+  "bounding_box": {"x": [-1.0, 1.0],
+                   "y": [-1.0, 1.0],
+                   "z": [-1.0, 1.0]},
+  "height": 2.0,
+  "footprint_diameter": 2.0,
+  "total_strut_length": 577.2039,
+  "resolved_parameters": {
+    "radius": 1.0, "frequency": 16,
+    "polyhedron": "icosahedron", "dome_class": 1,
+    ...
+  }
+}
+```
+
+At frequency 16, Class I icosahedron: `3060` raw vertices (`20` faces × `153` symmetry-triangle vertices each, since a Class I symmetry triangle at frequency `f` has `(f+1)(f+2)/2` of them) collapse to the golden-value `2562` (`10(16)²+2`), a reduction of `498`. That isn't the same as the `570` duplicate *pairs* found above. Each of the icosahedron's 12 original vertices is shared by 5 faces, not 2, so its 5 copies form a cluster with several pairwise links among them, and the whole cluster collapses to one vertex rather than being counted pair by pair. `locate_duplicate_vertices()` handles that by grouping linked pairs into clusters (a union-find structure) and keeping one member of each.
 
 **What It Means:** `498` is a checkable number: raw count minus final count should equal the number of points that needed merging, no more and no less. It's worth checking before trusting a high-frequency result. The Unbending Foreman's phantom hubs live in the gap between those two numbers.
 
@@ -39,11 +63,33 @@ Chapter 4 showed `vertex_equal_threshold`'s two failures at frequency 6: too tig
 **Prompt:**
 > Set `vertex_equal_threshold=0.1` on both a frequency-6 and a frequency-16 dome. Does it stay safe at both?
 
-**What Comes Back** (two `design_dome` results, with the golden value added for comparison):
+**What Comes Back** (two `design_dome` results: a snapshot of the frequency-16 result, then both vertex counts with the golden value added for comparison):
 
 ```json
-{"frequency": 6,  "vertex_equal_threshold": 0.10, "vertex_count": 362, "golden": 362}
-{"frequency": 16, "vertex_equal_threshold": 0.10, "vertex_count": 1,   "golden": 2562}
+{
+  "vertex_count": 1,
+  "edge_count": 1,
+  "face_count": 1,
+  "truncated": false,
+  "bounding_box": {"x": [0.8944, 0.8944],
+                   "y": [5.55e-17, 5.55e-17],
+                   "z": [0.4472, 0.4472]},
+  "height": 0.0,
+  "footprint_diameter": 0.0,
+  "total_strut_length": 0.0,
+  "resolved_parameters": {
+    "radius": 1.0, "frequency": 16,
+    "polyhedron": "icosahedron", "dome_class": 1,
+    ...
+  }
+}
+```
+
+```json
+{"frequency": 6, "vertex_equal_threshold": 0.10,
+ "vertex_count": 362, "golden": 362}
+{"frequency": 16, "vertex_equal_threshold": 0.10,
+ "vertex_count": 1, "golden": 2562}
 ```
 
 **What It Means:** The same threshold is safe at frequency 6 and catastrophic at frequency 16, where it collapses the sphere to a single vertex, the failure Chapter 4 showed only at the looser `0.2` on the coarser dome. At frequency 16 the collapse starts between `0.06` (still correct) and `0.07` (collapsed). The default, `1e-7`, sits so far below either boundary at any frequency this book has tried that it never needs to move. But "the safe zone is wide" is a weaker claim than "the safe zone is infinitely wide": if you widen the threshold for some reason (there isn't a good one), know that the margin shrinks as frequency grows.

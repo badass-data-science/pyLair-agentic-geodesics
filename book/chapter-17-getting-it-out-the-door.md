@@ -27,23 +27,76 @@ Face-aware export works on a dome truncated along any axis, because truncation c
 **Prompt:**
 > Export this dome (Class III `(4,1)`, stretched `1.8`× on Z, truncated on X at `0.3` and Z at `0.499999`) with `face_output=True`, `stl=True`, `obj=True`, `preview=True`, `hub_templates=True`, and `face_templates=True` all at once. Which of the files that come back depend on the face data surviving truncation?
 
-**What Comes Back** (the `export_dome` result's file list, abbreviated, with sizes):
+**What Comes Back** (a snapshot of the `export_dome` result: its file list, 166 files, of which 71 are `_hubtype` and 91 are `_facetype` templates, then the bill of materials; and the sizes of the files that aren't templates):
 
 ```json
 {
-  "files_written": [
-    "lair.wrl", "lair.png", "lair.stl", "lair.obj",
-    "lair_hubtype1.dxf", "... 71 hubtype files in all",
-    "lair_facetype1.dxf", "... 91 facetype files in all"
-  ]
+  "files_written": ["lair.wrl", "lair.png",
+                    "lair.stl", "lair.obj",
+                    "lair_hubtype1.dxf",
+                    "lair_hubtype2.dxf", ...],
+  "bill_of_materials": {
+    "pyLair report": {
+      "Bill of materials": {
+        "Chord Lengths and Counts": [
+          {"length": 0.4748, "count": 3,
+           "chord_indices": [142, 159, 180]},
+          ...
+        ],
+        "Warning": "Small length chords...",
+        "Possible truncation-artifact chords": []
+      },
+      "Total material": {
+        "Total strut length": 90.8715
+      },
+      "Hub Connector Templates": [
+        {"template_file": "lair_hubtype1.dxf",
+         "struts_per_hub": 6, "hub_count": 4, ...},
+        ...
+      ],
+      "Angles at hub between outbound cords and tangential plane": [
+        {"hub": 0, "connecting hub": 1,
+         "angle (degrees)": 10.8994, ...},
+        ...
+      ],
+      "Spoke angles": [
+        {"index": 0, "hub": 0, "connecting hub": 1,
+         ...},
+        ...
+      ],
+      "Panel shapes and counts": {
+        "Panel Types and Counts": [
+          {"edge_lengths": [0.249, 0.263, 0.271],
+           "area": 0.029, "count": 5, ...},
+          ...
+        ],
+        "Warning": "Panels sharing the same...",
+        "Possible truncation-artifact panels": []
+      },
+      "Total panel material": {
+        "Total panel area": 6.6423
+      },
+      "Bevel angles at panel edges": [
+        {"vertex 1": 0, "vertex 2": 1, "face 1": 30,
+         ...},
+        ...
+      ],
+      "Panel Cutting Templates": [
+        {"template_file": "lair_facetype1.dxf",
+         "edge_lengths": [0.249, 0.263, 0.271],
+         "panel_count": 5, ...},
+        ...
+      ]
+    }
+  }
 }
 ```
 
 ```
-lair.wrl              11,448 bytes   (face VRML)
-lair.stl              60,129 bytes   (3D-printable surface mesh)
-lair.obj              10,321 bytes   (3D-printable surface mesh)
-lair.png             180,646 bytes   (preview image)
+lair.wrl   11,448 bytes  (face VRML)
+lair.stl   60,129 bytes  (3D-printable mesh)
+lair.obj   10,321 bytes  (3D-printable mesh)
+lair.png  180,646 bytes  (preview image)
 ```
 
 **What It Means:** All but the preview depend on it. The face VRML, the STL, the OBJ, and the 91 panel templates are built from faces that survived *two* sequential cuts, and the hub templates come from struts that include the diagonal seams of Chapter 10. None errored or produced a broken shape, though both cuts clipped through triangles. 166 files from one call: 91 distinct panel shapes and 71 distinct hub shapes, more than the single-cut dome's 52 and 32, because the second cut adds a whole new boundary of clipped pieces.
@@ -53,7 +106,25 @@ For the Unbending Foreman's wireframe drawing, the same dome without `face_outpu
 **Prompt:**
 > Export the same dome again without `face_output`. I want the plain wireframe DXF.
 
-**What Comes Back** (the files written, with sizes):
+**What Comes Back** (a snapshot of the `export_dome` result, its bill of materials collapsed, since it matches the one above apart from having no template sections; then the files' sizes):
+
+```json
+{
+  "files_written": ["lair-wireframe.wrl",
+                    "lair-wireframe.dxf"],
+  "bill_of_materials": {
+    "pyLair report": {
+      "Bill of materials": {
+        "Chord Lengths and Counts": [...], ...
+      },
+      "Total material": {
+        "Total strut length": 90.8715
+      },
+      ...
+    }
+  }
+}
+```
 
 ```
 lair-wireframe.wrl   11,587 bytes   (wireframe VRML)
@@ -63,9 +134,41 @@ lair-wireframe.dxf   50,545 bytes
 ## Preview First, and What STL and OBJ Print
 
 **Prompt:**
-> Generate just a quick preview PNG first. Does the shape look right before I commit to a full export?
+> Generate just a quick preview first, with its summary. Does the shape look right before I commit to a full export?
 
-**What Comes Back:** `export_dome`'s `preview=True` writes `lair.png` in the same run, a wireframe sanity check that costs nothing extra once you're exporting anyway. Better still, call `preview_dome` before exporting at all, which writes nothing to disk; Chapter 18 makes that habit into a workflow.
+**What Comes Back** (a `preview_dome` render of the two-axis dome, captioned "131 vertices, 332 struts (truncated)", then a snapshot of `design_dome`'s JSON; neither call writes a file):
+
+**[IMAGE: examples/images/two-axis-secret-lair.png | A depth-cued wireframe of the tall dome on labeled 3D axes, its X axis running from about −0.4 to 1.0 because a vertical cut has removed one side, standing on a flat base at height 0 and rising to about 1.8.]**
+**[CAPTION: The Actual Secret Lair truncated on two axes, X at `0.3` and Z at `0.499999`, rendered by `preview_dome` before any export.]**
+
+```json
+{
+  "vertex_count": 131,
+  "edge_count": 332,
+  "face_count": 202,
+  "truncated": true,
+  "bounding_box": {"x": [-0.3971, 0.9929],
+                   "y": [-0.991, 0.991],
+                   "z": [-3.60e-06, 1.8]},
+  "height": 1.8,
+  "footprint_diameter": 1.9821,
+  "total_strut_length": 90.8715,
+  "resolved_parameters": {
+    "radius": 1.0,
+    "frequency": 4,
+    "polyhedron": "icosahedron",
+    "dome_class": 3,
+    "n_frequency": 1,
+    "elongation_factors": {
+      "x": 1.0, "y": 1.0, "z": 1.8
+    },
+    "truncation": {"x": 0.3, "y": null,
+                   "z": 0.499999}
+  }
+}
+```
+
+Yes. The bounding box puts the floor at `Z ≈ 0` and starts the X range at `−0.3971` rather than `−0.9929`, which is where a cut at `0.3` of that range lands; the counts say 131 hubs and 332 struts. `export_dome`'s `preview=True` writes the same picture as `lair.png` during an export, a sanity check that costs nothing extra once you're exporting anyway; calling `preview_dome` first, as here, writes nothing to disk at all. Chapter 18 makes that habit into a workflow.
 
 One more thing worth stating plainly, because it's easy to get backwards: **STL and OBJ export the dome's surface skin, not its strut skeleton.** `OutputSTL` and `OutputOBJ` both take the dome's *face* list, not its chord list. Expect a printable lattice of individual struts and you'll get a printed shell instead: the panels, with no gaps between them. That's the right output for "print a scale model of this dome's shape"; it's a different object from "print this dome's frame," and you should know which you're asking for before the print finishes.
 

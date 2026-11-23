@@ -17,7 +17,71 @@ Here is the payoff on the Actual Secret Lair: Class III `(4,1)`, stretched `1.8`
 **Prompt:**
 > Export this dome with hub and panel templates, `hub_templates=True` and `face_templates=True`. How many distinct hub shapes are there, against the total number of hubs?
 
-**What Comes Back** (summarizing the `export_dome` result, which lists 86 files written: the default VRML and DXF, 32 hub templates, and 52 panel templates): this dome has `156` hubs. `group_hub_types` finds `32` distinct shapes among them, and all `32` get a `_hubtype*.dxf` file, since every hub has at least two struts and therefore an angular pattern to draw.
+**What Comes Back** (a snapshot of the `export_dome` result, written with `output_path="lair"`: its file list, 86 files in all, the default VRML and DXF, 32 hub templates, and 52 panel templates, then the bill of materials, which gains a section for each kind of template):
+
+```json
+{
+  "files_written": ["lair.wrl", "lair.dxf",
+                    "lair_hubtype1.dxf",
+                    "lair_hubtype2.dxf", ...],
+  "bill_of_materials": {
+    "pyLair report": {
+      "Bill of materials": {
+        "Chord Lengths and Counts": [
+          {"length": 0.4748, "count": 5,
+           "chord_indices": [207, ...]},
+          ...
+        ],
+        "Warning": "Small length chords...",
+        "Possible truncation-artifact chords": []
+      },
+      "Total material": {
+        "Total strut length": 121.0815
+      },
+      "Hub Connector Templates": [
+        {"template_file": "lair_hubtype1.dxf",
+         "struts_per_hub": 7, "hub_count": 5, ...},
+        ...
+      ],
+      "Angles at hub between outbound cords and tangential plane": [
+        {"hub": 0, "connecting hub": 1,
+         "angle (degrees)": 10.8994, ...},
+        ...
+      ],
+      "Spoke angles": [
+        {"index": 0, "hub": 0, "connecting hub": 1,
+         ...},
+        ...
+      ],
+      "Panel shapes and counts": {
+        "Panel Types and Counts": [
+          {"edge_lengths": [0.248, 0.282, 0.337],
+           "area": 0.034, "count": 5, ...},
+          ...
+        ],
+        "Warning": "Panels sharing the same...",
+        "Possible truncation-artifact panels": []
+      },
+      "Total panel material": {
+        "Total panel area": 9.6766
+      },
+      "Bevel angles at panel edges": [
+        {"vertex 1": 0, "vertex 2": 1, "face 1": 30,
+         ...},
+        ...
+      ],
+      "Panel Cutting Templates": [
+        {"template_file": "lair_facetype1.dxf",
+         "edge_lengths": [0.248, 0.282, 0.337],
+         "panel_count": 5, ...},
+        ...
+      ]
+    }
+  }
+}
+```
+
+This dome has `156` hubs. `group_hub_types` finds `32` distinct shapes among them, and all `32` get a `_hubtype*.dxf` file, since every hub has at least two struts and therefore an angular pattern to draw.
 
 "All of them" deserves a footnote. `get_bill_of_materials` skips any hub-shape group with a valence of 1 or less before writing files: a plate with one socket has no angular pattern to draw, so the skip is correct, defensive code. It's also silent, which is why it matters that it never fires here.
 

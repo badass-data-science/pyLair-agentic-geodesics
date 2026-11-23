@@ -28,14 +28,62 @@ The honest way to produce this case, rather than contrive one, is to truncate ag
 **Prompt:**
 > Truncate this dome with `truncation_x=0.9` and `truncation_z=0.4` and check its bill of materials. Do the diagonal seams show up as real struts?
 
-**What Comes Back** (one entry from the bevel-angle section of `get_bill_of_materials`):
+**What Comes Back** (a snapshot of the `get_bill_of_materials` report; the bevel-angle section shows its first entry and the entry for the seam between hubs `24` and `2`):
 
 ```json
-{"vertex 1": 24, "vertex 2": 2, "face 1": 2, "face 2": 3,
- "dihedral angle (degrees)": 180.0, "bevel angle (degrees)": 0.0}
+{
+  "pyLair report": {
+    "Bill of materials": {
+      "Chord Lengths and Counts": [
+        {"length": 0.2159, "count": 2,
+         "chord_indices": [81, 92]},
+        ...
+      ],
+      "Warning": "Small length chords...",
+      "Possible truncation-artifact chords": []
+    },
+    "Total material": {
+      "Total strut length": 20.2514
+    },
+    "Angles at hub between outbound cords and tangential plane": [
+      {"hub": 0, "connecting hub": 1,
+       "angle (degrees)": 4.6624, ...},
+      ...
+    ],
+    "Spoke angles": [
+      {"index": 0, "hub": 0, "connecting hub": 1,
+       ...},
+      ...
+    ],
+    "Panel shapes and counts": {
+      "Panel Types and Counts": [
+        {"edge_lengths": [0.198, 0.203, 0.206],
+         "area": 0.018, "count": 8, ...},
+        ...
+      ],
+      "Warning": "Panels sharing the same...",
+      "Possible truncation-artifact panels": []
+    },
+    "Total panel material": {
+      "Total panel area": 0.7734
+    },
+    "Bevel angles at panel edges": [
+      {"vertex 1": 0, "vertex 2": 1, "face 1": 0,
+       "face 2": 6,
+       "dihedral angle (degrees)": 173.2405,
+       "bevel angle (degrees)": 3.3797},
+      ...,
+      {"vertex 1": 24, "vertex 2": 2, "face 1": 2,
+       "face 2": 3,
+       "dihedral angle (degrees)": 180.0,
+       "bevel angle (degrees)": 0.0},
+      ...
+    ]
+  }
+}
 ```
 
-**What It Means:** Yes. Chord `(24, 2)` is an ordinary entry in this dome's chord list, with a strut length (`0.170` units at radius 1) computed like every other strut's. It isn't flagged, hidden, or treated specially in the report, and neither are the other 16 seams like it in this dome. That's the point of the fix: a builder reading the bill of materials never needs to know that this strut came from a clipped panel's diagonal rather than the original subdivision.
+**What It Means:** Yes. Chord `(24, 2)` is an ordinary entry in this dome's chord list, with a strut length (`0.170` units at radius 1) computed like every other strut's. It isn't flagged, hidden, or treated specially in the report, and neither are the other 16 seams like it in this dome. That's the design: a builder reading the bill of materials never needs to know that this strut came from a clipped panel's diagonal rather than the original subdivision.
 
 ## Why a 180° Reading Here Is Correct, Not a Bug
 

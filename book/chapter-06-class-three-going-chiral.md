@@ -39,8 +39,12 @@ That relationship wasn't assumed from the formula. It was checked point by point
 Because `T = m²+mn+n²` is unchanged when you swap `m` and `n`, `(m,n)` and `(n,m)` always give the same `T` and therefore the same golden-value counts. A full-sphere comparison confirms it:
 
 ```json
-{"m": 4, "n": 1, "vertex_count": 212, "edge_count": 630, "face_count": 420, "total_strut_length": 164.278399}
-{"m": 1, "n": 4, "vertex_count": 212, "edge_count": 630, "face_count": 420, "total_strut_length": 164.278399}
+{"m": 4, "n": 1, "vertex_count": 212,
+ "edge_count": 630, "face_count": 420,
+ "total_strut_length": 164.278399}
+{"m": 1, "n": 4, "vertex_count": 212,
+ "edge_count": 630, "face_count": 420,
+ "total_strut_length": 164.278399}
 ```
 
 Both match the golden values for `T=21` (`10(21)+2 = 212`; `30(21) = 630`; `20(21) = 420`), and because mirroring never changes a length or an angle, only handedness, even the total strut length agrees to twelve significant figures. That is the trap this prompt is built to expose:
@@ -48,7 +52,29 @@ Both match the golden values for `T=21` (`10(21)+2 = 212`; `30(21) = 630`; `20(2
 **Prompt:**
 > Build a Class III dome with `f=4, n=1`. Then build one with `f=1, n=4`. Are these the same dome, or mirror images? Do their vertex, edge, and face counts differ?
 
-**What Comes Back:** Mirror images, not the same dome, and no, the counts don't differ at all, by construction. Every golden-value check from Chapters 4 and 5 will report the two as identical, because `T` doesn't change when `m` and `n` swap. Only a check of *which* physical strut pattern resulted (the reflection test above, or the chirality flag Chapter 14 introduces) tells them apart.
+**What Comes Back** (two `design_dome` results: a snapshot of the `(4,1)` result; the `(1,4)` result matches its counts and strut total exactly, as the two lines above show):
+
+```json
+{
+  "vertex_count": 212,
+  "edge_count": 630,
+  "face_count": 420,
+  "truncated": false,
+  "bounding_box": {"x": [-0.9929, 0.9929],
+                   "y": [-0.991, 0.991],
+                   "z": [-1.0, 1.0]},
+  "height": 2.0,
+  "footprint_diameter": 1.9857,
+  "total_strut_length": 164.2784,
+  "resolved_parameters": {
+    "radius": 1.0, "frequency": 4,
+    "polyhedron": "icosahedron", "dome_class": 3,
+    "n_frequency": 1, ...
+  }
+}
+```
+
+Mirror images, not the same dome, and no, the counts don't differ at all, by construction. Every golden-value check from Chapters 4 and 5 will report the two as identical, because `T` doesn't change when `m` and `n` swap. Only a check of *which* physical strut pattern resulted (the reflection test above, or the chirality flag Chapter 14 introduces) tells them apart.
 
 **What It Means:** A count-based check answers "is the total amount of material right," never "is the shape the one I meant to build." Those are different questions, and the rest of this chapter shows how far apart they can get.
 
@@ -78,7 +104,8 @@ Two of Class III's validation rules are worth triggering once, as Chapter 5 did 
 **What Comes Back** (a tool error; through MCP it carries the "Error executing tool design_dome:" prefix):
 
 ```
--c 3 (Class III / Skew) requires -n or --n-frequency. Exiting.
+-c 3 (Class III / Skew) requires -n or
+--n-frequency. Exiting.
 ```
 
 **Prompt:**
@@ -87,8 +114,9 @@ Two of Class III's validation rules are worth triggering once, as Chapter 5 did 
 **What Comes Back:**
 
 ```
--c 3 (Class III / Skew) requires --n-frequency to differ from --frequency
-(equal values are Class II -- use -c 2 instead). Exiting.
+-c 3 (Class III / Skew) requires --n-frequency
+to differ from --frequency (equal values are
+Class II -- use -c 2 instead). Exiting.
 ```
 
 The second message is worth reading carefully. It isn't only refusing an edge case: `m=n` has no handedness, so there is nothing chiral left to build, and pyLair sends you to its own achiral alternative, the Class II of Chapter 5.
@@ -100,7 +128,7 @@ The running dome gets its subdivision here: Class III, `(4,1)` rather than its m
 **Prompt:**
 > Switch our running dome to Class III with `(m,n)=(4,1)` (frequency 4, n_frequency 1, icosahedron, radius 1.0) and preview it.
 
-**What Comes Back** (a `preview_dome` render, `dome_class=3`, `frequency=4`, `n_frequency=1`):
+**What Comes Back** (a `preview_dome` render, `dome_class=3`, `frequency=4`, `n_frequency=1`, captioned "212 vertices, 630 struts"; this is the `(4,1)` configuration whose `design_dome` snapshot appears earlier in this chapter):
 
 **[IMAGE: examples/images/class3-secret-lair.png | A depth-cued wireframe sphere whose triangles form gently spiraling bands rather than the straight rows of a Class I sphere.]**
 **[CAPTION: The Actual Secret Lair's final subdivision: Class III, `(m,n)=(4,1)`, the shape the rest of the book stretches, truncates, costs, exports, and nests onto sheet stock.]**

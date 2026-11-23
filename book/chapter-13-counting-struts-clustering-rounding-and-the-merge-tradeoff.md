@@ -11,7 +11,9 @@ Here is the naive approach `get_bill_of_materials` deliberately avoids: round ea
 The implementation (whose comments in `pylair/bill_of_materials.py` explain this) is more careful. It sorts all the lengths and starts a new cluster wherever the gap between consecutive lengths exceeds a tolerance; it never rounds first. The tolerance comes from `bom_rounding_precision` itself:
 
 ```python
-cluster_tolerance = max(scale * 1e-9, 0.5 * 10 ** (-rounding_precision))
+cluster_tolerance = max(
+    scale * 1e-9,
+    0.5 * 10 ** (-rounding_precision))
 ```
 
 Read two things in that line. First, the tolerance never drops below a tiny, scale-relative floor (`scale * 1e-9`, where `scale` is the dome's longest strut), so even at an extremely fine setting, pure floating-point noise still merges instead of printing spurious near-duplicates. Second, and this is the design decision to understand: **`bom_rounding_precision` isn't only display precision.** The number that decides how many decimal places print also decides how far apart two lengths can be and still share a row. One setting, two jobs, on purpose.
@@ -23,7 +25,55 @@ Here is the Actual Secret Lair (Class III `(4,1)`, stretched, truncated at `0.49
 **Prompt:**
 > Get this dome's bill of materials at `bom_rounding_precision` 9, 3, 2, and 1. How many distinct strut-length rows does each report?
 
-**What Comes Back** (from four `get_bill_of_materials` calls, counting the rows of each one's strut-length table):
+**What Comes Back** (four `get_bill_of_materials` calls: a snapshot of the default report, at `bom_rounding_precision=9`, then the row count of each one's strut-length table):
+
+```json
+{
+  "pyLair report": {
+    "Bill of materials": {
+      "Chord Lengths and Counts": [
+        {"length": 0.4748, "count": 5,
+         "chord_indices": [207, ...]},
+        {"length": 0.4676, "count": 5,
+         "chord_indices": [205, ...]},
+        ...
+      ],
+      "Warning": "Small length chords...",
+      "Possible truncation-artifact chords": []
+    },
+    "Total material": {
+      "Total strut length": 121.0815
+    },
+    "Angles at hub between outbound cords and tangential plane": [
+      {"hub": 0, "connecting hub": 1,
+       "angle (degrees)": 10.8994, ...},
+      ...
+    ],
+    "Spoke angles": [
+      {"index": 0, "hub": 0, "connecting hub": 1,
+       ...},
+      ...
+    ],
+    "Panel shapes and counts": {
+      "Panel Types and Counts": [
+        {"edge_lengths": [0.248, 0.282, 0.337],
+         "area": 0.034, "count": 5, ...},
+        ...
+      ],
+      "Warning": "Panels sharing the same...",
+      "Possible truncation-artifact panels": []
+    },
+    "Total panel material": {
+      "Total panel area": 9.6766
+    },
+    "Bevel angles at panel edges": [
+      {"vertex 1": 0, "vertex 2": 1, "face 1": 30,
+       ...},
+      ...
+    ]
+  }
+}
+```
 
 ```json
 {"bom_rounding_precision": 9, "distinct_rows": 79}
@@ -38,7 +88,63 @@ Here is the Actual Secret Lair (Class III `(4,1)`, stretched, truncated at `0.49
 **Prompt:**
 > Generate the bill of materials at the default rounding, then again at `bom_rounding_precision=2`. Do any distinct strut lengths get merged at the coarser setting?
 
-**What Comes Back** (a case found by comparing the two reports): at the default, two separate rows exist, `0.047485003` (5 struts) and `0.051270148` (5 struts), a difference of about `0.0038` units, nowhere near floating-point noise. At `bom_rounding_precision=2`, both collapse into one row: `length: 0.05, count: 10`.
+**What Comes Back** (two `get_bill_of_materials` calls: a snapshot of the report at `bom_rounding_precision=2`, its strut-length table showing its first row and the merged row; then the two default-report rows that merged into it):
+
+```json
+{
+  "pyLair report": {
+    "Bill of materials": {
+      "Chord Lengths and Counts": [
+        {"length": 0.47, "count": 5,
+         "chord_indices": [205, ...]},
+        ...,
+        {"length": 0.05, "count": 10,
+         "chord_indices": [297, ...]},
+        ...
+      ],
+      "Warning": "Small length chords...",
+      "Possible truncation-artifact chords": []
+    },
+    "Total material": {
+      "Total strut length": 121.08
+    },
+    "Angles at hub between outbound cords and tangential plane": [
+      {"hub": 0, "connecting hub": 1,
+       "angle (degrees)": 10.8994, ...},
+      ...
+    ],
+    "Spoke angles": [
+      {"index": 0, "hub": 0, "connecting hub": 1,
+       ...},
+      ...
+    ],
+    "Panel shapes and counts": {
+      "Panel Types and Counts": [
+        {"edge_lengths": [0.248, 0.282, 0.337],
+         "area": 0.034, "count": 5, ...},
+        ...
+      ],
+      "Warning": "Panels sharing the same...",
+      "Possible truncation-artifact panels": []
+    },
+    "Total panel material": {
+      "Total panel area": 9.68
+    },
+    "Bevel angles at panel edges": [
+      {"vertex 1": 0, "vertex 2": 1, "face 1": 30,
+       ...},
+      ...
+    ]
+  }
+}
+```
+
+```json
+{"length": 0.047485003, "count": 5, ...}
+{"length": 0.051270148, "count": 5, ...}
+```
+
+Comparing the two reports: at the default, two separate rows exist, `0.047485003` (5 struts) and `0.051270148` (5 struts), a difference of about `0.0038` units, nowhere near floating-point noise. At `bom_rounding_precision=2`, both collapse into one row: `length: 0.05, count: 10`.
 
 **What It Means:** That's the merge tradeoff, in numbers. Two lengths differing by nearly 8%, a difference calipers catch instantly, are reported as one strut type at the coarser setting. Every example in this book is computed at radius 1; at the Actual Secret Lair's planned 2.5-meter radius, every length scales by 2.5, and that gap becomes about 9.5 millimeters. Whether the merge is a useful simplification or a mistake depends on what you do next with the number, which is why this isn't a bug to report but a tradeoff to choose.
 

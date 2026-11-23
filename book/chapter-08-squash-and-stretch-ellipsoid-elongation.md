@@ -17,12 +17,49 @@ def elongate(vertices, factors):
 A per-vertex multiply, nothing more. Chord and face connectivity are untouched, since scaling changes where vertices sit, never which are connected. A factor above 1 stretches that axis; below 1 squashes it; `1.0` leaves it alone. Once more than one axis differs, the result is a general **triaxial ellipsoid**: three independent semi-axes, no two of which need match.
 
 **Prompt:**
-> Preview the same frequency-6 Class I sphere three ways: unelongated, squashed to `(1.0, 1.0, 0.9)`, and stretched to `(1.0, 1.0, 1.8)`.
+> Preview the same frequency-6 Class I sphere three ways: unelongated, squashed to `(1.0, 1.0, 0.9)`, and stretched to `(1.0, 1.0, 1.8)`, with each one's summary.
 
-**What Comes Back** (three `preview_dome` renders):
+**What Comes Back** (three `preview_dome` renders, each captioned "362 vertices, 1080 struts", since elongation moves vertices without adding any; then a snapshot of the stretched dome's `design_dome` JSON, and the three summaries' sizes side by side):
 
 **[IMAGE: examples/images/elongation_triptych.png | Three wireframe domes side by side: a sphere; a slightly flattened sphere labeled as the Under-the-Ocean Prototype; and a tall egg shape labeled as the Actual Secret Lair, stretched for headroom.]**
 **[CAPTION: A frequency-6 Class I sphere, unelongated (left), with the Under-the-Ocean Prototype's gentle squash, `elongation_z=0.9` (center), and with the Actual Secret Lair's stretch, `elongation_z=1.8` (right). Each panel is scaled to fit, so compare shapes, not sizes. The center shape's subtlety is not a rendering error; it's what a 10% squash looks like beside an 80% stretch.]**
+
+```json
+{
+  "vertex_count": 362,
+  "edge_count": 1080,
+  "face_count": 720,
+  "truncated": false,
+  "bounding_box": {"x": [-0.9942, 0.9942],
+                   "y": [-1.0, 1.0],
+                   "z": [-1.8, 1.8]},
+  "height": 3.6,
+  "footprint_diameter": 2.0,
+  "total_strut_length": 279.8432,
+  "resolved_parameters": {
+    "radius": 1.0,
+    "frequency": 6,
+    "polyhedron": "icosahedron",
+    "dome_class": 1,
+    "elongation_factors": {
+      "x": 1.0, "y": 1.0, "z": 1.8
+    },
+    ...
+  }
+}
+```
+
+```json
+{"elongation_z": 1.0, "height": 2.0,
+ "footprint_diameter": 2.0,
+ "total_strut_length": 215.7794}
+{"elongation_z": 0.9, "height": 1.8,
+ "footprint_diameter": 2.0,
+ "total_strut_length": 208.7384}
+{"elongation_z": 1.8, "height": 3.6,
+ "footprint_diameter": 2.0,
+ "total_strut_length": 279.8432}
+```
 
 **[IMAGE: ../blog-posts/ellipsoid.png | A smooth, shaded ellipsoid with three unequal axes.]**
 **[CAPTION: A general axis-aligned ellipsoid, the shape elongation approximates, from pyLair's earlier documentation.]**
@@ -42,8 +79,11 @@ Here's a fact worth pinning down before it becomes a problem in Chapter 12: **on
 Elongate the sphere into an ellipsoid and that convenient fact stops being true. An ellipsoid's outward normal is generally *not* parallel to its position vector, except at the six points where it crosses its own axes, where symmetry makes the two coincide. Here is the difference in numbers, using the hand-computable case pyLair's test suite checks: a point on an ellipsoid stretched by `2.0` along `z`, at 45°, position `(0.7071, 0, 1.4142)`.
 
 ```
-True ellipsoid normal (gradient of x²/a² + z²/c² = 1):  (0.8944, 0, 0.4472)
-Naive normal (just the position vector, normalized):    (0.4472, 0, 0.8944)
+True ellipsoid normal, the gradient of
+x²/a² + z²/c² = 1:
+  (0.8944, 0, 0.4472)
+Naive normal, the position vector normalized:
+  (0.4472, 0, 0.8944)
 ```
 
 The two vectors aren't just different; their components are **swapped**. The true normal leans toward x, the naive one toward z, in exactly reversed proportion. That's a qualitatively wrong direction, not a rounding difference, and any calculation that treats it as "straight out from the surface," a strut's deflection angle, say, inherits the error.
@@ -67,11 +107,75 @@ Take hub 0 of the frequency-6 Class I sphere, which sits off the axis, at `Z ≈
 **Prompt:**
 > Elongate this dome upward by 1.8× on Z only. How much does that change hub 0's tangent-plane angles compared to the unelongated version?
 
-**What Comes Back** (from two `get_bill_of_materials` calls, in the order the report lists hub 0's five struts):
+**What Comes Back** (two `get_bill_of_materials` calls: a snapshot of the stretched dome's report, whose first five hub-angle entries are hub 0's five struts, then hub 0's angles from both reports, in the order the report lists them):
 
 ```json
-{"elongation": "1.0,1.0,1.0", "hub_0_tangent_angles_degrees": [4.6624, 4.6624, 4.6624, 4.6624, 4.6624]}
-{"elongation": "1.0,1.0,1.8", "hub_0_tangent_angles_degrees": [4.7289, 3.0904, 4.7289, 3.3204, 3.3204]}
+{
+  "pyLair report": {
+    "Bill of materials": {
+      "Chord Lengths and Counts": [
+        {"length": 0.3546, "count": 20,
+         "chord_indices": [311, ...]},
+        ...
+      ],
+      "Warning": "Small length chords...",
+      "Possible truncation-artifact chords": []
+    },
+    "Total material": {
+      "Total strut length": 279.8432
+    },
+    "Angles at hub between outbound cords and tangential plane": [
+      {"hub": 0, "connecting hub": 1,
+       "angle (degrees)": 4.7289, ...},
+      {"hub": 0, "connecting hub": 7,
+       "angle (degrees)": 3.0904, ...},
+      {"hub": 0, "connecting hub": 95,
+       "angle (degrees)": 4.7289, ...},
+      {"hub": 0, "connecting hub": 126,
+       "angle (degrees)": 3.3204, ...},
+      {"hub": 0, "connecting hub": 127,
+       "angle (degrees)": 3.3204, ...},
+      ...
+    ],
+    "Spoke angles": [
+      {"index": 0, "hub": 0, "connecting hub": 1,
+       ...},
+      ...
+    ],
+    "Panel shapes and counts": {
+      "Panel Types and Counts": [
+        {"edge_lengths": [0.173, 0.242, 0.264],
+         "area": 0.02, "count": 20, ...},
+        ...
+      ],
+      "Warning": "Panels sharing the same...",
+      "Possible truncation-artifact panels": []
+    },
+    "Total panel material": {
+      "Total panel area": 19.4709
+    },
+    "Bevel angles at panel edges": [
+      {"vertex 1": 0, "vertex 2": 7, "face 1": 0,
+       ...},
+      ...
+    ]
+  }
+}
+```
+
+```json
+{
+  "elongation": "1.0,1.0,1.0",
+  "hub_0_tangent_angles_degrees": [
+    4.6624, 4.6624, 4.6624, 4.6624, 4.6624
+  ]
+}
+{
+  "elongation": "1.0,1.0,1.8",
+  "hub_0_tangent_angles_degrees": [
+    4.7289, 3.0904, 4.7289, 3.3204, 3.3204
+  ]
+}
 ```
 
 **What It Means:** Unelongated, all five struts at this hub report the same angle: on a sphere, the hub sits at a point of five-fold symmetry. Stretched, the symmetry is gone and the five split into three values (`4.73°` twice, `3.32°` twice, `3.09°` once), because the true normal now depends on which direction the stretch pulled relative to each strut, not just on the hub's distance from the center.
@@ -88,7 +192,8 @@ Every elongation factor must be strictly greater than zero. Reach for `0` hoping
 **What Comes Back** (a tool error):
 
 ```
--e or --elongation arguments must each be greater than zero. Exiting.
+-e or --elongation arguments must each be
+greater than zero. Exiting.
 ```
 
 There's no meaningful ellipsoid with a zero semi-axis: the implicit equation this chapter rests on divides by each factor squared, and pyLair refuses before that division can produce nonsense.

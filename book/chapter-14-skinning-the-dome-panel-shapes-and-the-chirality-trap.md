@@ -10,7 +10,7 @@ Every panel is a triangle, and pyLair groups panels into shape types the way Cha
 
 ## What SSS Alone Can't Tell You
 
-Here is the catch, stated in `_face_type_signature`'s source comment: sorting the three lengths throws away one piece of information, the order in which the edges connect going around the panel. Two triangles with the *same* three lengths can be mirror images of each other, distinguishable only by that winding order. That is Chapter 6's chirality, applied to one flat triangle instead of a whole lattice. pyLair's fix is `_face_chirality_key`, a second fingerprint that keeps the winding order (allowing the three rotations of the sequence, but never a reflection), so two panels with the same SSS signature but opposite winding are flagged as mirror-image shapes, not the same shape counted twice.
+Here is the catch, stated in `_face_type_signature`'s source comment: sorting the three lengths throws away one piece of information, the order in which the edges connect going around the panel. Two triangles with the *same* three lengths can be mirror images of each other, distinguishable only by that winding order. That is Chapter 6's chirality, applied to one flat triangle instead of a whole lattice. pyLair's answer is `_face_chirality_key`, a second fingerprint that keeps the winding order (allowing the three rotations of the sequence, but never a reflection), so two panels with the same SSS signature but opposite winding are flagged as mirror-image shapes, not the same shape counted twice.
 
 ## A Surprise on the Plainest Dome in the Book
 
@@ -19,11 +19,71 @@ You don't need Class III, elongation, or truncation to see this. It happens on a
 **Prompt:**
 > Group this dome's panels by shape. Are any of the groups flagged as chiral, and what does that mean for a one-sided material?
 
-**What Comes Back** (the largest group from `get_bill_of_materials`'s panel section, trimmed):
+**What Comes Back** (a snapshot of the `get_bill_of_materials` report, its panel table showing the largest group in full except for its long list of panel numbers):
 
 ```json
-{"edge_lengths": [0.198, 0.203, 0.206], "count": 240, "chiral": true,
- "orientations": [{"count": 120}, {"count": 120}]}
+{
+  "pyLair report": {
+    "Bill of materials": {
+      "Chord Lengths and Counts": [
+        {"length": 0.2166, "count": 120,
+         "chord_indices": [23, ...]},
+        ...
+      ],
+      "Warning": "Small length chords...",
+      "Possible truncation-artifact chords": []
+    },
+    "Total material": {
+      "Total strut length": 215.7794
+    },
+    "Angles at hub between outbound cords and tangential plane": [
+      {"hub": 0, "connecting hub": 1,
+       "angle (degrees)": 4.6624, ...},
+      ...
+    ],
+    "Spoke angles": [
+      {"index": 0, "hub": 0, "connecting hub": 1,
+       ...},
+      ...
+    ],
+    "Panel shapes and counts": {
+      "Panel Types and Counts": [
+        {
+          "edge_lengths": [0.198, 0.203, 0.206],
+          "area": 0.018,
+          "count": 240,
+          "chiral": true,
+          "orientations": [
+            {
+              "edge_lengths": [
+                0.2028, 0.2059, 0.198
+              ],
+              "count": 120
+            },
+            {
+              "edge_lengths": [
+                0.2028, 0.198, 0.2059
+              ],
+              "count": 120
+            }
+          ],
+          "face_indices": [3, 4, 5, ...]
+        },
+        ...
+      ],
+      "Warning": "Panels sharing the same...",
+      "Possible truncation-artifact panels": []
+    },
+    "Total panel material": {
+      "Total panel area": 12.4598
+    },
+    "Bevel angles at panel edges": [
+      {"vertex 1": 0, "vertex 2": 7, "face 1": 0,
+       ...},
+      ...
+    ]
+  }
+}
 ```
 
 **What It Means:** Two of this dome's six panel shape groups are flagged `chiral`. The largest, with edge lengths `(0.198, 0.203, 0.206)`, has 240 panels split exactly 120 and 120 between two winding orders. (The other, `(0.182, 0.187, 0.203)`, splits 60 and 60.) Here is one of each, drawn from the dome's panel data:

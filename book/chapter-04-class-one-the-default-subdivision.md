@@ -34,11 +34,26 @@ Use these as the first sanity check on any Class I result before trusting anythi
 **Prompt:**
 > Build a Class I icosahedral dome at frequency 4. Does the reported vertex count match the golden-value formula?
 
-**What Comes Back** (a `design_dome` result, trimmed to the relevant fields):
+**What Comes Back** (a snapshot of the `design_dome` result):
 
 ```json
-{"vertex_count": 162, "edge_count": 480, "face_count": 320,
- "resolved_parameters": {"polyhedron": "icosahedron", "dome_class": 1, "frequency": 4}}
+{
+  "vertex_count": 162,
+  "edge_count": 480,
+  "face_count": 320,
+  "truncated": false,
+  "bounding_box": {"x": [-1.0, 1.0],
+                   "y": [-1.0, 1.0],
+                   "z": [-1.0, 1.0]},
+  "height": 2.0,
+  "footprint_diameter": 2.0,
+  "total_strut_length": 143.204,
+  "resolved_parameters": {
+    "radius": 1.0, "frequency": 4,
+    "polyhedron": "icosahedron", "dome_class": 1,
+    ...
+  }
+}
 ```
 
 **What It Means:** `10(4)²+2 = 162`. `30(4)² = 480`. `20(4)² = 320`. All three match with no rounding, which is the point of a golden-value check: not "does this look about right," but "does this equal a number computed independently of the tool being checked."
@@ -52,19 +67,59 @@ Class II, Chapter 5 shows, requires an even frequency; Class III needs two disti
 The dome Part V exports and Part VI nests onto plywood starts here, as an unremarkable Class I icosahedral sphere.
 
 **Prompt:**
-> Preview a Class I icosahedral dome at frequency 6, radius 1.0, no elongation or truncation yet. This is going to be our running example.
+> Preview a Class I icosahedral dome at frequency 6, radius 1.0, no elongation or truncation yet, and give me its summary. This is going to be our running example.
 
-**What Comes Back** (a `preview_dome` render, `dome_class=1`, `frequency=6`, `polyhedron="icosahedron"`, `radius=1.0`):
+**What Comes Back** (a `preview_dome` render, `dome_class=1`, `frequency=6`, `polyhedron="icosahedron"`, `radius=1.0`, captioned "362 vertices, 1080 struts"; then a snapshot of `design_dome`'s JSON):
 
 **[IMAGE: examples/images/class1-secret-lair.png | A depth-cued wireframe of a geodesic sphere made of 720 small triangles, with nearer struts drawn darker.]**
 **[CAPTION: The Actual Secret Lair's first appearance: a plain Class I icosahedral sphere at frequency 6. Chapter 5 rebuilds the same nominal frequency under Class II, Chapter 6 replaces this subdivision with a chiral one, and Chapters 8 and 9 stretch and truncate whatever survives.]**
+
+```json
+{
+  "vertex_count": 362,
+  "edge_count": 1080,
+  "face_count": 720,
+  "truncated": false,
+  "bounding_box": {"x": [-0.9942, 0.9942],
+                   "y": [-1.0, 1.0],
+                   "z": [-1.0, 1.0]},
+  "height": 2.0,
+  "footprint_diameter": 2.0,
+  "total_strut_length": 215.7794,
+  "resolved_parameters": {
+    "radius": 1.0, "frequency": 6,
+    "polyhedron": "icosahedron", "dome_class": 1,
+    ...
+  }
+}
+```
 
 Nothing here is the final design, which is the point of introducing it early. Each later chapter that reshapes this dome reshapes *this* shape, so the running example accumulates decisions instead of resetting to a fresh dome each time.
 
 **Prompt:**
 > If I double the frequency, how much does the face count grow, and is that what you expected before I told you?
 
-**What Comes Back** (two `design_dome` results, Class I icosahedron, `f=4` and `f=8`):
+**What Comes Back** (two `design_dome` results, Class I icosahedron, `f=4` and `f=8`: a snapshot of the `f=8` result, since `f=4`'s is above, then the two face counts):
+
+```json
+{
+  "vertex_count": 642,
+  "edge_count": 1920,
+  "face_count": 1280,
+  "truncated": false,
+  "bounding_box": {"x": [-1.0, 1.0],
+                   "y": [-1.0, 1.0],
+                   "z": [-1.0, 1.0]},
+  "height": 2.0,
+  "footprint_diameter": 2.0,
+  "total_strut_length": 288.1616,
+  "resolved_parameters": {
+    "radius": 1.0, "frequency": 8,
+    "polyhedron": "icosahedron", "dome_class": 1,
+    ...
+  }
+}
+```
 
 ```json
 {"frequency": 4, "face_count": 320}
@@ -82,24 +137,56 @@ It exists to catch one narrow situation: two vertices that are supposed to be th
 **Prompt:**
 > Set `vertex_equal_threshold` to `0.0` on this frequency-6 dome and tell me the resulting vertex count.
 
-**What Comes Back:**
+**What Comes Back** (a snapshot of the `design_dome` result):
 
 ```json
-{"vertex_count": 552}
+{
+  "vertex_count": 552,
+  "edge_count": 1257,
+  "face_count": 720,
+  "truncated": false,
+  "bounding_box": {"x": [-0.9942, 0.9942],
+                   "y": [-1.0, 1.0],
+                   "z": [-1.0, 1.0]},
+  "height": 2.0,
+  "footprint_diameter": 2.0,
+  "total_strut_length": 248.3526,
+  "resolved_parameters": {
+    "radius": 1.0, "frequency": 6,
+    "polyhedron": "icosahedron", "dome_class": 1,
+    ...
+  }
+}
 ```
 
-**What It Means:** Too tight. The seam duplicates, which differ by a tiny amount of floating-point roundoff, no longer count as close enough to merge. Instead of the golden `10(6)²+2 = 362`, the dome has `552` vertices: seams left cracked open, each side keeping its own copy of what should be one point.
+**What It Means:** Too tight. The seam duplicates, which differ by a tiny amount of floating-point roundoff, no longer count as close enough to merge. Instead of the golden `10(6)²+2 = 362`, the dome has `552` vertices, and `1257` edges instead of `1080`: seams left cracked open, each side keeping its own copy of what should be one point, and its own copy of the struts along it.
 
 **Prompt:**
 > Now try `vertex_equal_threshold=0.2` on the same dome.
 
-**What Comes Back:**
+**What Comes Back** (a snapshot of the `design_dome` result):
 
 ```json
-{"vertex_count": 1}
+{
+  "vertex_count": 1,
+  "edge_count": 1,
+  "face_count": 1,
+  "truncated": false,
+  "bounding_box": {"x": [0.8944, 0.8944],
+                   "y": [5.55e-17, 5.55e-17],
+                   "z": [0.4472, 0.4472]},
+  "height": 0.0,
+  "footprint_diameter": 0.0,
+  "total_strut_length": 0.0,
+  "resolved_parameters": {
+    "radius": 1.0, "frequency": 6,
+    "polyhedron": "icosahedron", "dome_class": 1,
+    ...
+  }
+}
 ```
 
-**What It Means:** Too loose, the other way. The threshold now catches far more than seam duplicates: every vertex on the sphere collapses into one, and the dome stops existing as a shape. Between the extremes sits a wide range (this dome stays at `362` vertices from about `1e-15` up through `0.15`) with the default comfortably inside it. That's why the parameter almost never needs touching, and why it's worth knowing what happens on the rare occasion you're tempted.
+**What It Means:** Too loose, the other way. The threshold now catches far more than seam duplicates: every vertex on the sphere collapses into one, and the dome stops existing as a shape: one vertex, a height of `0.0`, and a total strut length of `0.0`. Between the extremes sits a wide range (this dome stays at `362` vertices from about `1e-15` up through `0.15`) with the default comfortably inside it. That's why the parameter almost never needs touching, and why it's worth knowing what happens on the rare occasion you're tempted.
 
 ## What's Next
 

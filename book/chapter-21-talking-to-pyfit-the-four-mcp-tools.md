@@ -11,19 +11,48 @@ Chapter 18 taught pyLair's iterate-then-commit loop. pyFit has the same shape, `
 **Prompt:**
 > Nest these four panel templates, five of each, on 0.6 by 0.5 sheets. Summarize first, then give me the full report, then export.
 
-**What Comes Back** (from `design_nest`, `get_nest_report`, and `export_nest` in turn; utilizations rounded, the report and file list summarized):
+**What Comes Back** (from `design_nest`, shown whole; then snapshots of `get_nest_report`, whose `placements` list has 20 entries, one per panel, and of `export_nest`, which returns the same report plus the ten files it wrote, a DXF and a preview PNG for each sheet):
 
 ```json
-{"tool": "design_nest", "sheets_used": 5,
- "utilization_by_sheet": [0.580, 0.598, 0.550, 0.577, 0.343]}
+{
+  "sheets_used": 5,
+  "utilization_by_sheet": [
+    0.5796, 0.5984, 0.5502, 0.5771, 0.3434
+  ]
+}
 ```
 
 ```json
-{"tool": "get_nest_report", "sheets_used": 5, "placements_returned": 20}
+{
+  "sheets_used": 5,
+  "utilization_by_sheet": [0.5796, 0.5984, ...],
+  "placements": [
+    {"part_name": "facetype4", "sheet_index": 0,
+     "position": [-0.0, -0.0],
+     "rotation_degrees": 0.0, "mirrored": false},
+    {"part_name": "facetype4", "sheet_index": 0,
+     "position": [0.0474, 0.4329],
+     "rotation_degrees": 195.0, "mirrored": true},
+    ...
+  ]
+}
 ```
 
 ```json
-{"tool": "export_nest", "files_written": ["lair_sheet1.dxf", "lair_sheet1.png", "...", "lair_sheet5.dxf", "lair_sheet5.png"]}
+{
+  "sheets_used": 5,
+  "utilization_by_sheet": [0.5796, 0.5984, ...],
+  "placements": [
+    {"part_name": "facetype4", "sheet_index": 0,
+     "position": [-0.0, -0.0],
+     "rotation_degrees": 0.0, "mirrored": false},
+    ...
+  ],
+  "files_written": ["lair_sheet1.dxf",
+                    "lair_sheet1.png",
+                    "lair_sheet2.dxf",
+                    "lair_sheet2.png", ...]
+}
 ```
 
 **What It Means:** Two free calls and one that writes: five sheets, twenty placements (one per panel), ten files. Chapter 23 uses this batch to measure how far real sheet use departs from pyLair's theoretical panel area.
@@ -31,12 +60,27 @@ Chapter 18 taught pyLair's iterate-then-commit loop. pyFit has the same shape, `
 **Prompt:**
 > Try two other rotation steps for this job using `design_nest` only; don't write any files yet. Do they change the sheet count?
 
-**What Comes Back** (from `design_nest` at the default 15° step and at 30° and 45°):
+**What Comes Back** (from `design_nest` at the default 15° step and at 30° and 45°, in that order, each shown whole):
 
 ```json
-{"rotation_step_degrees": 15, "sheets_used": 5}
-{"rotation_step_degrees": 30, "sheets_used": 6}
-{"rotation_step_degrees": 45, "sheets_used": 5}
+{
+  "sheets_used": 5,
+  "utilization_by_sheet": [
+    0.5796, 0.5984, 0.5502, 0.5771, 0.3434
+  ]
+}
+{
+  "sheets_used": 6,
+  "utilization_by_sheet": [
+    0.4635, 0.4537, 0.5789, 0.4643, 0.574, 0.1145
+  ]
+}
+{
+  "sheets_used": 5,
+  "utilization_by_sheet": [
+    0.4635, 0.4537, 0.6933, 0.5803, 0.4579
+  ]
+}
 ```
 
 **What It Means:** It's the same discipline as Chapter 18's `design_dome`: try as many settings as you like through `design_nest`, and nothing touches disk until you're satisfied. Notice, too, that the coarser 30° step needed a sixth sheet while the even coarser 45° didn't. A greedy heuristic doesn't get steadily better or worse as you give it more or fewer options; Chapter 20 meets the same effect with mirroring. Try, and read the numbers.
@@ -52,7 +96,7 @@ That's worth confirming rather than trusting as a description. Here is a reprodu
 ```
 elapsed: 23.03s, 214 progress notifications
 first: t=0.008s (placed 0/40 parts, checking sheet 1)
-last:  t=23.026s (placed 39/40 parts, checking sheet 10)
+last: t=23.026s (placed 39/40 parts, checking sheet 10)
 ```
 
 **What It Means:** 214 notifications, arriving continuously from eight milliseconds after the call began to its final moment, not bunched at the end, which is what a blocked event loop would produce. pyFit's `AGENTS.md` records the same behavior on a different, shorter job (about 33 notifications over 5.6 seconds): a different run, the same mechanism. Timings depend on the machine; the shape of the arrivals doesn't. The AI Henchman, given a client that displayed them, stopped going quiet.
@@ -60,8 +104,14 @@ last:  t=23.026s (placed 39/40 parts, checking sheet 10)
 And with no progress-reporting client at all, as when a test suite or a script calls the function directly:
 
 ```python
-await design_nest(sheet_width=0.6, sheet_height=0.5, parts=parts)  # ctx defaults to None
-# -> {'sheets_used': 5, 'utilization_by_sheet': [0.5796, 0.5984, 0.5502, 0.5771, 0.3434]}
+# ctx defaults to None
+await design_nest(sheet_width=0.6,
+                  sheet_height=0.5,
+                  parts=parts)
+# -> {'sheets_used': 5,
+#     'utilization_by_sheet':
+#         [0.5796, 0.5984, 0.5502,
+#          0.5771, 0.3434]}
 ```
 
 **What It Means:** No client, or no progress token, means no notifications and nothing else different: the packing runs in its worker thread the same way, the result is identical, and nothing has to opt out to get correct behavior.

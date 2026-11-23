@@ -15,12 +15,42 @@ Here is the session: three `design_dome` calls comparing Class III configuration
 **Prompt:**
 > Try three different frequencies for this dome using `design_dome` only; don't write any files yet. Which one gives a total strut length closest to my budget of 115 to 125 units?
 
-**What Comes Back** (three `design_dome` results, all Class III on an icosahedron, stretched `1.8`× on Z, truncated at `0.499999`, differing only in `(m,n)`; trimmed, with strut totals rounded):
+**What Comes Back** (three `design_dome` results, all Class III on an icosahedron, stretched `1.8`× on Z, truncated at `0.499999`, differing only in `(m,n)`: a snapshot of the first, then all three side by side, with strut totals rounded):
 
 ```json
-{"m": 3, "n": 1, "vertex_count": 106, "face_count": 170, "total_strut_length": 97.99}
-{"m": 4, "n": 1, "vertex_count": 156, "face_count": 260, "total_strut_length": 121.08}
-{"m": 5, "n": 1, "vertex_count": 216, "face_count": 370, "total_strut_length": 144.02}
+{
+  "vertex_count": 106,
+  "edge_count": 275,
+  "face_count": 170,
+  "truncated": true,
+  "bounding_box": {"x": [-0.9879, 0.9857],
+                   "y": [-0.9857, 0.9857],
+                   "z": [-3.60e-06, 1.8]},
+  "height": 1.8,
+  "footprint_diameter": 1.9736,
+  "total_strut_length": 97.9924,
+  "resolved_parameters": {
+    "radius": 1.0,
+    "frequency": 3,
+    "polyhedron": "icosahedron",
+    "dome_class": 3,
+    "n_frequency": 1,
+    "elongation_factors": {
+      "x": 1.0, "y": 1.0, "z": 1.8
+    },
+    "truncation": {"x": null, "y": null,
+                   "z": 0.499999}
+  }
+}
+```
+
+```json
+{"m": 3, "n": 1, "vertex_count": 106,
+ "face_count": 170, "total_strut_length": 97.99}
+{"m": 4, "n": 1, "vertex_count": 156,
+ "face_count": 260, "total_strut_length": 121.08}
+{"m": 5, "n": 1, "vertex_count": 216,
+ "face_count": 370, "total_strut_length": 144.02}
 ```
 
 **What It Means:** Nothing was written for any of the three: three cheap summary calls, the comparison shopping `design_dome` exists for. Against the budget, `(4,1)` is the clear fit. It's the configuration Chapter 6 chose for its looks; here it's confirmed by the numbers, through the tool, rather than assumed from memory.
@@ -28,14 +58,64 @@ Here is the session: three `design_dome` calls comparing Class III configuration
 **Prompt:**
 > Now preview the one you picked, then check its bill of materials before we export anything.
 
-**What Comes Back** (a `preview_dome` render, then a `get_bill_of_materials` result on the same `(4,1)` configuration, summarized: the two totals are quoted from the report, the counts are the lengths of its tables):
+**What Comes Back** (a `preview_dome` render captioned "156 vertices, 415 struts (truncated)", then a snapshot of the `get_bill_of_materials` result on the same `(4,1)` configuration, and a summary of it: the two totals are quoted from the report, the counts are the lengths of its tables):
 
 The preview matches Figure 9.2: the same stretched, truncated Class III dome, and still no file written.
 
 ```json
 {
-  "Total material": {"Total strut length": 121.081470138},
-  "Total panel material": {"Total panel area": 9.676572145},
+  "pyLair report": {
+    "Bill of materials": {
+      "Chord Lengths and Counts": [
+        {"length": 0.4748, "count": 5,
+         "chord_indices": [207, ...]},
+        ...
+      ],
+      "Warning": "Small length chords...",
+      "Possible truncation-artifact chords": []
+    },
+    "Total material": {
+      "Total strut length": 121.0815
+    },
+    "Angles at hub between outbound cords and tangential plane": [
+      {"hub": 0, "connecting hub": 1,
+       "angle (degrees)": 10.8994, ...},
+      ...
+    ],
+    "Spoke angles": [
+      {"index": 0, "hub": 0, "connecting hub": 1,
+       ...},
+      ...
+    ],
+    "Panel shapes and counts": {
+      "Panel Types and Counts": [
+        {"edge_lengths": [0.248, 0.282, 0.337],
+         "area": 0.034, "count": 5, ...},
+        ...
+      ],
+      "Warning": "Panels sharing the same...",
+      "Possible truncation-artifact panels": []
+    },
+    "Total panel material": {
+      "Total panel area": 9.6766
+    },
+    "Bevel angles at panel edges": [
+      {"vertex 1": 0, "vertex 2": 1, "face 1": 30,
+       ...},
+      ...
+    ]
+  }
+}
+```
+
+```json
+{
+  "Total material": {
+    "Total strut length": 121.081470138
+  },
+  "Total panel material": {
+    "Total panel area": 9.676572145
+  },
   "strut_length_rows": 79,
   "panel_shape_groups": 52,
   "artifact_chords": 0,
@@ -48,16 +128,36 @@ The preview matches Figure 9.2: the same stretched, truncated Class III dome, an
 **Prompt:**
 > Export this configuration: the DXF and VRML, a preview image, STL and OBJ, and hub and panel templates.
 
-**What Comes Back** (an `export_dome` call with `preview`, `stl`, `obj`, `hub_templates`, and `face_templates` set and `face_output` left off, so the DXF is kept, as Chapter 17 explained; abbreviated):
+**What Comes Back** (a snapshot of the `export_dome` result from a call with `preview`, `stl`, `obj`, `hub_templates`, and `face_templates` set and `face_output` left off, so the DXF is kept, as Chapter 17 explained: 89 files, 32 of them `_hubtype` templates, Chapter 15's count for this dome, and 52 `_facetype` templates, matching `panel_shape_groups` above; its bill of materials, collapsed here, is the report examined above plus a section for each kind of template):
 
 ```json
 {
-  "files_written": [
-    "lair.wrl", "lair.dxf", "lair.png", "lair.stl", "lair.obj",
-    "lair_hubtype1.dxf", "... 32 hubtype files in all, Chapter 15's count for this dome",
-    "lair_facetype1.dxf", "... 52 facetype files in all, matching panel_shape_groups above"
-  ],
-  "bill_of_materials": { "...": "the same report examined above" }
+  "files_written": ["lair.wrl", "lair.dxf",
+                    "lair.png", "lair.stl",
+                    "lair.obj", "lair_hubtype1.dxf",
+                    ...],
+  "bill_of_materials": {
+    "pyLair report": {
+      "Bill of materials": {
+        "Chord Lengths and Counts": [...], ...
+      },
+      "Total material": {
+        "Total strut length": 121.0815
+      },
+      "Hub Connector Templates": [
+        {"template_file": "lair_hubtype1.dxf",
+         "struts_per_hub": 7, "hub_count": 5, ...},
+        ...
+      ],
+      ...,
+      "Panel Cutting Templates": [
+        {"template_file": "lair_facetype1.dxf",
+         "edge_lengths": [0.248, 0.282, 0.337],
+         "panel_count": 5, ...},
+        ...
+      ]
+    }
+  }
 }
 ```
 
@@ -71,8 +171,9 @@ The preview matches Figure 9.2: the same stretched, truncated Class III dome, an
 **What Comes Back** (the same error through `design_dome`, `export_dome`, or the CLI; through MCP it carries the "Error executing tool" prefix):
 
 ```
--c 3 (Class III / Skew) requires --n-frequency to differ from --frequency
-(equal values are Class II -- use -c 2 instead). Exiting.
+-c 3 (Class III / Skew) requires --n-frequency
+to differ from --frequency (equal values are
+Class II -- use -c 2 instead). Exiting.
 ```
 
 **What It Means:** All seven MCP tools and the CLI go through the same `build_dome` in `pylair/api.py`, which calls `validate_geometry_params` before building anything. There's no interface-specific validation anywhere, so an agent exploring with `design_dome` gets the same guardrails as a person typing CLI flags, word for word.

@@ -25,7 +25,8 @@ An odd frequency has no valid `m` for Class II to use, and pyLair refuses rather
 **What Comes Back** (the same error through the CLI or through `design_dome`, since both share `pylair/api.py`'s validation; through MCP it carries Chapter 2's "Error executing tool" prefix):
 
 ```
--c 2 (Class II / Triacon) requires an even --frequency. Exiting.
+-c 2 (Class II / Triacon) requires an even
+--frequency. Exiting.
 ```
 
 **What It Means:** Frequency 3 has no integer `m` (`m = f/2 = 1.5`), and there's no sensible way to lay a fractional grid over an LCD triangle. The fix is never to round. Pick the even frequency that reflects the detail you want (2 or 4, not 3), knowing Class II's `m` will be half of it.
@@ -45,10 +46,26 @@ Compare Chapter 4's Class I table at the *same nominal frequency*, `f=6`: Class 
 **Prompt:**
 > Check this Class II result against Euler's formula by hand. Does `V - E + F` equal 2?
 
-**What Comes Back** (a `design_dome` result, Class II, `f=6`, trimmed to the counts):
+**What Comes Back** (a snapshot of the `design_dome` result, Class II, `f=6`):
 
 ```json
-{"vertex_count": 542, "edge_count": 1620, "face_count": 1080}
+{
+  "vertex_count": 542,
+  "edge_count": 1620,
+  "face_count": 1080,
+  "truncated": false,
+  "bounding_box": {"x": [-0.9982, 0.9982],
+                   "y": [-1.0, 1.0],
+                   "z": [-1.0, 1.0]},
+  "height": 2.0,
+  "footprint_diameter": 2.0,
+  "total_strut_length": 291.4954,
+  "resolved_parameters": {
+    "radius": 1.0, "frequency": 6,
+    "polyhedron": "icosahedron", "dome_class": 2,
+    ...
+  }
+}
 ```
 
 **What It Means:** `542 - 1620 + 1080 = 2`. **Euler's formula**, published by Leonhard Euler in the 1750s, says that for any closed surface topologically equivalent to a sphere, vertices minus edges plus faces equals 2, and it holds here exactly. A second, independent identity is worth checking beside it: every face is a triangle with 3 edges, and every edge borders exactly 2 faces, so a closed triangulated mesh must have `2 × edges = 3 × faces`. Here, `2(1620) = 3240` and `3(1080) = 3240`. Neither check is specific to pyLair or to domes. They're general facts about closed triangulated surfaces, which is what makes them useful: a bug that fools pyLair's own bookkeeping still has to fool two independent mathematical facts.
@@ -72,7 +89,7 @@ The dome from Chapter 4 is rebuilt here, at the same nominal frequency, under Cl
 **Prompt:**
 > Rebuild that same dome (frequency 6, icosahedron, radius 1.0), but switch it to Class II and preview it.
 
-**What Comes Back** (a `preview_dome` render, `dome_class=2`, `frequency=6`):
+**What Comes Back** (a `preview_dome` render, `dome_class=2`, `frequency=6`, captioned "542 vertices, 1620 struts"; this is the dome whose `design_dome` JSON is shown above, so its summary is that snapshot):
 
 **[IMAGE: examples/images/class2-secret-lair.png | A depth-cued wireframe sphere, visibly denser than the Class I sphere at the same frequency, with clusters of triangles radiating from points where six or five struts meet.]**
 **[CAPTION: The Actual Secret Lair, same nominal frequency as Figure 4.2, rebuilt under Class II: 1,080 faces against 720, the "same frequency number, more detail" surprise the golden-value table predicts.]**

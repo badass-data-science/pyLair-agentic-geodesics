@@ -59,15 +59,10 @@ Every result in this book, every "What Comes Back" block in the chapters ahead, 
 Put together, a JSON object looks like this, an excerpt from what pyLair's `design_dome` tool returns for a frequency-4 icosahedral sphere:
 
 ```json
-{
-  "vertex_count": 162,
-  "edge_count": 480,
-  "face_count": 320,
-  "truncated": false,
-  "height": 2.0,
-  "footprint_diameter": 2.0,
-  "total_strut_length": 143.20402572929999
-}
+{"vertex_count": 162, "edge_count": 480,
+ "face_count": 320, "truncated": false,
+ "height": 2.0, "footprint_diameter": 2.0,
+ "total_strut_length": 143.20402572929999}
 ```
 
 Seven labeled values, each of a type that isn't in question. There is no ambiguity about what `162` refers to, because it sits next to the label `"vertex_count"`, not three sentences later in a paragraph.
@@ -103,7 +98,8 @@ Chapter 3 is where you'll pick a polyhedron and get a dome back. Here is the fie
   "footprint_diameter": ...,
   "total_strut_length": ...,
   "resolved_parameters": {
-    "radius": ..., "frequency": ..., "polyhedron": ..., "dome_class": ..., ...
+    "radius": ..., "frequency": ...,
+    "polyhedron": ..., "dome_class": ..., ...
   }
 }
 ```
@@ -111,10 +107,7 @@ Chapter 3 is where you'll pick a polyhedron and get a dome back. Here is the fie
 And here is its counterpart one problem over, the skeleton of `design_nest`, which you'll meet in Part VI:
 
 ```json
-{
-  "sheets_used": ...,
-  "utilization_by_sheet": [...]
-}
+{"sheets_used": ..., "utilization_by_sheet": [...]}
 ```
 
 The two answer different questions but share a form: flat, labeled, and ready to act on, `vertex_count` next to `face_count`, `sheets_used` next to `utilization_by_sheet`. It is the same rule in both toolkits: **a result worth trusting is one you can name a field in, not a sentence you have to interpret.** You'll see both skeletons filled in as soon as Chapter 2's installation smoke test, and with a real design behind them for the rest of the book.

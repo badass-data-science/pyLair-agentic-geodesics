@@ -9,13 +9,15 @@ So before Chapter 3 picks a polyhedron, something more tedious happens: the wiri
 Both pyLair and pyFit are ordinary, installable **Python** packages. As of this writing, neither has been published to PyPI, the Python Package Index that `pip install` normally downloads from (pyLair's blog post lists that under "Next Steps," and pyFit's `AGENTS.md` says "publishing is a separate, deliberate step"). So for now both install the same way: clone the repository (pyLair's lives at [github.com/badass-data-science/pyLair-agentic-geodesics](https://github.com/badass-data-science/pyLair-agentic-geodesics), pyFit's at [github.com/badass-data-science/pyFit-agentic-polygon-nesting](https://github.com/badass-data-science/pyFit-agentic-polygon-nesting)), then install it in editable mode with the `mcp` extra:
 
 ```bash
-git clone https://github.com/badass-data-science/pyLair-agentic-geodesics.git
+git clone \
+  https://github.com/badass-data-science/pyLair-agentic-geodesics.git
 cd pyLair-agentic-geodesics
 pip install -e ".[mcp]"
 ```
 
 ```bash
-git clone https://github.com/badass-data-science/pyFit-agentic-polygon-nesting.git
+git clone \
+  https://github.com/badass-data-science/pyFit-agentic-polygon-nesting.git
 cd pyFit-agentic-polygon-nesting
 pip install -e ".[mcp]"
 ```
@@ -71,7 +73,9 @@ That's the whole configuration: pyLair has no API key or environment variable to
 {
   "skills": {
     "load": {
-      "extraDirs": ["/absolute/path/to/pyFit-agentic-polygon-nesting/skills"]
+      "extraDirs": [
+        "/absolute/path/to/pyFit-agentic-polygon-nesting/skills"
+      ]
     },
     "entries": {
       "pyfit": {
@@ -93,8 +97,8 @@ Claude Code registers MCP servers either in a project-level `.mcp.json` file, us
 ```jsonc
 {
   "mcpServers": {
-    "pylair": { "command": "pylair-mcp", "args": [] },
-    "pyfit":  { "command": "pyfit-mcp",  "args": [] }
+    "pylair": {"command": "pylair-mcp", "args": []},
+    "pyfit": {"command": "pyfit-mcp", "args": []}
   }
 }
 ```
@@ -112,8 +116,8 @@ Several general-purpose AI assistants also speak MCP directly. Claude Desktop is
 ```jsonc
 {
   "mcpServers": {
-    "pylair": { "command": "pylair-mcp", "args": [] },
-    "pyfit":  { "command": "pyfit-mcp",  "args": [] }
+    "pylair": {"command": "pylair-mcp", "args": []},
+    "pyfit": {"command": "pyfit-mcp", "args": []}
   }
 }
 ```
@@ -127,14 +131,18 @@ The AI Henchman's first words to the new servers were an apology. "The tool `pyl
 The setup: a virtual environment, both projects installed into it with `pip install -e ".[mcp]"`, both console scripts confirmed with `which pylair-mcp pyfit-mcp`. Then a client configuration that names a server by its bare command:
 
 ```json
-{ "mcpServers": { "pylair": { "command": "pylair-mcp", "args": [] } } }
+{
+  "mcpServers": {
+    "pylair": {"command": "pylair-mcp", "args": []}
+  }
+}
 ```
 
 Connecting can produce something like:
 
 ```
-RuntimeError: Client failed to connect: [Errno 2] No such file or
-directory: 'pylair-mcp'
+RuntimeError: Client failed to connect:
+[Errno 2] No such file or directory: 'pylair-mcp'
 ```
 
 That is confusing the first time, because `pylair-mcp` *does* exist: `which` just said so, in the same terminal.
@@ -146,8 +154,14 @@ The fix is one line per server: use the **absolute path** to the installed conso
 ```jsonc
 {
   "mcpServers": {
-    "pylair": { "command": "/path/to/your/venv/bin/pylair-mcp", "args": [] },
-    "pyfit":  { "command": "/path/to/your/venv/bin/pyfit-mcp",  "args": [] }
+    "pylair": {
+      "command": "/path/to/your/venv/bin/pylair-mcp",
+      "args": []
+    },
+    "pyfit": {
+      "command": "/path/to/your/venv/bin/pyfit-mcp",
+      "args": []
+    }
   }
 }
 ```
@@ -166,10 +180,16 @@ Installation isn't finished until you've watched tool calls succeed: "the instal
 **What Comes Back** (from a running server: a Class I icosahedral sphere at frequency 2 and radius 1.0, the Proof-of-Concept Yurt):
 
 ```
-Tools exposed: design_dome, preview_dome, get_bill_of_materials, export_dome,
-  get_assembly_manifest, export_assembly_job_spec, render_assembly_schematic
+Tools exposed: design_dome, preview_dome,
+  get_bill_of_materials, export_dome,
+  get_assembly_manifest,
+  export_assembly_job_spec,
+  render_assembly_schematic
+```
 
-design_dome result:
+The `design_dome` result:
+
+```json
 {
   "vertex_count": 42,
   "edge_count": 120,
@@ -189,7 +209,9 @@ design_dome result:
     "polyhedron": "icosahedron",
     "dome_class": 1,
     "n_frequency": null,
-    "elongation_factors": {"x": 1.0, "y": 1.0, "z": 1.0},
+    "elongation_factors": {
+      "x": 1.0, "y": 1.0, "z": 1.0
+    },
     "truncation": {"x": null, "y": null, "z": null}
   }
 }
@@ -208,13 +230,14 @@ Look at the shape, too, rather than only trusting the summary:
 **What Comes Back:**
 
 ```
-Tools exposed: design_nest, preview_nest, get_nest_report, export_nest
+Tools exposed: design_nest, preview_nest,
+  get_nest_report, export_nest
+```
 
-design_nest result:
-{
-  "sheets_used": 1,
-  "utilization_by_sheet": [1.0]
-}
+The `design_nest` result:
+
+```json
+{"sheets_used": 1, "utilization_by_sheet": [1.0]}
 ```
 
 **What It Means:** Four more tools, from a second subprocess, and a result you can check by hand: six unit squares have a combined area of 6, a 3×2 sheet has an area of 6, and pyFit's README says this case tiles perfectly. `utilization_by_sheet: [1.0]`, or 100%, confirms it did, on one sheet. It's a boring, hand-checkable result, chosen because there's nowhere for a packing mistake to hide in it. The Unbending Foreman checked it with a pencil anyway, and nodded.
@@ -230,11 +253,25 @@ One more thing to confirm while you're here, since Chapter 1 made a point of it:
 **What Comes Back** (a tool error, not a crash):
 
 ```
-Error executing tool design_dome: -c 2 (Class II / Triacon) requires an
-even --frequency. Exiting.
+Error executing tool design_dome: -c 2
+(Class II / Triacon) requires an even
+--frequency. Exiting.
 ```
 
 **What It Means:** After the MCP framework's "Error executing tool" prefix, that's the same message the `pylair` CLI gives for `-c 2 -f 3`, flag names and all. It isn't a coincidence: one shared engine (`pylair/api.py`, and `pyfit/api.py` on the nesting side) validates every request, whichever interface it arrived through. That is why this book trusts an agent's tool calls as much as a terminal's. Chapter 5 explains why Class II needs an even frequency.
+
+## Reading, and Keeping, What Comes Back
+
+Most of the tools answer with JSON (JavaScript Object Notation), a plain-text format of named fields, lists in square brackets, and nested groups in braces, that any program can read back. The exceptions are the three that draw pictures: pyLair's `preview_dome` and `render_assembly_schematic` and pyFit's `preview_nest` send an image with a one-line caption ("42 vertices, 120 struts"), not JSON. A picture is for your eyes and the JSON is for the record, so wherever this book asks for a picture, its prompt also asks for the matching JSON: `design_dome`'s summary beside a preview, `get_assembly_manifest` beside a schematic, `get_nest_report` beside a sheet layout.
+
+The two results above are shown whole. Most results are far longer: a bill of materials lists an angle for every strut end at every hub, nearly a thousand entries on a modest dome. So from here on, each **What Comes Back** shows a **snapshot**: every top-level field appears, each list shows its first entry or two, nested groups show their first few fields, and a bare `...` marks what was left out. Numbers are rounded to four decimal places. A snapshot isn't valid JSON as printed, because of the `...` marks; the real output is, in full and at full precision.
+
+That real output is worth keeping, and it's easy to keep. There are two ways:
+
+- **Ask the agent.** "Save that result, exactly as the tool returned it, to `yurt.json`." An agent that can write files, as Claude Code can, writes the JSON as it came back. Ask for the tool's own output rather than a summary; this book keeps asking for raw results for a reason. This is also how to keep the JSON from the export tools: `export_dome`, `export_assembly_job_spec`, and `export_nest` write their drawings and models to disk, but their reports (a bill of materials, a job spec, a placement report) come back to the agent as JSON, like every other tool's.
+- **Use the command line.** `pylair` prints its bill of materials as JSON, so `pylair -f 2 -o yurt > yurt-bom.json` saves it (the DXF and VRML files land beside it). Adding `--assembly-manifest` also writes `yurt_manifest.json`, and `--pyfit-job-spec=panels` writes `yurt_jobspec.json`. `pyfit -j job.json -o squares` writes its placement report to `squares_report.json` on its own.
+
+A saved result is a record: it can be compared with tomorrow's run, attached to a work order, or read back by the next tool in the chain, the way Chapter 20 feeds a bill of materials into pyFit.
 
 ## What's Next
 
