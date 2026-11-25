@@ -3357,19 +3357,6 @@
       "id": "github_workflows_ci_pipeline"
     },
     {
-      "label": "book/outline.md (book outline)",
-      "file_type": "document",
-      "source_file": "book/outline.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "community": 16,
-      "norm_label": "book/outline.md (book outline)",
-      "id": "book_outline_outline_md"
-    },
-    {
       "label": "Python 3.9-3.13 test matrix",
       "file_type": "concept",
       "source_file": ".github/workflows/ci.yml",
@@ -3472,201 +3459,6 @@
       "community": 23,
       "norm_label": "hub tangent-plane deflection angle",
       "id": "blog_posts_method_md_tangent_angle"
-    },
-    {
-      "label": "The Proof-of-Concept Yurt",
-      "file_type": "concept",
-      "source_file": "book/outline.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "community": 36,
-      "norm_label": "the proof-of-concept yurt",
-      "id": "book_outline_outline_md_poc_yurt"
-    },
-    {
-      "label": "The Actual Secret Lair",
-      "file_type": "concept",
-      "source_file": "book/outline.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "community": 28,
-      "norm_label": "the actual secret lair",
-      "id": "book_outline_outline_md_actual_secret_lair"
-    },
-    {
-      "label": "The Under-the-Ocean Prototype",
-      "file_type": "concept",
-      "source_file": "book/outline.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "community": 37,
-      "norm_label": "the under-the-ocean prototype",
-      "id": "book_outline_outline_md_underocean_prototype"
-    },
-    {
-      "label": "The Orbital Panopticon",
-      "file_type": "concept",
-      "source_file": "book/outline.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "community": 34,
-      "norm_label": "the orbital panopticon",
-      "id": "book_outline_outline_md_orbital_panopticon"
-    },
-    {
-      "label": "The Magma Redoubt",
-      "file_type": "concept",
-      "source_file": "book/outline.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "community": 32,
-      "norm_label": "the magma redoubt",
-      "id": "book_outline_outline_md_magma_redoubt"
-    },
-    {
-      "label": "The Permafrost Cache",
-      "file_type": "concept",
-      "source_file": "book/outline.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "community": 35,
-      "norm_label": "the permafrost cache",
-      "id": "book_outline_outline_md_permafrost_cache"
-    },
-    {
-      "label": "The Ostentatious Mesa Spire",
-      "file_type": "concept",
-      "source_file": "book/outline.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "community": 33,
-      "norm_label": "the ostentatious mesa spire",
-      "id": "book_outline_outline_md_mesa_spire"
-    },
-    {
-      "label": "Ch.20: catching doc drift with graphify",
-      "file_type": "rationale",
-      "source_file": "book/outline.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "community": 14,
-      "norm_label": "ch.20: catching doc drift with graphify",
-      "id": "book_outline_outline_md_ch20_doc_drift"
-    },
-    {
-      "label": "Ch.21: agent-authored CI catching real bugs",
-      "file_type": "rationale",
-      "source_file": "book/outline.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "community": 11,
-      "norm_label": "ch.21: agent-authored ci catching real bugs",
-      "id": "book_outline_outline_md_ch21_ci_bugs"
-    },
-    {
-      "label": "Ch.22: when to trust the agent checklist",
-      "file_type": "concept",
-      "source_file": "book/outline.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "community": 30,
-      "norm_label": "ch.22: when to trust the agent checklist",
-      "id": "book_outline_outline_md_ch22_trust_checklist"
-    },
-    {
-      "label": "Companion book: Agentic Time Series Forecasting for Supervillains",
-      "file_type": "concept",
-      "source_file": "book/outline.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "community": 16,
-      "norm_label": "companion book: agentic time series forecasting for supervillains",
-      "id": "book_outline_outline_md_companion_omen_book"
-    },
-    {
-      "label": "commit 26de45e (strut the diagonal seam)",
-      "file_type": "concept",
-      "source_file": "book/outline.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "community": 14,
-      "norm_label": "commit 26de45e (strut the diagonal seam)",
-      "id": "book_outline_outline_md_commit_26de45e"
-    },
-    {
-      "label": "/graphify knowledge-graph tool",
-      "file_type": "concept",
-      "source_file": "book/outline.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "community": 14,
-      "norm_label": "/graphify knowledge-graph tool",
-      "id": "book_outline_outline_md_graphify_tool"
-    },
-    {
-      "label": "Golden-value vertex/edge/face count formulas",
-      "file_type": "concept",
-      "source_file": "book/outline.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "community": 31,
-      "norm_label": "golden-value vertex/edge/face count formulas",
-      "id": "book_outline_outline_md_golden_value_formulas"
-    },
-    {
-      "label": "Appendix C: Further Reading",
-      "file_type": "concept",
-      "source_file": "book/outline.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "community": 29,
-      "norm_label": "appendix c: further reading",
-      "id": "book_outline_outline_md_appendix_c"
     },
     {
       "label": "pyLair",
@@ -3914,19 +3706,6 @@
       "community": 1,
       "norm_label": "pyproject.toml",
       "id": "pyproject"
-    },
-    {
-      "label": "book/outline.md (\"Agentic Geodesic Lair Design for Supervillains\")",
-      "file_type": "document",
-      "source_file": "CHANGELOG.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "community": 15,
-      "norm_label": "book/outline.md (\"agentic geodesic lair design for supervillains\")",
-      "id": "book_outline"
     },
     {
       "label": "pylair/__init__.py",
@@ -4811,19 +4590,6 @@
       "community": 39,
       "norm_label": "cli/python/license badges on the readme",
       "id": "changelog_readme_badges"
-    },
-    {
-      "label": "Environment-design practicum chapter",
-      "file_type": "document",
-      "source_file": "CHANGELOG.md",
-      "source_location": null,
-      "source_url": null,
-      "captured_at": null,
-      "author": null,
-      "contributor": null,
-      "community": 15,
-      "norm_label": "environment-design practicum chapter",
-      "id": "changelog_practicum_chapter"
     },
     {
       "label": "Face-level bill of materials",
@@ -15499,16 +15265,6 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "book/outline.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "book_outline_outline_md_ch21_ci_bugs",
-      "target": "github_workflows_ci_pipeline"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
       "source_file": ".github/workflows/ci.yml",
       "source_location": null,
       "weight": 1.0,
@@ -15524,16 +15280,6 @@
       "weight": 1.0,
       "source": "github_workflows_ci_pipeline",
       "target": "github_workflows_ci_test_matrix"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "book/outline.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "book_outline_outline_md",
-      "target": "book_outline_outline_md_companion_omen_book"
     },
     {
       "relation": "references",
@@ -15574,36 +15320,6 @@
       "weight": 1.0,
       "source": "github_workflows_ci_mcp_extra",
       "target": "github_workflows_ci_mcp_extra_py39_gap"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "book/outline.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "book_outline_outline_md_ch21_ci_bugs",
-      "target": "github_workflows_ci_mcp_extra_py39_gap"
-    },
-    {
-      "relation": "cites",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "book/outline.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "book_outline_outline_md_ch20_doc_drift",
-      "target": "book_outline_outline_md_commit_26de45e"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "book/outline.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "book_outline_outline_md_ch20_doc_drift",
-      "target": "book_outline_outline_md_graphify_tool"
     },
     {
       "relation": "references",
@@ -15994,16 +15710,6 @@
       "weight": 1.0,
       "source": "readme_pylair",
       "target": "pyproject"
-    },
-    {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "CHANGELOG.md",
-      "source_location": null,
-      "weight": 1.0,
-      "source": "book_outline",
-      "target": "changelog_practicum_chapter"
     },
     {
       "relation": "references",

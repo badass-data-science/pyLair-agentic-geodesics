@@ -5,7 +5,7 @@
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 470 nodes · 1010 edges · 47 communities (16 shown, 31 thin omitted)
+- 452 nodes · 1004 edges · 34 communities (15 shown, 19 thin omitted)
 - Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 30 edges (avg confidence: 0.7)
 - Token cost: 0 input · 0 output
 
@@ -33,21 +33,8 @@
 - Docs-Sync and Project Concepts
 - pylair Package Root
 - CI Pipeline
-- Companion Book Series
 - Geodesic Method Summary
 - Hub Tangent Angle Concept
-- The Proof-of-Concept Yurt
-- The Actual Secret Lair
-- The Under-the-Ocean Prototype
-- The Orbital Panopticon
-- The Magma Redoubt
-- The Permafrost Cache
-- The Ostentatious Mesa Spire
-- Diagonal-Seam Doc-Drift Case Study
-- Trusting the Agent Checklist
-- Golden-Value Count Formulas
-- Further Reading Appendix
-- Book Outline Practicum Chapter
 - Package Init (pylair)
 - Output Flag
 - Frequency/Radius Validation
@@ -90,7 +77,7 @@
 - **CLI flags that require face data (truncation-aware)** — readme_flag_face, readme_flag_stl, readme_flag_obj, readme_flag_face_templates, readme_flag_area_cost, readme_flag_panel_density [EXTRACTED 1.00]
 - **Documentation kept in sync across README/METHOD/SKILL/CHANGELOG/blog post** — agents, blog_posts_method, skill, blog_posts_introducing_pylair [EXTRACTED 1.00]
 
-## Communities (47 total, 31 thin omitted)
+## Communities (34 total, 19 thin omitted)
 
 ### Community 5 - "Class III Subdivision Tests"
 Cohesion: 0.11
@@ -142,20 +129,16 @@ Nodes (51): _lattice_to_xy(), _roll3(), compute_face_adjacency(), pyLair, AGENTS
 
 ### Community 11 - "CI Pipeline"
 Cohesion: 0.29
-Nodes (8): CI Pipeline (ci.yml), Python 3.9-3.13 test matrix, cli-smoke job (full-format dome export), test extra, mcp extra, verify extra, mcp extra unsupported on Python 3.9, Ch.21: agent-authored CI catching real bugs
-
-### Community 14 - "Diagonal-Seam Doc-Drift Case Study"
-Cohesion: 0.67
-Nodes (3): Ch.20: catching doc drift with graphify, commit 26de45e (strut the diagonal seam), /graphify knowledge-graph tool
+Nodes (7): CI Pipeline (ci.yml), Python 3.9-3.13 test matrix, cli-smoke job (full-format dome export), test extra, mcp extra, verify extra, mcp extra unsupported on Python 3.9
 
 ### Community 12 - "Frequency/Radius Validation"
 Cohesion: 0.50
 Nodes (4): -r/--radius, -f/--frequency, -f must be a positive integer and -r must be > 0, validated with clear errors, Validate frequency/radius CLI arguments and narrow bare except clauses
 
 ## Knowledge Gaps
-- **63 isolated node(s):** `Geodesic Dome Structure`, `Triangulated Panel Grid`, `STDOUT: Spoke Angles Terminal Output`, `STDOUT: Angles at Hub Between Outbound Cords and Tangential Plane`, `Geodesic Sphere Projection Render (edited_4_projected1)` (+58 more)
+- **47 isolated node(s):** `Geodesic Dome Structure`, `Triangulated Panel Grid`, `STDOUT: Spoke Angles Terminal Output`, `STDOUT: Angles at Hub Between Outbound Cords and Tangential Plane`, `Geodesic Sphere Projection Render (edited_4_projected1)` (+42 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **31 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **19 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
@@ -165,7 +148,7 @@ _Questions this graph is uniquely positioned to answer:_
 - **Why does `Icosahedron` connect `Class II Subdivision Tests` to `Output Format Exporter Tests`, `Bill of Materials Tests`, `Class III Subdivision Tests`, `Truncation Geometry Tests`, `Dome Build API Tests`?**
   _High betweenness centrality (0.079) - this node is a cross-community bridge._
 - **What connects `Geodesic Dome Structure`, `Triangulated Panel Grid`, `STDOUT: Spoke Angles Terminal Output` to the rest of the system?**
-  _63 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _47 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Class III Subdivision Tests` be split into smaller, more focused modules?**
   _Cohesion score 0.10510510510510511 - nodes in this community are weakly interconnected._
 - **Should `MCP Tool Tests` be split into smaller, more focused modules?**
