@@ -576,3 +576,24 @@ def test_no_assembly_schematic_flag_means_no_schematic_file(tmp_path):
 
     assert result.returncode == 0
     assert not Path(str(out) + "_schematic.png").exists()
+
+
+def test_truncation_max_flags_cut_from_each_axis_max_end_and_combine_into_a_band(tmp_path):
+    out = tmp_path / "band"
+    for args in (["--truncation-z-max", "0.333333"],
+                 ["--truncation-x-max", "0.333333", "--truncation-y-max", "0.333333"],
+                 ["-t", "0.2", "--truncation-z-max", "0.3", "-F", "-s"]):
+        result = run_cli(["-o", str(out), "-f", "4"] + args)
+        assert result.returncode == 0, result.stdout
+
+
+def test_truncation_max_flag_rejects_a_non_float(tmp_path):
+    result = run_cli(["-o", str(tmp_path / "d"), "-f", "4", "--truncation-z-max", "top"])
+    assert result.returncode != 0
+    assert "--truncation-z-max argument must be a floating point number" in result.stdout
+
+
+def test_overlapping_band_is_rejected(tmp_path):
+    result = run_cli(["-o", str(tmp_path / "d"), "-f", "4", "-t", "0.6", "--truncation-z-max", "0.5"])
+    assert result.returncode != 0
+    assert "sum to less than 1" in result.stdout

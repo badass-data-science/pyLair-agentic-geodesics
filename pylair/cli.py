@@ -124,6 +124,9 @@ def main():
   truncation_x = None
   truncation_y = None
   truncation_z = None
+  truncation_x_max = None
+  truncation_y_max = None
+  truncation_z_max = None
   bom_rounding_precision = 9
   face_output = False
   preview_output = False
@@ -156,7 +159,7 @@ def main():
   # parse command line
   #
   try:
-    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:c:m:e:n:a:w:x:y:FPsOHTho:', ['truncation=', 'truncation-x=', 'truncation-y=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'class=', 'material-cost=', 'elongation=', 'n-frequency=', 'area-cost=', 'panel-density=', 'face', 'preview', 'stl', 'obj', 'hub-templates', 'face-templates', 'output=', 'assembly-manifest', 'pyfit-job-spec=', 'sheet-width=', 'sheet-height=', 'assembly-schematic', 'schematic-strut-labels', 'schematic-panel-labels'])
+    opts, args = getopt.getopt(sys.argv[1:], 'r:f:v:t:b:p:c:m:e:n:a:w:x:y:FPsOHTho:', ['truncation=', 'truncation-x=', 'truncation-y=', 'truncation-x-max=', 'truncation-y-max=', 'truncation-z-max=', 'vthreshold=', 'radius=', 'frequency=', 'help', 'bom-rounding=', 'polyhedron=', 'class=', 'material-cost=', 'elongation=', 'n-frequency=', 'area-cost=', 'panel-density=', 'face', 'preview', 'stl', 'obj', 'hub-templates', 'face-templates', 'output=', 'assembly-manifest', 'pyfit-job-spec=', 'sheet-width=', 'sheet-height=', 'assembly-schematic', 'schematic-strut-labels', 'schematic-panel-labels'])
   except getopt.error as msg:
     print(str(msg) + ' (for help use --help)')
     sys.exit(-1)
@@ -309,6 +312,18 @@ def main():
       except ValueError:
         print('-y or --truncation-y argument must be a floating point number. Exiting.')
         sys.exit(-1)
+    if o in ('--truncation-x-max', '--truncation-y-max', '--truncation-z-max'):
+      try:
+        value = np.float64(float(a))
+      except ValueError:
+        print('%s argument must be a floating point number. Exiting.' % o)
+        sys.exit(-1)
+      if o == '--truncation-x-max':
+        truncation_x_max = value
+      elif o == '--truncation-y-max':
+        truncation_y_max = value
+      else:
+        truncation_z_max = value
 
   #
   # check for required options
@@ -327,7 +342,9 @@ def main():
                        dome_class=dome_class, n_frequency=n_frequency,
                        vertex_equal_threshold=vertex_equal_threshold,
                        elongation_factors=elongation_factors,
-                       truncation_x=truncation_x, truncation_y=truncation_y, truncation_z=truncation_z)
+                       truncation_x=truncation_x, truncation_y=truncation_y, truncation_z=truncation_z,
+                       truncation_x_max=truncation_x_max, truncation_y_max=truncation_y_max,
+                       truncation_z_max=truncation_z_max)
   except ValueError as e:
     print(str(e))
     sys.exit(-1)

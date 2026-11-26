@@ -149,3 +149,31 @@ def test_validate_geometry_params_rejects_bad_values(kwargs, expected_substring)
         validate_geometry_params(**params)
 
 
+
+
+def test_truncation_from_an_axis_max_end_alone_counts_as_truncated():
+    dome = build_dome(frequency=4, truncation_z_max=0.333333)
+    assert dome.truncated is True
+    assert dome.truncation_z is None
+    assert dome.truncation_z_max == 0.333333
+    full = build_dome(frequency=4)
+    assert max(v[2] for v in dome.V) < max(v[2] for v in full.V) - 0.5
+
+
+@pytest.mark.parametrize("axis", ["x", "y", "z"])
+def test_band_truncation_keeps_both_cut_ends_on_any_axis(axis):
+    i = "xyz".index(axis)
+    full = build_dome(frequency=6)
+    dome = build_dome(frequency=6, **{"truncation_" + axis: 0.2, "truncation_%s_max" % axis: 0.3})
+    coords = [v[i] for v in full.V]
+    lo, hi = min(coords), max(coords)
+    kept = [v[i] for v in dome.V]
+    assert min(kept) == pytest.approx(lo + 0.2 * (hi - lo))
+    assert max(kept) == pytest.approx(hi - 0.3 * (hi - lo))
+    assert len(dome.F_sphere) > 0
+
+
+@pytest.mark.parametrize("lo,hi", [(0.5, 0.5), (0.7, 0.4)])
+def test_band_whose_cuts_meet_or_cross_is_rejected(lo, hi):
+    with pytest.raises(ValueError, match="sum to less than 1"):
+        build_dome(frequency=4, truncation_z=lo, truncation_z_max=hi)

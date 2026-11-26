@@ -63,6 +63,13 @@ class DomeResult:
   truncation_y: Optional[float]
   truncation_z: Optional[float]
   vertex_equal_threshold: float
+  # fraction trimmed from each axis's *maximum* end (None = that end is
+  # not cut). Set alongside the matching truncation_<axis> above, the
+  # dome keeps the band between the two cuts. Defaulted so DomeResult's
+  # existing positional/keyword construction is unaffected.
+  truncation_x_max: Optional[float] = None
+  truncation_y_max: Optional[float] = None
+  truncation_z_max: Optional[float] = None
 
 
 def validate_geometry_params(radius, frequency, dome_class, n_frequency, elongation_factors):
@@ -90,16 +97,35 @@ def validate_geometry_params(radius, frequency, dome_class, n_frequency, elongat
       raise ValueError('-c 3 (Class III / Skew) requires --n-frequency to differ from --frequency (equal values are Class II -- use -c 2 instead). Exiting.')
 
 
+def validate_truncation_params(truncation_x=None, truncation_y=None, truncation_z=None,
+                               truncation_x_max=None, truncation_y_max=None, truncation_z_max=None):
+  # A band whose two cuts meet or cross would discard the whole axis --
+  # almost certainly a mixed-up ratio rather than an intentionally empty
+  # dome, so fail loudly instead of returning nothing. (Single-sided
+  # cuts keep their existing, unvalidated behavior.)
+  for axis, lo, hi in (('x', truncation_x, truncation_x_max),
+                       ('y', truncation_y, truncation_y_max),
+                       ('z', truncation_z, truncation_z_max)):
+    if lo is not None and hi is not None and lo + hi >= 1:
+      raise ValueError(
+        'Truncating %s from both ends by %g (from its minimum) and %g (from its maximum) '
+        'would discard its entire extent -- the two fractions must sum to less than 1. Exiting.'
+        % (axis.upper(), lo, hi))
+
+
 def build_dome(radius=1.0, frequency=4, polyhedron: Union[str, Polyhedron] = 'icosahedron',
                 dome_class=1, n_frequency=None, vertex_equal_threshold=1e-7,
                 elongation_factors=(1.0, 1.0, 1.0), truncation_x=None, truncation_y=None,
-                truncation_z=None) -> DomeResult:
+                truncation_z=None, truncation_x_max=None, truncation_y_max=None,
+                truncation_z_max=None) -> DomeResult:
   # `polyhedron` accepts either a name string ("icosahedron"/"octahedron"/
   # "tetrahedron", for MCP callers) or an already-built
   # Icosahedron()/Octahedron()/Tetrahedron() instance (so cli.py, which
   # already constructs one from -p, needs no translation code at its
   # call site).
   validate_geometry_params(radius, frequency, dome_class, n_frequency, elongation_factors)
+  validate_truncation_params(truncation_x, truncation_y, truncation_z,
+                             truncation_x_max, truncation_y_max, truncation_z_max)
 
   if isinstance(polyhedron, str):
     if polyhedron == 'octahedron':
@@ -145,24 +171,28 @@ def build_dome(radius=1.0, frequency=4, polyhedron: Union[str, Polyhedron] = 'ic
     V_sphere = elongate(V_sphere, elongation_factors)
 
   # each axis is truncated independently and sequentially (X, then Y,
-  # then Z) when its cutoff is given, so a later axis's cutoff ratio is
-  # computed against that axis's range in the already-trimmed vertex
-  # set, not the original sphere/ellipsoid's -- the same "describes the
-  # final extent" convention elongation already follows above. Face data
-  # is threaded through every active axis: truncate()'s clipping is
-  # axis-generic and composes correctly across repeated calls (each
-  # pass's crossing points are computed fresh from whatever V/C/F it's
-  # handed, including any quad-split diagonal chord a previous pass
-  # introduced -- see truncation.py's _register_crossing).
-  truncated = any(t is not None for t in (truncation_x, truncation_y, truncation_z))
+  # then Z) when either of its cutoffs is given, so a later axis's
+  # cutoff ratios are computed against that axis's range in the
+  # already-trimmed vertex set, not the original sphere/ellipsoid's --
+  # the same "describes the final extent" convention elongation already
+  # follows above. Within one axis, though, the min-end
+  # (truncation_<axis>) and max-end (truncation_<axis>_max) ratios are
+  # both measured against that axis's extent before either cut, so a
+  # band reads as "trim this much off each end" (see truncate()). Face
+  # data is threaded through every active axis: truncate()'s clipping is
+  # axis- and direction-generic and composes correctly across repeated
+  # calls (each pass's crossing points are computed fresh from whatever
+  # V/C/F it's handed, including any quad-split diagonal chord a
+  # previous pass introduced -- see truncation.py's _register_crossing).
+  axis_cuts = ((0, truncation_x, truncation_x_max),
+               (1, truncation_y, truncation_y_max),
+               (2, truncation_z, truncation_z_max))
+  truncated = any(lo is not None or hi is not None for _, lo, hi in axis_cuts)
   if truncated:
     V, C, F = V_sphere, C_sphere, F_sphere
-    if truncation_x is not None:
-      V, C, F = truncate(V, C, truncation_x, axis=0, F_sphere=F)
-    if truncation_y is not None:
-      V, C, F = truncate(V, C, truncation_y, axis=1, F_sphere=F)
-    if truncation_z is not None:
-      V, C, F = truncate(V, C, truncation_z, axis=2, F_sphere=F)
+    for axis, lo, hi in axis_cuts:
+      if lo is not None or hi is not None:
+        V, C, F = truncate(V, C, lo, axis=axis, F_sphere=F, cutoff_from_top=hi)
     F_out = F
   else:
     V, C, F_out = V_sphere, C_sphere, F_sphere
@@ -171,4 +201,6 @@ def build_dome(radius=1.0, frequency=4, polyhedron: Union[str, Polyhedron] = 'ic
                      frequency=frequency, dome_class=dome_class, n_frequency=n_frequency,
                      polyhedron=polyhedron_name, elongation_factors=tuple(elongation_factors),
                      truncation_x=truncation_x, truncation_y=truncation_y, truncation_z=truncation_z,
-                     vertex_equal_threshold=vertex_equal_threshold)
+                     vertex_equal_threshold=vertex_equal_threshold,
+                     truncation_x_max=truncation_x_max, truncation_y_max=truncation_y_max,
+                     truncation_z_max=truncation_z_max)

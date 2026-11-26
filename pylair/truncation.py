@@ -29,25 +29,29 @@ import numpy as np
 HORIZONTAL_CHORD_EPSILON = 1e-12
 
 
-def _edge_crossing(v_below, v_above, axis, cutoff):
-  # the point on segment (v_below, v_above) where it crosses `cutoff`
+def _edge_crossing(v_discarded, v_kept, axis, cutoff):
+  # the point on segment (v_discarded, v_kept) where it crosses `cutoff`
   # along `axis`. Shared by both the chord-splitting and face-clipping
   # logic below, so a chord and every face touching it agree on exactly
   # the same cut point rather than two independently-rounded near
-  # duplicates.
-  norm = np.linalg.norm(v_below - v_above)
-  norm_vec = (v_below - v_above) / norm
+  # duplicates. Purely a line/plane intersection -- it has no notion of
+  # which side of the plane is "kept", so it serves cuts from either end
+  # of the axis unchanged (the argument order only fixes which endpoint
+  # the arithmetic starts from, so a given edge always rounds the same
+  # way).
+  norm = np.linalg.norm(v_discarded - v_kept)
+  norm_vec = (v_discarded - v_kept) / norm
   if abs(norm_vec[axis]) < HORIZONTAL_CHORD_EPSILON:
     raise ValueError(
       'Truncation cutoff plane lies exactly on a chord that is flat '
       'along the cutoff axis. Choose a slightly different truncation '
       'value to avoid this degenerate case.'
     )
-  scalar = (cutoff - v_above[axis]) / norm_vec[axis]
-  return v_above + scalar * norm_vec
+  scalar = (cutoff - v_kept[axis]) / norm_vec[axis]
+  return v_kept + scalar * norm_vec
 
 
-def _clip_face(face, V_sphere, register_crossing, axis, cutoff):
+def _clip_face(face, V_sphere, register_crossing, is_kept):
   # Clip a single triangular face against the same cutoff plane used for
   # chords. `register_crossing(v1_idx, v2_idx)` returns the (possibly
   # newly created) crossing point for ANY edge, not just real chords --
@@ -64,8 +68,11 @@ def _clip_face(face, V_sphere, register_crossing, axis, cutoff):
   # preserved in every case: a kept triangle's corner(s) are simply
   # pulled inward along the edges leading to a discarded vertex, which
   # never reverses the cyclic order the original face was given in.
+  # `is_kept(vertex)` decides which side of the cutoff plane survives,
+  # so the same logic serves a cut from either end of the axis -- below,
+  # "above" just means "on the kept side".
   verts = list(face)
-  above = [V_sphere[v][axis] >= cutoff for v in verts]
+  above = [is_kept(V_sphere[v]) for v in verts]
   n_above = sum(above)
 
   if n_above == 3:
@@ -116,19 +123,48 @@ def _clip_face(face, V_sphere, register_crossing, axis, cutoff):
   ], [diagonal, base_ring_edge]
 
 
-def truncate(V_sphere, C_sphere, cutoff_from_bottom, axis=2, F_sphere=None):
+def truncate(V_sphere, C_sphere, cutoff_from_bottom, axis=2, F_sphere=None, cutoff_from_top=None):
+  # Cut the dome along `axis` (0=X, 1=Y, 2=Z).
+  #   cutoff_from_bottom: fraction (0-1) of the axis's extent to discard
+  #     from its minimum end, keeping everything above (the original,
+  #     and still the positional, behavior).
+  #   cutoff_from_top: fraction (0-1) of the axis's extent to discard
+  #     from its maximum end, keeping everything below.
+  # Either may be None; giving both keeps the band between them. Both
+  # fractions are measured against this axis's extent *before* either
+  # cut is made, so a band of (0.25, 0.25) keeps the middle half of the
+  # extent -- not 0.25 of whatever the first cut leaves behind.
+  values = [v[axis] for v in V_sphere]
+  if not values:
+    return list(V_sphere), list(C_sphere), None if F_sphere is None else list(F_sphere)
+  min_v, max_v = min(values), max(values)
+  v_range = max_v - min_v
 
-  #
-  # figure out the range between top and bottom of the sphere along
-  # the requested axis (0=X, 1=Y, 2=Z)
-  #
-  min_vy = 1.
-  max_vy = -1.
-  for idx, v in enumerate(V_sphere):
-      if v[axis] > max_vy:  max_vy = v[axis]
-      if v[axis] < min_vy:  min_vy = v[axis]
-  v_range = abs(max_vy - min_vy)
-  cutoff = min_vy + cutoff_from_bottom * v_range
+  V, C, F = V_sphere, C_sphere, F_sphere
+  if cutoff_from_bottom is not None:
+    V, C, F = _truncate_one_side(V, C, F, axis, min_v + cutoff_from_bottom * v_range, keep_above=True)
+  if cutoff_from_top is not None:
+    V, C, F = _truncate_one_side(V, C, F, axis, max_v - cutoff_from_top * v_range, keep_above=False)
+  if cutoff_from_bottom is None and cutoff_from_top is None:
+    V, C = list(V), list(C)
+    F = None if F is None else list(F)
+  return V, C, F
+
+
+def _truncate_one_side(V_sphere, C_sphere, F_sphere, axis, cutoff, keep_above):
+  # A single planar cut at absolute coordinate `cutoff` along `axis`.
+  # Points lying exactly on the plane are kept from either direction.
+  # Only the kept/discarded classification depends on `keep_above`; no
+  # coordinate is ever reflected, so face winding is untouched. A band
+  # is two calls in a row -- the same composition multi-axis truncation
+  # already relies on (see _register_crossing / _clip_face on
+  # re-clipping a previous pass's quad-split diagonal).
+  if keep_above:
+    def is_kept(v):
+      return v[axis] >= cutoff
+  else:
+    def is_kept(v):
+      return v[axis] <= cutoff
 
   #
   # crossing points, computed once per edge and cached regardless of
@@ -143,7 +179,7 @@ def truncate(V_sphere, C_sphere, cutoff_from_bottom, axis=2, F_sphere=None):
     key = frozenset((v1_idx, v2_idx))
     if key not in edge_to_new_vertex:
       v1, v2 = V_sphere[v1_idx], V_sphere[v2_idx]
-      if v1[axis] < cutoff:
+      if not is_kept(v1):
         point = _edge_crossing(v1, v2, axis, cutoff)
       else:
         point = _edge_crossing(v2, v1, axis, cutoff)
@@ -162,17 +198,17 @@ def truncate(V_sphere, C_sphere, cutoff_from_bottom, axis=2, F_sphere=None):
     v1 = V_sphere[v1_idx]
     v2 = V_sphere[v2_idx]
 
-    # both vertices below cutoff
-    if v1[axis] < cutoff and v2[axis] < cutoff:
+    # both vertices discarded
+    if not is_kept(v1) and not is_kept(v2):
       chords_to_remove.append(c_idx)
 
-    # vertex 1 below cutoff
-    elif v1[axis] < cutoff:
+    # vertex 1 discarded
+    elif not is_kept(v1):
       chords_to_remove.append(c_idx)
       chords_to_add.append([c[1], _register_crossing(v1_idx, v2_idx)])
 
-    # vertex 2 below cutoff
-    elif v2[axis] < cutoff:
+    # vertex 2 discarded
+    elif not is_kept(v2):
       chords_to_remove.append(c_idx)
       chords_to_add.append([c[0], _register_crossing(v1_idx, v2_idx)])
 
@@ -188,7 +224,7 @@ def truncate(V_sphere, C_sphere, cutoff_from_bottom, axis=2, F_sphere=None):
   if F_sphere is not None:
     F_next = []
     for f in F_sphere:
-      triangles, new_chords = _clip_face(f, V_sphere, _register_crossing, axis, cutoff)
+      triangles, new_chords = _clip_face(f, V_sphere, _register_crossing, is_kept)
       F_next.extend(triangles)
       chords_to_add.extend(new_chords)
 

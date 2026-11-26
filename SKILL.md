@@ -51,7 +51,8 @@ to most dome-design questions.
 | `-p` | Base polyhedron: `icosahedron` (default), `octahedron`, or `tetrahedron`. |
 | `-c` | Subdivision class: `1` (Alternate, default), `2` (Triacon, needs even `-f`), `3` (Skew/chiral, needs `-n`). |
 | `-n` | Second Goldberg-Coxeter frequency, required for `-c 3`. |
-| `-t`/`-x`/`-y` | Truncation cutoff (0-1) along Z/X/Y. Prefer `0.499999` or `0.333333` over round numbers — see caveat below. |
+| `-t`/`-x`/`-y` | Truncation cutoff (0-1) along Z/X/Y, trimmed from that axis's minimum end. Prefer `0.499999` or `0.333333` over round numbers — see caveat below. |
+| `--truncation-z-max`/`--truncation-x-max`/`--truncation-y-max` | The reverse: fraction (0-1) trimmed from that axis's maximum end. Give both ends of one axis (e.g. `-t 0.25 --truncation-z-max 0.25`) to keep only the band between them; the two must sum to less than 1. |
 | `-e` | Elongation `"fx,fy,fz"` — stretch/squash each axis independently before truncation. |
 | `-F` | Emit face data (needed for `-s`/`-O`/`-T`/`-a`/`-w`). |
 | `-s`/`-O` | Also write STL/OBJ. |

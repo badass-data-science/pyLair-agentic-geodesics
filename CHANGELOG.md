@@ -10,6 +10,14 @@ lives under `[Unreleased]` against the `0.1.0` version in `pyproject.toml`.
 
 ### Added
 
+- Truncation from an axis's maximum end, and bands: `--truncation-z-max`/
+  `--truncation-x-max`/`--truncation-y-max` (MCP/API: `truncation_z_max`/
+  `truncation_x_max`/`truncation_y_max`) trim a fraction off that axis's top
+  end, keeping the portion below. Combined with the existing min-end cut on
+  the same axis (`-t`/`-x`/`-y`), the dome keeps only the band between the
+  two planes. Both fractions of a band are measured against that axis's
+  extent before either cut, and a band whose two cuts meet or cross is
+  rejected. Existing min-end flags and defaults are unchanged.
 - `Tetrahedron` as a third base-polyhedron option (`-p tetrahedron` /
   `polyhedron="tetrahedron"`), alongside the existing `icosahedron` and
   `octahedron`. Verified against Euler's formula and derived golden-value

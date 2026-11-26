@@ -41,6 +41,8 @@ def test_design_dome_returns_summary_stats():
     dict(truncation_x=0.499999),
     dict(truncation_y=0.499999),
     dict(truncation_x=0.499999, truncation_y=0.499999, truncation_z=0.499999),
+    dict(truncation_z_max=0.499999),
+    dict(truncation_x=0.2, truncation_x_max=0.3),
 ])
 def test_design_dome_truncated_on_any_axis_still_has_a_face_count(kwargs):
     result = design_dome(frequency=4, **kwargs)
@@ -48,6 +50,14 @@ def test_design_dome_truncated_on_any_axis_still_has_a_face_count(kwargs):
     assert result["truncated"] is True
     assert result["face_count"] is not None
     assert result["face_count"] > 0
+
+
+def test_design_dome_echoes_max_end_truncation_in_resolved_parameters():
+    result = design_dome(frequency=4, truncation_z=0.2, truncation_z_max=0.3)
+
+    resolved = result["resolved_parameters"]
+    assert resolved["truncation"] == {"x": None, "y": None, "z": 0.2}
+    assert resolved["truncation_max"] == {"x": None, "y": None, "z": 0.3}
 
 
 def test_design_dome_elongation_x_y_z_are_independent():

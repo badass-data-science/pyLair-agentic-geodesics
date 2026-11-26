@@ -373,3 +373,142 @@ def test_clip_face_one_vertex_above_cutoff_adds_base_ring_edge_as_a_real_chord()
         and V_new[c[0]][2] == pytest.approx(1.0) and V_new[c[1]][2] == pytest.approx(1.0)
     ]
     assert len(base_ring_chords) == 1
+
+
+#
+# cutting from an axis's maximum end (cutoff_from_top), and bands
+# (both ends of one axis at once)
+#
+
+def _dome_with_faces(**kwargs):
+    from pylair.api import build_dome
+    dome = build_dome(**kwargs)
+    return dome.V, dome.C, dome.F_sphere
+
+
+def _outward_signs(V, F):
+    # sign of (face normal . face centroid) for every face: +1 means the
+    # face is wound counter-clockwise seen from outside the dome
+    V = np.array(V)
+    return {float(np.sign(np.dot(np.cross(V[b] - V[a], V[c] - V[a]), V[a] + V[b] + V[c])))
+            for a, b, c in F}
+
+
+@pytest.mark.parametrize("axis", [0, 1, 2])
+def test_truncate_from_top_removes_vertices_above_cutoff_on_any_axis(axis):
+    V, C = build_sphere()
+    V_new, C_new, _ = truncate(V, C, None, axis=axis, cutoff_from_top=0.333333)
+
+    min_v = min(v[axis] for v in V)
+    max_v = max(v[axis] for v in V)
+    cutoff = max_v - 0.333333 * (max_v - min_v)
+
+    for v in V_new:
+        assert v[axis] <= cutoff + 1e-9
+    # the max end really moved, and the min end is untouched (vertex
+    # count isn't a usable check here -- see
+    # test_truncate_never_adds_chords on why it isn't monotonic)
+    assert max(v[axis] for v in V_new) < max_v - 0.3
+    assert min(v[axis] for v in V_new) == pytest.approx(min_v)
+    assert len(C_new) > 0
+
+
+@pytest.mark.parametrize("dome_kwargs", [
+    dict(frequency=4),
+    dict(frequency=3, polyhedron='octahedron'),
+    dict(frequency=4, polyhedron='tetrahedron'),
+    dict(frequency=4, dome_class=3, n_frequency=1),
+])
+@pytest.mark.parametrize("axis", [0, 1, 2])
+def test_truncate_from_top_is_the_mirror_image_of_truncate_from_bottom(dome_kwargs, axis):
+    # independent ground truth for the reversed direction: reflect the
+    # sphere along `axis`, cut that from the bottom with the existing
+    # (well-tested) code path, then reflect the result back. That must
+    # land on exactly the same vertices, struts, and panels as cutting
+    # the unreflected sphere from the top -- for every base polyhedron
+    # and class, including the chiral Class III, where the reflection
+    # is a genuinely different dome.
+    V, C, F = _dome_with_faces(**dome_kwargs)
+    flip = np.ones(3)
+    flip[axis] = -1.
+    ratio = 0.333333
+
+    V_top, C_top, F_top = truncate(V, C, None, axis=axis, F_sphere=F, cutoff_from_top=ratio)
+    V_ref, C_ref, F_ref = truncate([v * flip for v in V], C, ratio, axis=axis, F_sphere=F)
+    V_ref = [v * flip for v in V_ref]
+
+    def key(p):
+        return tuple(np.round(p, 9) + 0.)  # + 0. folds -0.0 into 0.0
+
+    assert sorted(map(key, V_top)) == sorted(map(key, V_ref))
+    assert (sorted(tuple(sorted((key(V_top[a]), key(V_top[b])))) for a, b in C_top)
+            == sorted(tuple(sorted((key(V_ref[a]), key(V_ref[b])))) for a, b in C_ref))
+    assert (sorted(tuple(sorted(key(V_top[i]) for i in f)) for f in F_top)
+            == sorted(tuple(sorted(key(V_ref[i]) for i in f)) for f in F_ref))
+
+    # no coordinate is ever reflected internally, so winding is
+    # preserved: every panel still faces outward, exactly as on the
+    # untruncated sphere
+    assert _outward_signs(V, F) == {1.0}
+    assert _outward_signs(V_top, F_top) == {1.0}
+
+
+@pytest.mark.parametrize("axis", [0, 1, 2])
+def test_band_keeps_only_vertices_between_both_cuts(axis):
+    V, C, F = _dome_with_faces(frequency=6)
+    lo, hi = 0.2, 0.3
+    V_new, C_new, F_new = truncate(V, C, lo, axis=axis, F_sphere=F, cutoff_from_top=hi)
+
+    min_v = min(v[axis] for v in V)
+    max_v = max(v[axis] for v in V)
+    v_range = max_v - min_v
+    for v in V_new:
+        assert min_v + lo * v_range - 1e-9 <= v[axis] <= max_v - hi * v_range + 1e-9
+    # both cut planes are actually reached, i.e. both ends really got cut
+    assert min(v[axis] for v in V_new) == pytest.approx(min_v + lo * v_range)
+    assert max(v[axis] for v in V_new) == pytest.approx(max_v - hi * v_range)
+    assert _outward_signs(V_new, F_new) == {1.0}
+
+
+def test_band_fractions_are_both_measured_against_the_uncut_extent():
+    # a band of (lo, hi) is the same as cutting lo from the bottom and
+    # then -- since the bottom cut leaves the max end where it was --
+    # hi / (1 - lo) of what remains from the top
+    V, C, F = _dome_with_faces(frequency=5)
+    lo, hi = 0.25, 0.25
+    V_band, C_band, F_band = truncate(V, C, lo, axis=2, F_sphere=F, cutoff_from_top=hi)
+
+    V1, C1, F1 = truncate(V, C, lo, axis=2, F_sphere=F)
+    V2, C2, F2 = truncate(V1, C1, None, axis=2, F_sphere=F1, cutoff_from_top=hi / (1 - lo))
+
+    assert len(V_band) == len(V2)
+    assert len(C_band) == len(C2)
+    assert len(F_band) == len(F2)
+    assert np.allclose(sorted(map(tuple, V_band)), sorted(map(tuple, V2)))
+
+
+def test_band_faces_are_watertight_except_at_its_two_open_boundaries():
+    # same structural invariant as the single-cut case (see
+    # tests/test_geometry_oracle.py): every face edge borders 1 or 2
+    # faces, never 0 or 3+ -- and with a band there are two separate
+    # boundary rings, one per cut plane
+    V, C, F = _dome_with_faces(frequency=6)
+    V_new, C_new, F_new = truncate(V, C, 0.2, axis=2, F_sphere=F, cutoff_from_top=0.3)
+
+    edge_face_count = {}
+    for a, b, c in F_new:
+        for u, v in ((a, b), (b, c), (c, a)):
+            key = frozenset((u, v))
+            edge_face_count[key] = edge_face_count.get(key, 0) + 1
+    assert set(edge_face_count.values()) == {1, 2}
+
+    boundary_z = {round(float(V_new[i][2]), 9)
+                  for e, n in edge_face_count.items() if n == 1 for i in e}
+    assert len(boundary_z) == 2
+
+
+def test_truncate_with_neither_cutoff_returns_the_input_unchanged():
+    V, C, F = _dome_with_faces(frequency=3)
+    V_new, C_new, F_new = truncate(V, C, None, axis=2, F_sphere=F)
+    assert len(V_new) == len(V) and len(C_new) == len(C) and len(F_new) == len(F)
+    assert all(np.array_equal(a, b) for a, b in zip(V_new, V))
