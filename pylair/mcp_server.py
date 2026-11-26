@@ -49,8 +49,12 @@ DomeClass = Literal[1, 2, 3]
 
 # Shared geometry parameters across all four tools:
 #   radius, frequency, polyhedron, dome_class, n_frequency,
-#   truncation_x/truncation_y/truncation_z (None = that axis is not
-#   truncated), elongation_x/elongation_y/elongation_z,
+#   truncation_x/truncation_y/truncation_z (fraction trimmed from that
+#   axis's minimum end; None = not cut there),
+#   truncation_x_max/truncation_y_max/truncation_z_max (fraction trimmed
+#   from that axis's maximum end; None = not cut there -- set both ends
+#   of one axis to keep the band between them),
+#   elongation_x/elongation_y/elongation_z,
 #   vertex_equal_threshold
 # See pylair/api.py:validate_geometry_params for the domain rules (e.g.
 # class 2 needs an even frequency); a bad combination raises ValueError,
@@ -61,7 +65,9 @@ DomeClass = Literal[1, 2, 3]
 def design_dome(radius: float = 1.0, frequency: int = 4, polyhedron: Polyhedron = "icosahedron",
                  dome_class: DomeClass = 1, n_frequency: Optional[int] = None,
                  truncation_x: Optional[float] = None, truncation_y: Optional[float] = None,
-                 truncation_z: Optional[float] = None, elongation_x: float = 1.0,
+                 truncation_z: Optional[float] = None,
+                 truncation_x_max: Optional[float] = None, truncation_y_max: Optional[float] = None,
+                 truncation_z_max: Optional[float] = None, elongation_x: float = 1.0,
                  elongation_y: float = 1.0, elongation_z: float = 1.0,
                  vertex_equal_threshold: float = 1e-7) -> dict:
   """Compute a dome's geometry (no files written) and return summary stats
@@ -70,6 +76,8 @@ def design_dome(radius: float = 1.0, frequency: int = 4, polyhedron: Polyhedron 
   dome = build_dome(radius=radius, frequency=frequency, polyhedron=polyhedron,
                      dome_class=dome_class, n_frequency=n_frequency,
                      truncation_x=truncation_x, truncation_y=truncation_y, truncation_z=truncation_z,
+                     truncation_x_max=truncation_x_max, truncation_y_max=truncation_y_max,
+                     truncation_z_max=truncation_z_max,
                      elongation_factors=(elongation_x, elongation_y, elongation_z),
                      vertex_equal_threshold=vertex_equal_threshold)
   return _design_summary(dome)
@@ -79,7 +87,9 @@ def design_dome(radius: float = 1.0, frequency: int = 4, polyhedron: Polyhedron 
 def preview_dome(radius: float = 1.0, frequency: int = 4, polyhedron: Polyhedron = "icosahedron",
                   dome_class: DomeClass = 1, n_frequency: Optional[int] = None,
                   truncation_x: Optional[float] = None, truncation_y: Optional[float] = None,
-                  truncation_z: Optional[float] = None, elongation_x: float = 1.0,
+                  truncation_z: Optional[float] = None,
+                 truncation_x_max: Optional[float] = None, truncation_y_max: Optional[float] = None,
+                 truncation_z_max: Optional[float] = None, elongation_x: float = 1.0,
                   elongation_y: float = 1.0, elongation_z: float = 1.0,
                   vertex_equal_threshold: float = 1e-7) -> List:
   """Render a quick 3D wireframe preview of the dome and return it inline
@@ -88,6 +98,8 @@ def preview_dome(radius: float = 1.0, frequency: int = 4, polyhedron: Polyhedron
   dome = build_dome(radius=radius, frequency=frequency, polyhedron=polyhedron,
                      dome_class=dome_class, n_frequency=n_frequency,
                      truncation_x=truncation_x, truncation_y=truncation_y, truncation_z=truncation_z,
+                     truncation_x_max=truncation_x_max, truncation_y_max=truncation_y_max,
+                     truncation_z_max=truncation_z_max,
                      elongation_factors=(elongation_x, elongation_y, elongation_z),
                      vertex_equal_threshold=vertex_equal_threshold)
   png_bytes = render_preview_png_bytes(dome.V, dome.C)
@@ -100,7 +112,9 @@ def preview_dome(radius: float = 1.0, frequency: int = 4, polyhedron: Polyhedron
 def get_bill_of_materials(radius: float = 1.0, frequency: int = 4, polyhedron: Polyhedron = "icosahedron",
                            dome_class: DomeClass = 1, n_frequency: Optional[int] = None,
                            truncation_x: Optional[float] = None, truncation_y: Optional[float] = None,
-                           truncation_z: Optional[float] = None, elongation_x: float = 1.0,
+                           truncation_z: Optional[float] = None,
+                 truncation_x_max: Optional[float] = None, truncation_y_max: Optional[float] = None,
+                 truncation_z_max: Optional[float] = None, elongation_x: float = 1.0,
                            elongation_y: float = 1.0, elongation_z: float = 1.0,
                            vertex_equal_threshold: float = 1e-7,
                            bom_rounding_precision: int = 9,
@@ -121,6 +135,8 @@ def get_bill_of_materials(radius: float = 1.0, frequency: int = 4, polyhedron: P
   dome = build_dome(radius=radius, frequency=frequency, polyhedron=polyhedron,
                      dome_class=dome_class, n_frequency=n_frequency,
                      truncation_x=truncation_x, truncation_y=truncation_y, truncation_z=truncation_z,
+                     truncation_x_max=truncation_x_max, truncation_y_max=truncation_y_max,
+                     truncation_z_max=truncation_z_max,
                      elongation_factors=(elongation_x, elongation_y, elongation_z),
                      vertex_equal_threshold=vertex_equal_threshold)
   return compute_bom(dome.V, dome.C, bom_rounding_precision, cost_per_unit_length,
@@ -134,6 +150,8 @@ def export_dome(output_path: str, radius: float = 1.0, frequency: int = 4,
                  polyhedron: Polyhedron = "icosahedron", dome_class: DomeClass = 1,
                  n_frequency: Optional[int] = None, truncation_x: Optional[float] = None,
                  truncation_y: Optional[float] = None, truncation_z: Optional[float] = None,
+                 truncation_x_max: Optional[float] = None, truncation_y_max: Optional[float] = None,
+                 truncation_z_max: Optional[float] = None,
                  elongation_x: float = 1.0, elongation_y: float = 1.0, elongation_z: float = 1.0,
                  vertex_equal_threshold: float = 1e-7,
                  face_output: bool = False, preview: bool = False, stl: bool = False,
@@ -146,7 +164,8 @@ def export_dome(output_path: str, radius: float = 1.0, frequency: int = 4,
   (required for stl/obj/hub_templates/face_templates/cost_per_unit_area/
   panel_areal_density). Truncation on any combination of axes correctly
   preserves face data, so all of the above work regardless of
-  truncation_x/truncation_y/truncation_z. face_templates=True writes one
+  truncation_x/truncation_y/truncation_z (or their _max counterparts,
+  which trim from each axis's maximum end instead). face_templates=True writes one
   DXF cutting template per unique panel shape. Returns the list of files
   written and the Bill of Materials (including panel shapes/counts,
   chirality flags, panel area/cost/weight, bevel angles, and "Possible
@@ -157,6 +176,8 @@ def export_dome(output_path: str, radius: float = 1.0, frequency: int = 4,
   dome = build_dome(radius=radius, frequency=frequency, polyhedron=polyhedron,
                      dome_class=dome_class, n_frequency=n_frequency,
                      truncation_x=truncation_x, truncation_y=truncation_y, truncation_z=truncation_z,
+                     truncation_x_max=truncation_x_max, truncation_y_max=truncation_y_max,
+                     truncation_z_max=truncation_z_max,
                      elongation_factors=(elongation_x, elongation_y, elongation_z),
                      vertex_equal_threshold=vertex_equal_threshold)
 
@@ -199,7 +220,9 @@ def export_dome(output_path: str, radius: float = 1.0, frequency: int = 4,
 def get_assembly_manifest(radius: float = 1.0, frequency: int = 4, polyhedron: Polyhedron = "icosahedron",
                            dome_class: DomeClass = 1, n_frequency: Optional[int] = None,
                            truncation_x: Optional[float] = None, truncation_y: Optional[float] = None,
-                           truncation_z: Optional[float] = None, elongation_x: float = 1.0,
+                           truncation_z: Optional[float] = None,
+                 truncation_x_max: Optional[float] = None, truncation_y_max: Optional[float] = None,
+                 truncation_z_max: Optional[float] = None, elongation_x: float = 1.0,
                            elongation_y: float = 1.0, elongation_z: float = 1.0,
                            vertex_equal_threshold: float = 1e-7,
                            rounding_precision: int = 9, angle_precision: int = 3,
@@ -221,6 +244,8 @@ def get_assembly_manifest(radius: float = 1.0, frequency: int = 4, polyhedron: P
   dome = build_dome(radius=radius, frequency=frequency, polyhedron=polyhedron,
                      dome_class=dome_class, n_frequency=n_frequency,
                      truncation_x=truncation_x, truncation_y=truncation_y, truncation_z=truncation_z,
+                     truncation_x_max=truncation_x_max, truncation_y_max=truncation_y_max,
+                     truncation_z_max=truncation_z_max,
                      elongation_factors=(elongation_x, elongation_y, elongation_z),
                      vertex_equal_threshold=vertex_equal_threshold)
   return build_assembly_manifest(dome.V, dome.C, faces=dome.F_sphere,
@@ -237,6 +262,8 @@ def export_assembly_job_spec(output_path: str, kind: Literal["panels", "hubs"] =
                               polyhedron: Polyhedron = "icosahedron", dome_class: DomeClass = 1,
                               n_frequency: Optional[int] = None, truncation_x: Optional[float] = None,
                               truncation_y: Optional[float] = None, truncation_z: Optional[float] = None,
+                 truncation_x_max: Optional[float] = None, truncation_y_max: Optional[float] = None,
+                 truncation_z_max: Optional[float] = None,
                               elongation_x: float = 1.0, elongation_y: float = 1.0,
                               elongation_z: float = 1.0, vertex_equal_threshold: float = 1e-7,
                               rounding_precision: int = 9, angle_precision: int = 3,
@@ -261,6 +288,8 @@ def export_assembly_job_spec(output_path: str, kind: Literal["panels", "hubs"] =
   dome = build_dome(radius=radius, frequency=frequency, polyhedron=polyhedron,
                      dome_class=dome_class, n_frequency=n_frequency,
                      truncation_x=truncation_x, truncation_y=truncation_y, truncation_z=truncation_z,
+                     truncation_x_max=truncation_x_max, truncation_y_max=truncation_y_max,
+                     truncation_z_max=truncation_z_max,
                      elongation_factors=(elongation_x, elongation_y, elongation_z),
                      vertex_equal_threshold=vertex_equal_threshold)
   manifest = build_assembly_manifest(dome.V, dome.C, faces=dome.F_sphere,
@@ -295,6 +324,8 @@ def render_assembly_schematic(radius: float = 1.0, frequency: int = 4,
                                polyhedron: Polyhedron = "icosahedron", dome_class: DomeClass = 1,
                                n_frequency: Optional[int] = None, truncation_x: Optional[float] = None,
                                truncation_y: Optional[float] = None, truncation_z: Optional[float] = None,
+                 truncation_x_max: Optional[float] = None, truncation_y_max: Optional[float] = None,
+                 truncation_z_max: Optional[float] = None,
                                elongation_x: float = 1.0, elongation_y: float = 1.0,
                                elongation_z: float = 1.0, vertex_equal_threshold: float = 1e-7,
                                show_hub_labels: bool = True, show_strut_labels: bool = False,
@@ -312,6 +343,8 @@ def render_assembly_schematic(radius: float = 1.0, frequency: int = 4,
   dome = build_dome(radius=radius, frequency=frequency, polyhedron=polyhedron,
                      dome_class=dome_class, n_frequency=n_frequency,
                      truncation_x=truncation_x, truncation_y=truncation_y, truncation_z=truncation_z,
+                     truncation_x_max=truncation_x_max, truncation_y_max=truncation_y_max,
+                     truncation_z_max=truncation_z_max,
                      elongation_factors=(elongation_x, elongation_y, elongation_z),
                      vertex_equal_threshold=vertex_equal_threshold)
   manifest = build_assembly_manifest(dome.V, dome.C, faces=dome.F_sphere,
@@ -351,6 +384,8 @@ def _design_summary(dome) -> dict:
           "elongation_factors": {"x": dome.elongation_factors[0], "y": dome.elongation_factors[1],
                                   "z": dome.elongation_factors[2]},
           "truncation": {"x": dome.truncation_x, "y": dome.truncation_y, "z": dome.truncation_z},
+          "truncation_max": {"x": dome.truncation_x_max, "y": dome.truncation_y_max,
+                             "z": dome.truncation_z_max},
       },
   }
 

@@ -337,3 +337,36 @@ def test_attach_nest_placements_merges_by_instance_label():
     # every other panel is untouched
     other_panels = [p for pid, p in manifest['panels'].items() if pid != some_panel_id]
     assert all('placement' not in p for p in other_panels)
+
+
+@pytest.mark.parametrize("truncation_kwargs,cut_planes", [
+    (dict(truncation_z_max=0.4), 1),
+    (dict(truncation_z=0.4, truncation_z_max=0.3), 2),
+    (dict(truncation_x_max=0.4), 1),
+])
+def test_max_end_and_band_truncation_cut_edges_border_exactly_one_panel(truncation_kwargs, cut_planes):
+    # the same direct strut<->panel adjacency check as
+    # test_truncated_dome_base_ring_struts_border_exactly_one_panel, for
+    # a cut from an axis's maximum end and for a band: golden-value/Euler
+    # checks can't catch an undercounted boundary on an open dome (see
+    # AGENTS.md), so check each cut ring's struts directly. A band has two
+    # closed boundary rings, each with one strut per vertex on it.
+    result = build_dome(radius=1.0, frequency=6, polyhedron='icosahedron', dome_class=1,
+                         **truncation_kwargs)
+    manifest = build_assembly_manifest(result.V, result.C, faces=result.F_sphere)
+
+    counts = collections.Counter(len(s['bordering_panels']) for s in manifest['struts'].values())
+    assert set(counts) == {1, 2}
+
+    axis = 0 if 'truncation_x_max' in truncation_kwargs else 2
+    coords = [v[axis] for v in result.V]
+    lo, hi = min(coords), max(coords)
+    on_cut = 0
+    if 'truncation_z' in truncation_kwargs:
+        on_cut += sum(1 for c in coords if c - lo < 1e-4)
+    on_cut += sum(1 for c in coords if hi - c < 1e-4)
+    assert counts[1] == on_cut
+
+    for panel in manifest['panels'].values():
+        for edge in panel['edges']:
+            assert edge['strut'] is not None

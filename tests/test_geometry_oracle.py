@@ -212,6 +212,39 @@ def test_multi_axis_truncated_faces_match_trimesh_sequential_slice_oracle(
         assert all(a < 1e-9 for a in extra_areas)
 
 
+@pytest.mark.parametrize("polyhedron,frequency,lo,hi", [
+    ("icosahedron", 4, None, 0.333333),
+    ("octahedron", 4, None, 0.6),
+    ("icosahedron", 6, 0.2, 0.3),
+    ("tetrahedron", 4, 0.25, 0.25),
+])
+def test_max_end_and_band_truncated_faces_match_trimesh_slice_oracle(tmp_path, polyhedron, frequency, lo, hi):
+    # cut from Z's maximum end (optionally after a min-end cut, i.e. a
+    # band): trimesh keeps the side its plane normal points toward, so
+    # a max-end cut is a slice with the normal pointing *down*, at the
+    # plane pyLair computes from the uncut extent
+    trimesh = pytest.importorskip("trimesh")
+
+    truncated = build_dome(frequency=frequency, polyhedron=polyhedron,
+                           truncation_z=lo, truncation_z_max=hi)
+    full = build_dome(frequency=frequency, polyhedron=polyhedron)
+    obj_path = tmp_path / "full.obj"
+    OutputOBJ(full.V, full.F_sphere, str(obj_path))
+    mesh = trimesh.load(str(obj_path), process=False)
+
+    zs = [v[2] for v in full.V]
+    min_z, max_z = min(zs), max(zs)
+    if lo is not None:
+        mesh = trimesh.intersections.slice_mesh_plane(
+            mesh, plane_normal=[0., 0., 1.], plane_origin=[0., 0., min_z + lo * (max_z - min_z)])
+    mesh = trimesh.intersections.slice_mesh_plane(
+        mesh, plane_normal=[0., 0., -1.], plane_origin=[0., 0., max_z - hi * (max_z - min_z)])
+
+    our_area = sum(fd['area'] for fd in compute_face_data(truncated.V, truncated.F_sphere))
+    assert our_area == pytest.approx(mesh.area, rel=1e-6)
+    assert len(truncated.F_sphere) == len(mesh.faces)
+
+
 @pytest.mark.parametrize("frequency,truncation_kwargs", [
     (4, dict(truncation_x=0.499999, truncation_y=0.499999)),
     (4, dict(truncation_x=0.499999, truncation_z=0.499999)),
